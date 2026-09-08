@@ -1,12 +1,18 @@
-# Dependencies
+# dependencies
 node_modules
-dist
-dist-ssr
-.next
-out
+/.pnp
+.pnp.*
 
-# Logs
-logs
+# testing
+/coverage
+
+# next.js
+.next/
+/out/
+/build
+dist
+
+# logs & debug
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -30,3 +36,4 @@ lerna-debug.log*
 *.suo
 *.sln
 *.tsbuildinfo
+next-env.d.ts
