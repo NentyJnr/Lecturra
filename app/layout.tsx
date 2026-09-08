@@ -29,7 +29,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn("antialiased", fontSans.variable, fontMono.variable, "font-serif", instrumentSerif.variable)}
     >
-      <body>
+      <body suppressHydrationWarning>
         <ThemeProvider>
           <QueryProvider>{children}</QueryProvider>
           <Toaster richColors position="top-center" />
