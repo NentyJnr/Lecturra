@@ -19,7 +19,7 @@ export const registerSchema = z
     phoneNumber: z.string().trim().min(1, "Phone number is required"),
     location: z.string().trim().min(1, "Location is required"),
     profileImageUrl: z.string().trim().optional(),
-    accountType: z.number().default(1),
+    accountType: z.number(),
     institutionName: z.string().trim().optional(),
     facultyAccessCode: z.string().trim().optional(),
     referredByReferralCode: z.string().trim().optional(),

@@ -106,7 +106,7 @@ export function RegisterForm() {
     <Card>
       <CardHeader>
         <CardTitle>Create your account</CardTitle>
-        <CardDescription>Get 5,000 free credits to start generating questions.</CardDescription>
+        <CardDescription>Get 1,500 free credits to start generating questions.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
