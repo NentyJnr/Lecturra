@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { CircleCheckIcon, Loader2Icon, OctagonXIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,18 @@ import { useVerifyEmail } from "@/hooks/use-auth";
 import { getApiErrorMessage } from "@/lib/api/api-error";
 
 function VerifyEmailStatusInner() {
+  const router = useRouter();
   const token = useSearchParams().get("token");
   const verification = useVerifyEmail(token);
+
+  useEffect(() => {
+    if (verification.isSuccess) {
+      const timer = setTimeout(() => {
+        router.push("/login");
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [verification.isSuccess, router]);
 
   return (
     <Card>
@@ -31,16 +41,16 @@ function VerifyEmailStatusInner() {
           </Alert>
         )}
         {token && verification.isPending && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2Icon className="animate-spin" /> Verifying...
+          <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
+            <Loader2Icon className="animate-spin text-primary h-5 w-5" /> Verifying account token...
           </div>
         )}
         {token && verification.isSuccess && (
-          <Alert>
-            <CircleCheckIcon />
-            <AlertTitle>Email verified</AlertTitle>
+          <Alert className="border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <CircleCheckIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            <AlertTitle>Email verified successfully!</AlertTitle>
             <AlertDescription>
-              {verification.data.message ?? "Your email has been verified. You can log in now."}
+              {verification.data.message ?? "Your email has been verified. Redirecting to login..."}
             </AlertDescription>
           </Alert>
         )}
@@ -52,8 +62,8 @@ function VerifyEmailStatusInner() {
           </Alert>
         )}
         {token && verification.isSuccess && (
-          <Button type="button" className="w-full" onClick={() => (window.location.href = "/login")}>
-            Continue to login
+          <Button type="button" className="w-full" onClick={() => router.push("/login")}>
+            Continue to login now &rarr;
           </Button>
         )}
       </CardContent>
