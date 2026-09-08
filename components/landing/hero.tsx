@@ -14,7 +14,7 @@ export function Hero() {
   return (
     <section className="mx-auto grid max-w-5xl items-center gap-10 px-6 pt-16 pb-12 md:grid-cols-2 md:pt-24">
       <div className="flex flex-col items-start gap-5">
-        <Badge variant="secondary">5,000 free credits on signup — no card required</Badge>
+        <Badge variant="secondary">1,500 free credits on signup — no card required</Badge>
         <h1 className="font-heading text-4xl leading-tight font-medium text-balance md:text-5xl">
           Turn lecture notes into exam-ready questions in minutes
         </h1>

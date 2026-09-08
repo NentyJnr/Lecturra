@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
-const freeIncludes = ["5,000 credits on signup", "+200 credits per referral", "Full workflow: upload → grade"];
+const freeIncludes = ["1,500 credits on signup", "+200 credits per referral", "Full workflow: upload → grade"];
 const topupIncludes = ["₦5,000 = 5,000 credits", "Secure OPay checkout", "Track payment status per order"];
 
 export function Pricing() {
@@ -24,7 +24,7 @@ export function Pricing() {
             <CardTitle>Free</CardTitle>
             <CardDescription>For trying Lecturra on a real course.</CardDescription>
             <p className="font-heading text-4xl font-medium">
-              ₦0 <span className="font-sans text-sm font-normal text-muted-foreground">/ 5,000 credits</span>
+              ₦0 <span className="font-sans text-sm font-normal text-muted-foreground">/ 1,500 credits</span>
             </p>
           </CardHeader>
           <CardContent>
