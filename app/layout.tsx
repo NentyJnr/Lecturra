@@ -2,6 +2,8 @@ import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/sonner"
+import { QueryProvider } from "@/providers/query-provider"
 import { cn } from "@/lib/utils";
 
 const instrumentSerif = Instrument_Serif({subsets:['latin'],weight:['400'],variable:'--font-serif'});
@@ -28,7 +30,10 @@ export default function RootLayout({
       className={cn("antialiased", fontSans.variable, fontMono.variable, "font-serif", instrumentSerif.variable)}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <QueryProvider>{children}</QueryProvider>
+          <Toaster richColors position="top-center" />
+        </ThemeProvider>
       </body>
     </html>
   )
