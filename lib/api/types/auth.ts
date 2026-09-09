@@ -59,6 +59,13 @@ export interface AuthUser {
   phoneNumber?: string;
   location?: string;
   profileImageUrl?: string;
+  role?: string;
+  accountType?: number;
+  institutionName?: string;
+  facultyAccessCode?: string;
+  tenantId?: string;
+  remainingQuota?: number;
+  monthlyQuotaLimit?: number;
 }
 
 export interface AuthSession {
