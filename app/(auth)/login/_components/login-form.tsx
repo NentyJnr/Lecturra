@@ -33,7 +33,7 @@ export function LoginForm() {
       {
         onSuccess: () => {
           toast.success("Welcome back!");
-          router.push("/");
+          router.push("/dashboard");
         },
       },
     );

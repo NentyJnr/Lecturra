@@ -76,9 +76,34 @@ const mockHistory: HistoryRow[] = [
   },
 ];
 
+import { useAuthStore } from "@/stores/auth-store";
+import { isAdminUser } from "@/lib/api/types/auth";
+import Link from "next/link";
+
 export default function BillingPage() {
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = isAdminUser(user);
+
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  if (!isAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center space-y-4 min-h-[50vh]">
+        <div className="flex size-16 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 border border-amber-500/20">
+          <ShieldCheckIcon className="size-8" />
+        </div>
+        <div className="space-y-1 max-w-md">
+          <h2 className="font-heading text-xl font-bold">Access Restricted</h2>
+          <p className="text-sm text-muted-foreground">
+            Quota topup and billing management is managed by your school institution administrator.
+          </p>
+        </div>
+        <Button render={<Link href="/dashboard" />}>Return to Overview</Button>
+      </div>
+    );
+  }
+
 
   function handleInitializePayment(pkg: PaymentPackage) {
     setSelectedPackage(pkg.id);

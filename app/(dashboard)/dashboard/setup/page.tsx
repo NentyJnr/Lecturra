@@ -20,14 +20,37 @@ import { Input } from "@/components/ui/input";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Badge } from "@/components/ui/badge";
 
+import Link from "next/link";
+import { isAdminUser } from "@/lib/api/types/auth";
+
 export default function SetupPage() {
   const user = useAuthStore((s) => s.user);
+  const isAdmin = isAdminUser(user);
+
 
   const [institutionName, setInstitutionName] = useState(user?.institutionName || "University of Lagos");
   const [allowedDomain, setAllowedDomain] = useState("unilag.edu.ng");
   const [facultyEmail, setFacultyEmail] = useState(user?.email || "admin@unilag.edu.ng");
   const [accessCode, setAccessCode] = useState(user?.facultyAccessCode || "FAC-UNILAG-8F21");
   const [saving, setSaving] = useState(false);
+
+  if (!isAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center space-y-4 min-h-[50vh]">
+        <div className="flex size-16 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 border border-amber-500/20">
+          <ShieldCheckIcon className="size-8" />
+        </div>
+        <div className="space-y-1 max-w-md">
+          <h2 className="font-heading text-xl font-bold">Access Restricted</h2>
+          <p className="text-sm text-muted-foreground">
+            Organization setup and domain mapping configuration is restricted to school administrators.
+          </p>
+        </div>
+        <Button render={<Link href="/dashboard" />}>Return to Overview</Button>
+      </div>
+    );
+  }
+
 
   function handleSaveSetup(e: React.FormEvent) {
     e.preventDefault();

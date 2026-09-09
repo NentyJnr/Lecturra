@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { GraduationCapIcon, MenuIcon, XIcon } from "lucide-react";
+import { GraduationCapIcon, MenuIcon, XIcon, LayoutDashboardIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/stores/auth-store";
 
 const links = [
   { href: "#features", label: "Features" },
@@ -15,6 +16,7 @@ const links = [
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   return (
     <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur">
@@ -31,10 +33,18 @@ export function Navbar() {
           ))}
         </div>
         <div className="ml-auto hidden items-center gap-2 md:flex">
-          <Button variant="ghost" render={<a href="/login" />}>
-            Log in
-          </Button>
-          <Button render={<a href="/register" />}>Start free</Button>
+          {isAuthenticated ? (
+            <Button render={<Link href="/dashboard" />}>
+              <LayoutDashboardIcon className="size-4" /> Go to Dashboard
+            </Button>
+          ) : (
+            <>
+              <Button variant="ghost" render={<a href="/login" />}>
+                Log in
+              </Button>
+              <Button render={<a href="/register" />}>Start free</Button>
+            </>
+          )}
         </div>
         <Button
           variant="ghost"
@@ -61,12 +71,20 @@ export function Navbar() {
               </a>
             ))}
             <div className="mt-2 flex gap-2">
-              <Button variant="outline" className="flex-1" render={<a href="/login" />}>
-                Log in
-              </Button>
-              <Button className="flex-1" render={<a href="/register" />}>
-                Start free
-              </Button>
+              {isAuthenticated ? (
+                <Button className="w-full" render={<Link href="/dashboard" />}>
+                  <LayoutDashboardIcon className="size-4" /> Go to Dashboard
+                </Button>
+              ) : (
+                <>
+                  <Button variant="outline" className="flex-1" render={<a href="/login" />}>
+                    Log in
+                  </Button>
+                  <Button className="flex-1" render={<a href="/register" />}>
+                    Start free
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>

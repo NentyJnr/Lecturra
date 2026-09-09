@@ -1,4 +1,6 @@
+import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { useAuthStore } from "@/stores/auth-store";
 import {
   forgotPassword,
@@ -68,10 +70,13 @@ export function useRefreshToken() {
 }
 
 export function useLogout() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const logout = useAuthStore((s) => s.logout);
   return () => {
     logout();
     queryClient.clear();
+    router.push("/login");
   };
 }
+
