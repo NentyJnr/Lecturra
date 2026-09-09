@@ -12,9 +12,17 @@ interface ErrorBody {
 export function getApiErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const raw: unknown = error.response?.data;
+    const status = error.response?.status;
 
     if (typeof raw === "string") {
-      return raw || FALLBACK;
+      const trimmed = raw.trim();
+      if (trimmed.startsWith("<") || trimmed.includes("<!DOCTYPE") || trimmed.includes("<html")) {
+        if (status === 404) return "API endpoint or server route not found (404).";
+        if (status === 500) return "Internal server error (500). Please try again later.";
+        if (status === 502 || status === 503 || status === 504) return "Server is temporarily unavailable. Please try again later.";
+        return error.response?.statusText || FALLBACK;
+      }
+      return trimmed || FALLBACK;
     }
 
     if (typeof raw === "object" && raw !== null) {

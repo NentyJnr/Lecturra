@@ -59,6 +59,13 @@ export interface AuthUser {
   phoneNumber?: string;
   location?: string;
   profileImageUrl?: string;
+  role?: string;
+  accountType?: number;
+  institutionName?: string;
+  facultyAccessCode?: string;
+  tenantId?: string;
+  remainingQuota?: number;
+  monthlyQuotaLimit?: number;
 }
 
 export interface AuthSession {
@@ -78,3 +85,10 @@ export interface ApiMessage {
   message?: string;
   succeeded?: boolean;
 }
+
+export function isAdminUser(user: AuthUser | null): boolean {
+  if (!user || !user.role) return false;
+  const role = user.role.toLowerCase();
+  return role === "institutionadmin" || role === "systemadmin" || role.includes("admin");
+}
+

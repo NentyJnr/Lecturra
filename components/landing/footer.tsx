@@ -14,7 +14,7 @@ export function Footer() {
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <Button size="lg" render={<a href="/register" />}>
-            Get 5,000 free credits
+            Get 1,500 free credits
           </Button>
           <Button size="lg" variant="outline" render={<a href="/login" />}>
             Log in
