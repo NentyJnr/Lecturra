@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/stores/auth-store";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { Loader2Icon } from "lucide-react";
 
 export default function DashboardLayout({
   children,
@@ -10,6 +13,30 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const router = useRouter();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !isAuthenticated) {
+      router.replace("/login");
+    }
+  }, [mounted, isAuthenticated, router]);
+
+  if (!mounted || !isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2Icon className="size-8 animate-spin text-primary" />
+          <p className="text-sm font-medium text-muted-foreground">Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -29,3 +56,4 @@ export default function DashboardLayout({
     </div>
   );
 }
+

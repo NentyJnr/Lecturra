@@ -14,6 +14,7 @@ import {
 
 import { useAuthStore } from "@/stores/auth-store";
 import { useLogout } from "@/hooks/use-auth";
+import { isAdminUser } from "@/lib/api/types/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -41,7 +42,8 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
   const currentPage = pageTitles[pathname] || { title: "Dashboard", subtitle: "Lectura Academic Platform" };
 
   const isOrganization = user?.accountType === 2 || !!user?.institutionName;
-  const isAdmin = user?.role === "InstitutionAdmin" || user?.role === "SystemAdmin" || user?.accountType === 2;
+  const isAdmin = isAdminUser(user);
+
 
   const initials = user?.fullName
     ? user.fullName
@@ -51,6 +53,17 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
         .join("")
         .toUpperCase()
     : "LE";
+
+  const creditBadgeContent = (
+    <Badge
+      variant="outline"
+      className="flex items-center gap-1.5 px-3 py-1 bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800 text-sky-700 dark:text-sky-300 hover:bg-sky-100 transition-colors"
+    >
+      <SparklesIcon className="size-3.5 fill-sky-500 text-sky-500 animate-pulse" />
+      <span className="font-bold text-xs">1,500</span>
+      <span className="text-[10px] uppercase font-medium opacity-80 hidden sm:inline">Credits</span>
+    </Badge>
+  );
 
   return (
     <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-border/80 bg-background/85 px-4 backdrop-blur md:px-6">
@@ -77,17 +90,14 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
 
       {/* Right: Credits Counter & User Profile Dropdown */}
       <div className="flex items-center gap-3">
-        {/* Credits Counter Pill */}
-        <Link href="/dashboard/billing">
-          <Badge
-            variant="outline"
-            className="flex items-center gap-1.5 px-3 py-1 bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800 text-sky-700 dark:text-sky-300 hover:bg-sky-100 transition-colors"
-          >
-            <SparklesIcon className="size-3.5 fill-sky-500 text-sky-500 animate-pulse" />
-            <span className="font-bold text-xs">1,500</span>
-            <span className="text-[10px] uppercase font-medium opacity-80 hidden sm:inline">Credits</span>
-          </Badge>
-        </Link>
+        {/* Credits Counter Pill - Only Admins can navigate to Topup & Billing */}
+        {isAdmin ? (
+          <Link href="/dashboard/billing">
+            {creditBadgeContent}
+          </Link>
+        ) : (
+          <div>{creditBadgeContent}</div>
+        )}
 
         {/* User Dropdown */}
         <div className="relative">
@@ -146,26 +156,29 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
                     <span>My Profile</span>
                   </Link>
 
-                  <Link
-                    href="/dashboard/billing"
-                    onClick={() => setProfileDropdownOpen(false)}
-                    className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors"
-                  >
-                    <CreditCardIcon className="size-4 text-muted-foreground" />
-                    <span>Quota Topup & Billing</span>
-                  </Link>
-
                   {isAdmin && (
-                    <Link
-                      href="/dashboard/setup"
-                      onClick={() => setProfileDropdownOpen(false)}
-                      className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors"
-                    >
-                      <Building2Icon className="size-4 text-muted-foreground" />
-                      <span>Organization Setup</span>
-                    </Link>
+                    <>
+                      <Link
+                        href="/dashboard/billing"
+                        onClick={() => setProfileDropdownOpen(false)}
+                        className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                      >
+                        <CreditCardIcon className="size-4 text-muted-foreground" />
+                        <span>Quota Topup & Billing</span>
+                      </Link>
+
+                      <Link
+                        href="/dashboard/setup"
+                        onClick={() => setProfileDropdownOpen(false)}
+                        className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                      >
+                        <Building2Icon className="size-4 text-muted-foreground" />
+                        <span>Organization Setup</span>
+                      </Link>
+                    </>
                   )}
                 </div>
+
 
                 <div className="pt-1 border-t border-border/60">
                   <button

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { useAuthStore } from "@/stores/auth-store";
+import { isAdminUser } from "@/lib/api/types/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +26,8 @@ export default function DashboardOverviewPage() {
   const user = useAuthStore((s) => s.user);
 
   const isOrganization = user?.accountType === 2 || !!user?.institutionName;
-  const isAdmin = user?.role === "InstitutionAdmin" || user?.role === "SystemAdmin" || user?.accountType === 2;
+  const isAdmin = isAdminUser(user);
+
 
   const quickStats = [
     {
@@ -69,9 +71,13 @@ export default function DashboardOverviewPage() {
                 {isOrganization ? <Building2Icon className="size-3.5" /> : <SparklesIcon className="size-3.5" />}
                 {isOrganization ? (user?.institutionName || "School Organization") : "Individual Lecturer Workspace"}
               </Badge>
-              {isAdmin && (
+              {isAdmin ? (
                 <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400">
                   Administrator
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="border-sky-500/40 text-sky-600 dark:text-sky-400">
+                  Faculty Member
                 </Badge>
               )}
             </div>
@@ -191,32 +197,34 @@ export default function DashboardOverviewPage() {
             </CardContent>
           </Card>
 
-          {/* Quota Topup / Payments Card */}
-          <Card className="group hover:border-primary/50 transition-all hover:shadow-md">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                  <CreditCardIcon className="size-5" />
+          {/* Quota Topup / Payments Card - Only for School Admin */}
+          {isAdmin && (
+            <Card className="group hover:border-primary/50 transition-all hover:shadow-md">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                    <CreditCardIcon className="size-5" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base">Quota Topup / Payments</CardTitle>
+                    <CardDescription className="text-xs">Credits & Billing Packages</CardDescription>
+                  </div>
                 </div>
-                <div>
-                  <CardTitle className="text-base">Quota Topup / Payments</CardTitle>
-                  <CardDescription className="text-xs">Credits & Billing Packages</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-xs text-muted-foreground">
-                1,500 free credits currently loaded. Top up your AI generation quota anytime via OPay payment integration.
-              </p>
-              <Button variant="ghost" size="xs" className="w-full justify-between text-primary hover:text-primary" render={<Link href="/dashboard/billing" />}>
-                <span>Topup Quota</span>
-                <ArrowRightIcon className="size-3.5" />
-              </Button>
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  1,500 free credits currently loaded. Top up your AI generation quota anytime via OPay payment integration.
+                </p>
+                <Button variant="ghost" size="xs" className="w-full justify-between text-primary hover:text-primary" render={<Link href="/dashboard/billing" />}>
+                  <span>Topup Quota</span>
+                  <ArrowRightIcon className="size-3.5" />
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Organization Members Card - Conditional */}
-          {isOrganization && (
+          {/* Organization Members Card - Only for School Admin */}
+          {isAdmin && (
             <Card className="group hover:border-primary/50 transition-all hover:shadow-md border-sky-500/30">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
@@ -241,7 +249,7 @@ export default function DashboardOverviewPage() {
             </Card>
           )}
 
-          {/* Organization Setup Card - Conditional */}
+          {/* Organization Setup Card - Only for School Admin */}
           {isAdmin && (
             <Card className="group hover:border-primary/50 transition-all hover:shadow-md border-amber-500/30">
               <CardHeader className="pb-3">
@@ -268,6 +276,7 @@ export default function DashboardOverviewPage() {
           )}
         </div>
       </div>
+
     </div>
   );
 }

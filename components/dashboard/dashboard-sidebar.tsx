@@ -21,6 +21,7 @@ import {
 
 import { useAuthStore } from "@/stores/auth-store";
 import { useLogout } from "@/hooks/use-auth";
+import { isAdminUser } from "@/lib/api/types/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -36,9 +37,19 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
 
   // Determine role and account type from auth store
   const isOrganization = user?.accountType === 2 || !!user?.institutionName;
-  const isAdmin = user?.role === "InstitutionAdmin" || user?.role === "SystemAdmin" || user?.accountType === 2;
+  const isAdmin = isAdminUser(user);
 
-  const coreNavItems = [
+
+  interface NavItem {
+    title: string;
+    href: string;
+    icon: any;
+    exact?: boolean;
+    description?: string;
+    badge?: string;
+  }
+
+  const coreNavItems: NavItem[] = [
     {
       title: "Overview",
       href: "/dashboard",
@@ -64,28 +75,25 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
       description: "Extract test result reports",
     },
     {
-      title: "Quota Topup / Payments",
-      href: "/dashboard/billing",
-      icon: CreditCardIcon,
-      badge: "1,500 Cr",
-    },
-    {
       title: "Profile",
       href: "/dashboard/profile",
       icon: UserIcon,
     },
   ];
 
-  const organizationNavItems = [
+  const adminNavItems: NavItem[] = [
+    {
+      title: "Quota Topup / Payments",
+      href: "/dashboard/billing",
+      icon: CreditCardIcon,
+      badge: "1,500 Cr",
+    },
     {
       title: "Members",
       href: "/dashboard/members",
       icon: UsersIcon,
       description: "Organization staff & access code",
     },
-  ];
-
-  const adminNavItems = [
     {
       title: "Setup",
       href: "/dashboard/setup",
@@ -93,6 +101,8 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
       description: "Organization settings & domain mapping",
     },
   ];
+
+
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href;
@@ -182,36 +192,7 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
             })}
           </div>
 
-          {/* Organization Section - Rendered if AccountType is Organization / Institution */}
-          {isOrganization && (
-            <div className="space-y-1">
-              <p className="px-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                Organization
-              </p>
-              {organizationNavItems.map((item) => {
-                const active = isActive(item.href);
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileOpen?.(false)}
-                    className={`group relative flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
-                      active
-                        ? "bg-primary text-primary-foreground shadow-sm font-semibold"
-                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <Icon className={`size-4 shrink-0 transition-transform group-hover:scale-105 ${active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"}`} />
-                      <span className="truncate">{item.title}</span>
-                    </div>
-                    {active && <ChevronRightIcon className="size-3.5 shrink-0 opacity-70" />}
-                  </Link>
-                );
-              })}
-            </div>
-          )}
+
 
           {/* Admin Section - Rendered if logged in as Admin */}
           {isAdmin && (
