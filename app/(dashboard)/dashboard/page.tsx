@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   LibraryIcon,
@@ -18,6 +19,7 @@ import {
 
 import { useAuthStore } from "@/stores/auth-store";
 import { isAdminUser } from "@/lib/api/types/auth";
+import { getDashboardOverview, type DashboardOverviewData } from "@/lib/api/services/dashboard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,36 +27,58 @@ import { Badge } from "@/components/ui/badge";
 export default function DashboardOverviewPage() {
   const user = useAuthStore((s) => s.user);
 
-  const isOrganization = user?.accountType === 2 || !!user?.institutionName;
+  const [overview, setOverview] = useState<DashboardOverviewData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadOverview() {
+      try {
+        setLoading(true);
+        const data = await getDashboardOverview();
+        setOverview(data);
+      } catch (err) {
+        // Silent fallback to user store properties
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadOverview();
+  }, []);
+
+  const isOrganization = overview?.isOrganization ?? (user?.accountType === 2 || !!user?.institutionName);
   const isAdmin = isAdminUser(user);
 
+  const remainingQuotaFormatted = (overview?.remainingQuota ?? user?.remainingQuota ?? 1500).toLocaleString();
+  const libraryCount = (overview?.libraryMaterialsCount ?? 0).toString();
+  const questionsCount = (overview?.questionBanksCount ?? 0).toString();
+  const submissionsCount = (overview?.submissionsCount ?? 0).toString();
 
   const quickStats = [
     {
       title: "AI Credits Remaining",
-      value: "1,500",
+      value: remainingQuotaFormatted,
       change: "Free allocation loaded",
       icon: SparklesIcon,
       accent: "text-amber-500 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900",
     },
     {
       title: "Library Materials",
-      value: "0",
-      change: "Upload lecture notes & slides",
+      value: libraryCount,
+      change: overview?.libraryMaterialsCount ? `${overview.libraryMaterialsCount} documents uploaded` : "Upload lecture notes & slides",
       icon: LibraryIcon,
       accent: "text-sky-500 bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-900",
     },
     {
       title: "Question Banks Generated",
-      value: "0",
-      change: "Ready for AI question run",
+      value: questionsCount,
+      change: overview?.questionBanksCount ? `${overview.questionBanksCount} items in question bank` : "Ready for AI question run",
       icon: HelpCircleIcon,
       accent: "text-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-900",
     },
     {
       title: "Submissions & Results",
-      value: "0",
-      change: "Student test submissions",
+      value: submissionsCount,
+      change: overview?.submissionsCount ? `${overview.submissionsCount} student submissions` : "Student test submissions",
       icon: BarChart3Icon,
       accent: "text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900",
     },
@@ -69,7 +93,7 @@ export default function DashboardOverviewPage() {
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="gap-1 bg-primary/15 text-primary border-primary/20 font-medium">
                 {isOrganization ? <Building2Icon className="size-3.5" /> : <SparklesIcon className="size-3.5" />}
-                {isOrganization ? (user?.institutionName || "School Organization") : "Individual Lecturer Workspace"}
+                {isOrganization ? (overview?.institutionName || user?.institutionName || "School Organization") : "Individual Lecturer Workspace"}
               </Badge>
               {isAdmin ? (
                 <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400">
@@ -113,7 +137,7 @@ export default function DashboardOverviewPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold font-heading">{s.value}</div>
+                <div className="text-2xl font-bold font-heading">{loading ? "..." : s.value}</div>
                 <p className="text-[11px] text-muted-foreground mt-1">{s.change}</p>
               </CardContent>
             </Card>
@@ -213,7 +237,7 @@ export default function DashboardOverviewPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="text-xs text-muted-foreground">
-                  1,500 free credits currently loaded. Top up your AI generation quota anytime via OPay payment integration.
+                  {remainingQuotaFormatted} free credits currently loaded. Top up your AI generation quota anytime via OPay payment integration.
                 </p>
                 <Button variant="ghost" size="xs" className="w-full justify-between text-primary hover:text-primary" render={<Link href="/dashboard/billing" />}>
                   <span>Topup Quota</span>
@@ -276,7 +300,6 @@ export default function DashboardOverviewPage() {
           )}
         </div>
       </div>
-
     </div>
   );
 }
