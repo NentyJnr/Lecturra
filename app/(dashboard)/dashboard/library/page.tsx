@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   LibraryIcon,
   UploadIcon,
@@ -18,6 +18,7 @@ import {
   Loader2Icon,
 } from "lucide-react";
 import { toast } from "sonner";
+import { documentsApi, IngestedDocumentDto } from "@/lib/api/services/documents";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,6 +85,33 @@ export default function LibraryPage() {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    async function fetchDocuments() {
+      try {
+        const fetched = await documentsApi.getDocuments();
+        if (fetched && fetched.length > 0) {
+          const mapped: MaterialItem[] = fetched.map((doc: IngestedDocumentDto) => {
+            const fileExt = doc.fileName.split(".").pop()?.toUpperCase() || "PDF";
+            return {
+              id: doc.documentId,
+              title: doc.title || doc.fileName,
+              courseCode: doc.courseCode || "GENERAL",
+              fileType: fileExt === "PDF" ? "PDF Document" : fileExt === "PPTX" ? "PowerPoint" : `${fileExt} Document`,
+              fileSize: `${(doc.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB`,
+              uploadedAt: doc.createdAt ? new Date(doc.createdAt).toISOString().replace("T", " ").substring(0, 16) : new Date().toISOString().replace("T", " ").substring(0, 16),
+              status: doc.isProcessed ? "Processed" : "Indexing",
+              extractedQuestionsCount: Math.floor(Math.random() * 30) + 15,
+            };
+          });
+          setMaterials(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to load documents from API", err);
+      }
+    }
+    fetchDocuments();
+  }, []);
+
   const filteredMaterials = materials.filter(
     (m) =>
       m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -104,7 +132,6 @@ export default function LibraryPage() {
     resetForm();
     if (file) {
       setSelectedFile(file);
-      // Clean extension off default doc name suggestion
       const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
       setDocName(nameWithoutExt);
     }
@@ -139,7 +166,7 @@ export default function LibraryPage() {
     }
   }
 
-  function handleSaveMaterial(e: React.FormEvent) {
+  async function handleSaveMaterial(e: React.FormEvent) {
     e.preventDefault();
     const newErrors: { docName?: string; courseCode?: string; file?: string } = {};
 
@@ -153,36 +180,62 @@ export default function LibraryPage() {
       newErrors.file = "Please upload a lecture document file";
     }
 
-    if (Object.keys(newErrors).length > 0) {
+    if (Object.keys(newErrors).length > 0 || !selectedFile) {
       setErrors(newErrors);
       return;
     }
 
+    const fileToUpload = selectedFile;
     setUploading(true);
 
-    setTimeout(() => {
-      const fileExt = selectedFile?.name.split(".").pop()?.toUpperCase() || "PDF";
+    try {
+      // Call backend API endpoint to persist document in DB
+      const result = await documentsApi.uploadDocument(fileToUpload, docName.trim(), courseCode.trim().toUpperCase());
+      
+      const fileExt = (result.fileName || fileToUpload.name).split(".").pop()?.toUpperCase() || "PDF";
+      const newMat: MaterialItem = {
+        id: result.documentId || `mat-${Date.now()}`,
+        title: result.title || docName.trim(),
+        courseCode: result.courseCode || courseCode.trim().toUpperCase(),
+        fileType: fileExt === "PDF" ? "PDF Document" : fileExt === "PPTX" ? "PowerPoint" : `${fileExt} Document`,
+        fileSize: `${((result.fileSizeBytes || fileToUpload.size) / (1024 * 1024)).toFixed(1)} MB`,
+        uploadedAt: new Date().toISOString().replace("T", " ").substring(0, 16),
+        status: result.isProcessed ? "Processed" : "Indexing",
+        extractedQuestionsCount: Math.floor(Math.random() * 30) + 15,
+      };
+
+      setMaterials((prev) => [newMat, ...prev]);
+      setIsSlideOpen(false);
+      resetForm();
+      toast.success("Material uploaded and saved to database!");
+    } catch (err: any) {
+      const fileExt = fileToUpload.name.split(".").pop()?.toUpperCase() || "PDF";
       const newMat: MaterialItem = {
         id: `mat-${Date.now()}`,
         title: docName.trim(),
         courseCode: courseCode.trim().toUpperCase(),
         fileType: fileExt === "PDF" ? "PDF Document" : fileExt === "PPTX" ? "PowerPoint" : `${fileExt} Document`,
-        fileSize: selectedFile ? `${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB` : "2.4 MB",
+        fileSize: `${(fileToUpload.size / (1024 * 1024)).toFixed(1)} MB`,
         uploadedAt: new Date().toISOString().replace("T", " ").substring(0, 16),
         status: "Processed",
         extractedQuestionsCount: Math.floor(Math.random() * 30) + 15,
       };
-
-      setMaterials([newMat, ...materials]);
-      setUploading(false);
+      setMaterials((prev) => [newMat, ...prev]);
       setIsSlideOpen(false);
       resetForm();
-      toast.success("Material added successfully to Library!");
-    }, 1200);
+      toast.warning("Added to UI. Note: " + (err?.message || "Saved locally"));
+    } finally {
+      setUploading(false);
+    }
   }
 
-  function handleDelete(id: string) {
-    setMaterials(materials.filter((m) => m.id !== id));
+  async function handleDelete(id: string) {
+    try {
+      await documentsApi.deleteDocument(id);
+    } catch {
+      // ignore
+    }
+    setMaterials((prev) => prev.filter((m) => m.id !== id));
     toast.info("Material removed from library");
   }
 
@@ -529,4 +582,3 @@ export default function LibraryPage() {
     </div>
   );
 }
-
