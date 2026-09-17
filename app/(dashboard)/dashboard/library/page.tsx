@@ -5,7 +5,6 @@ import {
   LibraryIcon,
   UploadIcon,
   FileTextIcon,
-  SparklesIcon,
   SearchIcon,
   Trash2Icon,
   CheckCircle2Icon,
@@ -34,7 +33,6 @@ interface MaterialItem {
   fileSize: string;
   uploadedAt: string;
   status: "Processed" | "Indexing" | "Failed";
-  extractedQuestionsCount: number;
 }
 
 const mockMaterials: MaterialItem[] = [
@@ -46,7 +44,6 @@ const mockMaterials: MaterialItem[] = [
     fileSize: "4.2 MB",
     uploadedAt: "2026-09-08 14:20",
     status: "Processed",
-    extractedQuestionsCount: 45,
   },
   {
     id: "mat-2",
@@ -56,7 +53,6 @@ const mockMaterials: MaterialItem[] = [
     fileSize: "8.1 MB",
     uploadedAt: "2026-09-07 09:15",
     status: "Processed",
-    extractedQuestionsCount: 60,
   },
   {
     id: "mat-3",
@@ -66,7 +62,6 @@ const mockMaterials: MaterialItem[] = [
     fileSize: "1.5 MB",
     uploadedAt: "2026-09-06 18:40",
     status: "Indexing",
-    extractedQuestionsCount: 0,
   },
 ];
 
@@ -100,7 +95,6 @@ export default function LibraryPage() {
               fileSize: `${(doc.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB`,
               uploadedAt: doc.createdAt ? new Date(doc.createdAt).toISOString().replace("T", " ").substring(0, 16) : new Date().toISOString().replace("T", " ").substring(0, 16),
               status: doc.isProcessed ? "Processed" : "Indexing",
-              extractedQuestionsCount: Math.floor(Math.random() * 30) + 15,
             };
           });
           setMaterials(mapped);
@@ -189,7 +183,6 @@ export default function LibraryPage() {
     setUploading(true);
 
     try {
-      // Call backend API endpoint to persist document in DB
       const result = await documentsApi.uploadDocument(fileToUpload, docName.trim(), courseCode.trim().toUpperCase());
       
       const fileExt = (result.fileName || fileToUpload.name).split(".").pop()?.toUpperCase() || "PDF";
@@ -201,7 +194,6 @@ export default function LibraryPage() {
         fileSize: `${((result.fileSizeBytes || fileToUpload.size) / (1024 * 1024)).toFixed(1)} MB`,
         uploadedAt: new Date().toISOString().replace("T", " ").substring(0, 16),
         status: result.isProcessed ? "Processed" : "Indexing",
-        extractedQuestionsCount: Math.floor(Math.random() * 30) + 15,
       };
 
       setMaterials((prev) => [newMat, ...prev]);
@@ -218,7 +210,6 @@ export default function LibraryPage() {
         fileSize: `${(fileToUpload.size / (1024 * 1024)).toFixed(1)} MB`,
         uploadedAt: new Date().toISOString().replace("T", " ").substring(0, 16),
         status: "Processed",
-        extractedQuestionsCount: Math.floor(Math.random() * 30) + 15,
       };
       setMaterials((prev) => [newMat, ...prev]);
       setIsSlideOpen(false);
@@ -475,19 +466,27 @@ export default function LibraryPage() {
         </div>
       )}
 
+      {/* Retention Notice Banner */}
+      <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs shadow-xs">
+        <ClockIcon className="size-4 shrink-0 text-amber-500" />
+        <span>
+          <strong>Storage Retention Policy:</strong> Uploaded materials are automatically retained for <strong>1 year</strong> from upload date, after which they are safely wiped to preserve database capacity.
+        </span>
+      </div>
+
       {/* Materials Search & List Table */}
       <Card>
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <CardTitle className="text-base">Uploaded Lecture Materials ({materials.length})</CardTitle>
             <CardDescription className="text-xs">
-              Manage your course materials and trigger AI question generation runs.
+              Manage your course materials. Uploaded files are available for automated AI question bank generation.
             </CardDescription>
           </div>
           <div className="relative w-full sm:w-64">
             <SearchIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
             <Input
-              placeholder="Search material or course code..."
+              placeholder="Search material or course..."
               className="pl-8 text-xs h-9"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -500,17 +499,16 @@ export default function LibraryPage() {
               <thead className="border-b border-border/80 bg-muted/40 font-semibold text-muted-foreground">
                 <tr>
                   <th className="p-3">Material Title</th>
-                  <th className="p-3">Course Code</th>
+                  <th className="p-3">Course</th>
                   <th className="p-3">File Info</th>
                   <th className="p-3">Status</th>
-                  <th className="p-3">AI Questions</th>
                   <th className="p-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
                 {filteredMaterials.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                    <td colSpan={5} className="p-8 text-center text-muted-foreground">
                       No lecture materials found. Click "Add Material" above to add your first lecture resource.
                     </td>
                   </tr>
@@ -547,29 +545,16 @@ export default function LibraryPage() {
                           </Badge>
                         )}
                       </td>
-                      <td className="p-3 font-semibold text-foreground">
-                        {mat.extractedQuestionsCount > 0 ? (
-                          <span className="text-emerald-600 dark:text-emerald-400">
-                            {mat.extractedQuestionsCount} Questions
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">Pending</span>
-                        )}
-                      </td>
                       <td className="p-3 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button size="xs" variant="outline" className="gap-1 text-primary border-primary/30">
-                            <SparklesIcon className="size-3" /> Generate
-                          </Button>
-                          <Button
-                            size="icon-xs"
-                            variant="ghost"
-                            className="text-muted-foreground hover:text-destructive"
-                            onClick={() => handleDelete(mat.id)}
-                          >
-                            <Trash2Icon className="size-3.5" />
-                          </Button>
-                        </div>
+                        <Button
+                          size="icon-xs"
+                          variant="ghost"
+                          className="text-muted-foreground hover:text-destructive"
+                          onClick={() => handleDelete(mat.id)}
+                          title="Delete material"
+                        >
+                          <Trash2Icon className="size-3.5" />
+                        </Button>
                       </td>
                     </tr>
                   ))
