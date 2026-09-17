@@ -15,6 +15,7 @@ interface AuthState {
   user: AuthUser | null;
   isAuthenticated: boolean;
   setSession: (session: AuthSession) => void;
+  setUser: (user: AuthUser) => void;
   refreshToken: () => Promise<void>;
   logout: () => void;
 }
@@ -39,6 +40,7 @@ export const useAuthStore = create<AuthState>()(
           user: session.user,
           isAuthenticated: true,
         }),
+      setUser: (user) => set({ user }),
       // Uses a bare axios call (not the intercepted `api` instance) to avoid loops/cycles.
       refreshToken: async () => {
         const refreshToken = get().refreshTokenValue;
