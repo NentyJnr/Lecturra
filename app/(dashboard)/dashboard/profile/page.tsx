@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 
 export default function ProfilePage() {
   const user = useAuthStore((s) => s.user);
+  console.log({user})
 
   const [title, setTitle] = useState(user?.title || "Dr.");
   const [fullName, setFullName] = useState(user?.fullName || "Jane Doe");
