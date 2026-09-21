@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowRightIcon, CircleCheckIcon, FileDownIcon, QrCodeIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +24,7 @@ export function Hero() {
           the assessment with a link. Students submit online and get graded instantly.
         </p>
         <div className="flex flex-wrap gap-3">
-          <Button size="lg" render={<a href="/register" />}>
+          <Button size="lg" render={<Link href="/register" />}>
             Start generating free <ArrowRightIcon data-icon="inline-end" />
           </Button>
           <Button size="lg" variant="outline" render={<a href="#how-it-works" />}>

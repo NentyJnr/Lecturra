@@ -10,6 +10,7 @@ export interface DashboardOverviewData {
   institutionName: string;
   facultyAccessCode: string;
   isOrganization: boolean;
+  membersCount?: number;
 }
 
 export interface DashboardOverviewResponse {

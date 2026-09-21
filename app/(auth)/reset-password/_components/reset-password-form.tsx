@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -110,9 +111,9 @@ function ResetPasswordFormInner() {
         </form>
       </CardContent>
       <CardFooter className="justify-center text-sm">
-        <a href="/login" className="text-primary underline-offset-4 hover:underline">
+        <Link href="/login" className="text-primary underline-offset-4 hover:underline">
           Back to login
-        </a>
+        </Link>
       </CardFooter>
     </Card>
   );

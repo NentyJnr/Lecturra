@@ -50,4 +50,22 @@ export const documentsApi = {
   async deleteDocument(documentId: string): Promise<void> {
     await api.delete(`/api/v1/documents/${documentId}`);
   },
+
+  async getDocumentTopics(documentId: string): Promise<string[]> {
+    try {
+      const res = await api.get<ApiResponse<string[]>>(`/api/v1/documents/${documentId}/topics`);
+      return res.data?.data || [];
+    } catch {
+      return [];
+    }
+  },
+
+  async getSavedQuestions(documentId: string): Promise<{ questions: any[]; selectedTopics: string[] }> {
+    try {
+      const res = await api.get<ApiResponse<{ questions: any[]; selectedTopics: string[] }>>(`/api/v1/documents/${documentId}/questions`);
+      return res.data?.data || { questions: [], selectedTopics: [] };
+    } catch {
+      return { questions: [], selectedTopics: [] };
+    }
+  },
 };

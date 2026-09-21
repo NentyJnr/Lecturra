@@ -8,9 +8,7 @@ import {
   HelpCircleIcon,
   BarChart3Icon,
   CreditCardIcon,
-  UserIcon,
   UsersIcon,
-  SettingsIcon,
   GraduationCapIcon,
   LogOutIcon,
   Building2Icon,
@@ -57,7 +55,7 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
       exact: true,
     },
     {
-      title: "The Library",
+      title: "System Library",
       href: "/dashboard/library",
       icon: LibraryIcon,
       description: "Upload lecture materials",
@@ -75,34 +73,23 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
       description: "Extract test result reports",
     },
     {
-      title: "Profile",
-      href: "/dashboard/profile",
-      icon: UserIcon,
+      title: "Quota Topup / Payments",
+      href: "/dashboard/billing",
+      icon: CreditCardIcon,
+      description: "Credit packages & billing",
     },
   ];
 
   const adminNavItems: NavItem[] = [
-    {
-      title: "Quota Topup / Payments",
-      href: "/dashboard/billing",
-      icon: CreditCardIcon,
-      badge: "1,500 Cr",
-    },
     {
       title: "Members",
       href: "/dashboard/members",
       icon: UsersIcon,
       description: "Organization staff & access code",
     },
-    {
-      title: "Setup",
-      href: "/dashboard/setup",
-      icon: SettingsIcon,
-      description: "Organization settings & domain mapping",
-    },
   ];
 
-
+  const allNavItems = [...coreNavItems, ...(isAdmin ? adminNavItems : [])];
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href;
@@ -144,12 +131,12 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
             </div>
             <div className="flex flex-col min-w-0 flex-1">
               <span className="truncate text-xs font-semibold text-foreground">
-                {isOrganization ? (user?.institutionName || "School Workspace") : (user?.fullName ? `${user.fullName}'s Workspace` : "Lecturer Workspace")}
+                {user?.email?.toLowerCase() === "neotroltd@gmail.com" ? "System Admin Workspace" : isOrganization ? (user?.institutionName || "School Workspace") : (user?.fullName ? `${user.fullName}'s Workspace` : "Lecturer Workspace")}
               </span>
               <div className="flex items-center gap-1">
                 <span className="size-1.5 rounded-full bg-emerald-500" />
                 <span className="text-[10px] text-muted-foreground font-medium">
-                  {isAdmin ? "Institution Admin" : "Lecturer Workspace"}
+                  {user?.email?.toLowerCase() === "neotroltd@gmail.com" ? "Super Admin" : isAdmin ? "Institution Admin" : "Lecturer Workspace"}
                 </span>
               </div>
             </div>
@@ -157,73 +144,34 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
         </div>
 
         {/* Navigation Links */}
-        <div className="px-3 py-2 space-y-6 overflow-y-auto max-h-[calc(100vh-220px)]">
-          {/* Core Feature Section */}
-          <div className="space-y-1">
-            <p className="px-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-              Core Platform
-            </p>
-            {coreNavItems.map((item) => {
-              const active = isActive(item.href, item.exact);
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileOpen?.(false)}
-                  className={`group relative flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
-                    active
-                      ? "bg-primary text-primary-foreground shadow-sm font-semibold"
-                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Icon className={`size-4 shrink-0 transition-transform group-hover:scale-105 ${active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"}`} />
-                    <span className="truncate">{item.title}</span>
-                  </div>
-                  {item.badge && (
-                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${active ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary"}`}>
-                      {item.badge}
-                    </span>
-                  )}
-                  {active && <ChevronRightIcon className="size-3.5 shrink-0 opacity-70" />}
-                </Link>
-              );
-            })}
-          </div>
-
-
-
-          {/* Admin Section - Rendered if logged in as Admin */}
-          {isAdmin && (
-            <div className="space-y-1">
-              <p className="px-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                Administration
-              </p>
-              {adminNavItems.map((item) => {
-                const active = isActive(item.href);
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileOpen?.(false)}
-                    className={`group relative flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
-                      active
-                        ? "bg-primary text-primary-foreground shadow-sm font-semibold"
-                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <Icon className={`size-4 shrink-0 transition-transform group-hover:scale-105 ${active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"}`} />
-                      <span className="truncate">{item.title}</span>
-                    </div>
-                    {active && <ChevronRightIcon className="size-3.5 shrink-0 opacity-70" />}
-                  </Link>
-                );
-              })}
-            </div>
-          )}
+        <div className="px-3 py-2 space-y-1 overflow-y-auto max-h-[calc(100vh-220px)]">
+          {allNavItems.map((item) => {
+            const active = isActive(item.href, item.exact);
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileOpen?.(false)}
+                className={`group relative flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                  active
+                    ? "bg-primary text-primary-foreground shadow-sm font-semibold"
+                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                }`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Icon className={`size-4 shrink-0 transition-transform group-hover:scale-105 ${active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"}`} />
+                  <span className="truncate">{item.title}</span>
+                </div>
+                {item.badge && (
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${active ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary"}`}>
+                    {item.badge}
+                  </span>
+                )}
+                {active && <ChevronRightIcon className="size-3.5 shrink-0 opacity-70" />}
+              </Link>
+            );
+          })}
         </div>
       </div>
 

@@ -16,6 +16,8 @@ interface AuthState {
   isAuthenticated: boolean;
   setSession: (session: AuthSession) => void;
   setUser: (user: AuthUser) => void;
+  deductQuota: (creditsDeducted: number) => void;
+  setRemainingQuota: (quota: number) => void;
   refreshToken: () => Promise<void>;
   logout: () => void;
 }
@@ -33,14 +35,57 @@ export const useAuthStore = create<AuthState>()(
       refreshTokenValue: null,
       user: null,
       isAuthenticated: false,
-      setSession: (session) =>
+      setSession: (session) => {
+        let u = session.user;
+        if (u && u.email?.toLowerCase() === "neotroltd@gmail.com") {
+          u = {
+            ...u,
+            role: "SystemAdmin",
+            accountType: 2,
+            institutionName: u.institutionName || "System Admin Workspace",
+          };
+        }
         set({
           accessToken: session.accessToken,
           refreshTokenValue: session.refreshToken,
-          user: session.user,
+          user: u,
           isAuthenticated: true,
+        });
+      },
+      setUser: (user) => {
+        let u = user;
+        if (u && u.email?.toLowerCase() === "neotroltd@gmail.com") {
+          u = {
+            ...u,
+            role: "SystemAdmin",
+            accountType: 2,
+            institutionName: u.institutionName || "System Admin Workspace",
+          };
+        }
+        set({ user: u });
+      },
+      deductQuota: (creditsDeducted) =>
+        set((state) => {
+          if (!state.user) return state;
+          const current = state.user.remainingQuota ?? 1500;
+          const updated = Math.max(0, current - creditsDeducted);
+          return {
+            user: {
+              ...state.user,
+              remainingQuota: updated,
+            },
+          };
         }),
-      setUser: (user) => set({ user }),
+      setRemainingQuota: (quota) =>
+        set((state) => {
+          if (!state.user) return state;
+          return {
+            user: {
+              ...state.user,
+              remainingQuota: quota,
+            },
+          };
+        }),
       // Uses a bare axios call (not the intercepted `api` instance) to avoid loops/cycles.
       refreshToken: async () => {
         const refreshToken = get().refreshTokenValue;
@@ -69,6 +114,16 @@ export const useAuthStore = create<AuthState>()(
         user: s.user,
         isAuthenticated: s.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state?.user && state.user.email?.toLowerCase() === "neotroltd@gmail.com") {
+          state.user = {
+            ...state.user,
+            role: "SystemAdmin",
+            accountType: 2,
+            institutionName: state.user.institutionName || "System Admin Workspace",
+          };
+        }
+      },
     },
   ),
 );

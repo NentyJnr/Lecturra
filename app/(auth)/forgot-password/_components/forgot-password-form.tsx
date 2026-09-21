@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleCheckIcon, Loader2Icon, OctagonXIcon } from "lucide-react";
@@ -70,9 +71,9 @@ export function ForgotPasswordForm() {
         </form>
       </CardContent>
       <CardFooter className="justify-center text-sm">
-        <a href="/login" className="text-primary underline-offset-4 hover:underline">
+        <Link href="/login" className="text-primary underline-offset-4 hover:underline">
           Back to login
-        </a>
+        </Link>
       </CardFooter>
     </Card>
   );

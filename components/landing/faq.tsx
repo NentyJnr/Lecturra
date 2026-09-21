@@ -12,7 +12,7 @@ const faqs = [
   },
   {
     q: "How do credits work?",
-    a: "Each generation run pre-deducts credits based on question count — for example, 50 questions cost 1,250 credits. You start with 5,000 free credits plus 200 for each referral, and top up at ₦5,000 for 5,000 credits via OPay.",
+    a: "Each generation run pre-deducts credits based on question count — for example, 50 questions cost 500 credits. You start with 5,000 free credits plus 200 for each referral, and top up at ₦5,000 for 5,000 credits via OPay.",
   },
   {
     q: "What formats can I export?",

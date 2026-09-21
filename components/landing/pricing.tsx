@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CircleCheckIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +16,7 @@ export function Pricing() {
           Start free, top up when you need more
         </h2>
         <p className="mt-2 text-muted-foreground">
-          A typical 50-question run costs 1,250 credits — the free balance covers your first exams.
+          A typical 50-question run costs 500 credits — the free balance covers your first exams.
         </p>
       </div>
       <div className="mt-8 grid gap-4 md:grid-cols-2">
@@ -37,7 +38,7 @@ export function Pricing() {
             </ul>
           </CardContent>
           <CardFooter>
-            <Button className="w-full" render={<a href="/register" />}>
+            <Button className="w-full" render={<Link href="/register" />}>
               Create free account
             </Button>
           </CardFooter>
@@ -63,7 +64,7 @@ export function Pricing() {
             </ul>
           </CardContent>
           <CardFooter>
-            <Button variant="outline" className="w-full" render={<a href="/register" />}>
+            <Button variant="outline" className="w-full" render={<Link href="/register" />}>
               Start free, top up later
             </Button>
           </CardFooter>

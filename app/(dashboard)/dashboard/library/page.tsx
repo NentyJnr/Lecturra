@@ -15,9 +15,12 @@ import {
   FileUpIcon,
   CheckIcon,
   Loader2Icon,
+  ShieldCheckIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { documentsApi, IngestedDocumentDto } from "@/lib/api/services/documents";
+import { useAuthStore } from "@/stores/auth-store";
+import { isAdminUser } from "@/lib/api/types/auth";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,38 +38,12 @@ interface MaterialItem {
   status: "Processed" | "Indexing" | "Failed";
 }
 
-const mockMaterials: MaterialItem[] = [
-  {
-    id: "mat-1",
-    title: "Quantum Mechanics & Atomic Structure Notes",
-    courseCode: "PHY 301",
-    fileType: "PDF Document",
-    fileSize: "4.2 MB",
-    uploadedAt: "2026-09-08 14:20",
-    status: "Processed",
-  },
-  {
-    id: "mat-2",
-    title: "Operating Systems Scheduling Algorithms & Memory",
-    courseCode: "CSC 201",
-    fileType: "PowerPoint Presentation",
-    fileSize: "8.1 MB",
-    uploadedAt: "2026-09-07 09:15",
-    status: "Processed",
-  },
-  {
-    id: "mat-3",
-    title: "Academic Essay Writing & Rhetorical Principles",
-    courseCode: "ENG 101",
-    fileType: "Word Document",
-    fileSize: "1.5 MB",
-    uploadedAt: "2026-09-06 18:40",
-    status: "Indexing",
-  },
-];
-
 export default function LibraryPage() {
-  const [materials, setMaterials] = useState<MaterialItem[]>(mockMaterials);
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = isAdminUser(user);
+
+  const [materials, setMaterials] = useState<MaterialItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSlideOpen, setIsSlideOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -83,8 +60,9 @@ export default function LibraryPage() {
   useEffect(() => {
     async function fetchDocuments() {
       try {
+        setLoading(true);
         const fetched = await documentsApi.getDocuments();
-        if (fetched && fetched.length > 0) {
+        if (fetched) {
           const mapped: MaterialItem[] = fetched.map((doc: IngestedDocumentDto) => {
             const fileExt = doc.fileName.split(".").pop()?.toUpperCase() || "PDF";
             return {
@@ -98,9 +76,14 @@ export default function LibraryPage() {
             };
           });
           setMaterials(mapped);
+        } else {
+          setMaterials([]);
         }
       } catch (err) {
         console.error("Failed to load documents from API", err);
+        setMaterials([]);
+      } finally {
+        setLoading(false);
       }
     }
     fetchDocuments();
@@ -232,61 +215,85 @@ export default function LibraryPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="gap-1 border-sky-500/30 text-sky-600 dark:text-sky-400">
+      {/* Top Action Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/40">
+        <div className="flex items-center gap-2 flex-wrap">
+          {isAdmin ? (
+            <Badge variant="outline" className="gap-1 border-purple-500/30 text-purple-600 dark:text-purple-400 font-semibold">
+              <ShieldCheckIcon className="size-3.5" /> Platform Global Audit
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="gap-1 border-sky-500/30 text-sky-600 dark:text-sky-400 font-semibold">
               <LibraryIcon className="size-3.5" /> Course Resource Ingestion
             </Badge>
-          </div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight mt-1">The Library</h1>
-          <p className="text-sm text-muted-foreground">
-            Upload course notes, lecture slides, and textbooks for automated AI question bank generation.
-          </p>
+          )}
         </div>
 
         <div>
-          <Button onClick={() => handleOpenSlide()} className="gap-2 shadow-md">
+          <Button onClick={() => handleOpenSlide()} className="gap-2 shadow-sm" size="sm">
             <PlusIcon className="size-4" />
-            <span>Add Material</span>
+            <span>{isAdmin ? "Upload Admin File" : "Add Material"}</span>
           </Button>
         </div>
       </div>
 
-      {/* Main Drag & Drop / Upload Trigger Banner */}
-      <Card
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragActive(true);
-        }}
-        onDragLeave={() => setDragActive(false)}
-        onDrop={handleDrop}
-        className={`border-2 border-dashed transition-all cursor-pointer ${
-          dragActive ? "border-primary bg-primary/5" : "border-border/80 bg-muted/20 hover:border-primary/50 hover:bg-muted/30"
-        }`}
-        onClick={() => handleOpenSlide()}
-      >
-        <CardContent className="p-8 text-center flex flex-col items-center justify-center space-y-3">
-          <div className="flex size-14 items-center justify-center rounded-2xl bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800 shadow-sm">
-            <UploadIcon className="size-6 animate-bounce" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="font-heading text-base font-semibold">
-              Drag and drop lecture files here or click to Add Material
-            </h3>
-            <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              Supported formats: <span className="font-semibold text-foreground">PDF, PPTX, DOCX, TXT</span> (Max file size: 50MB). Specify custom document name and course code on upload.
-            </p>
-          </div>
-          <div className="pt-2">
-            <Button variant="outline" size="sm" className="gap-2">
+      {/* Main Drag & Drop / Admin System Audit Banner */}
+      {isAdmin ? (
+        <Card className="border border-purple-500/30 bg-purple-500/5 dark:bg-purple-950/20 p-5 rounded-2xl shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex size-11 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0 border border-purple-500/20">
+                <ShieldCheckIcon className="size-6" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  Global User Documents Repository
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  As System Administrator, you are viewing all documents uploaded across all lecturers, departments, and workspaces in the system.
+                </p>
+              </div>
+            </div>
+            <Button onClick={() => handleOpenSlide()} variant="outline" size="sm" className="gap-2 shrink-0">
               <PlusIcon className="size-3.5" />
-              <span>Add Material</span>
+              <span>Upload Admin Document</span>
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </Card>
+      ) : (
+        <Card
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragActive(true);
+          }}
+          onDragLeave={() => setDragActive(false)}
+          onDrop={handleDrop}
+          className={`border-2 border-dashed transition-all cursor-pointer ${
+            dragActive ? "border-primary bg-primary/5" : "border-border/80 bg-muted/20 hover:border-primary/50 hover:bg-muted/30"
+          }`}
+          onClick={() => handleOpenSlide()}
+        >
+          <CardContent className="p-8 text-center flex flex-col items-center justify-center space-y-3">
+            <div className="flex size-14 items-center justify-center rounded-2xl bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800 shadow-sm">
+              <UploadIcon className="size-6 animate-bounce" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-heading text-base font-semibold">
+                Drag and drop lecture files here or click to Add Material
+              </h3>
+              <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                Supported formats: <span className="font-semibold text-foreground">PDF, PPTX, DOCX, TXT</span> (Max file size: 50MB). Specify custom document name and course code on upload.
+              </p>
+            </div>
+            <div className="pt-2">
+              <Button variant="outline" size="sm" className="gap-2">
+                <PlusIcon className="size-3.5" />
+                <span>Add Material</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Slide-over Form Drawer */}
       {isSlideOpen && (
@@ -506,10 +513,21 @@ export default function LibraryPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
-                {filteredMaterials.length === 0 ? (
+                {loading ? (
                   <tr>
                     <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                      No lecture materials found. Click "Add Material" above to add your first lecture resource.
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2Icon className="size-4 animate-spin text-primary" />
+                        <span>Querying database documents...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredMaterials.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="p-8 text-center text-muted-foreground">
+                      {isAdmin
+                        ? "No uploaded documents found in the database. When educators upload lecture materials, they will automatically appear here."
+                        : "No lecture materials found. Click \"Add Material\" above to upload your first lecture resource."}
                     </td>
                   </tr>
                 ) : (
