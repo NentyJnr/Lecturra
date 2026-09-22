@@ -23,27 +23,45 @@ interface DashboardHeaderProps {
 }
 
 const pageTitles: Record<string, { title: string; subtitle: string }> = {
-  "/dashboard": { title: "Overview", subtitle: "Welcome back! Here is your academic workspace summary." },
-  "/dashboard/library": { title: "The Library", subtitle: "Upload & manage lecture materials for AI question generation." },
+  "/dashboard": { title: "", subtitle: "" },
+  "/dashboard/library": { title: "System Library", subtitle: "Upload & manage lecture materials for AI question generation." },
   "/dashboard/question-bank": { title: "Questionbank", subtitle: "Generate AI multiple choice, true/false, and short answer questions." },
   "/dashboard/results": { title: "Result Station", subtitle: "Extract assessment result reports and view student analytics." },
-  "/dashboard/billing": { title: "Quota Topup / Payments", subtitle: "Manage your AI credit balance and payment packages." },
+  "/dashboard/billing": { title: "Quota Topup / Payments", subtitle: "Manage your credit balance and payment packages." },
   "/dashboard/profile": { title: "User Profile", subtitle: "Manage your personal information and workspace credentials." },
   "/dashboard/members": { title: "Organization Members", subtitle: "Manage faculty staff access and school access codes." },
   "/dashboard/setup": { title: "Organization Setup", subtitle: "Configure institution settings, domain mapping, and defaults." },
 };
 
+import { useEffect } from "react";
+import { getCurrentUserProfile } from "@/lib/api/services/users";
+
 export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
+  const setRemainingQuota = useAuthStore((s) => s.setRemainingQuota);
   const handleLogout = useLogout();
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
-  const currentPage = pageTitles[pathname] || { title: "Dashboard", subtitle: "Lectura Academic Platform" };
+  useEffect(() => {
+    async function syncRemainingQuota() {
+      try {
+        const profile = await getCurrentUserProfile();
+        if (profile && typeof profile.remainingQuota === "number") {
+          setRemainingQuota(profile.remainingQuota);
+        }
+      } catch {
+        // Fallback to existing store state if offline/network error
+      }
+    }
+    syncRemainingQuota();
+  }, [setRemainingQuota]);
+
+  const currentPage = pageTitles[pathname] || { title: "", subtitle: "" };
 
   const isOrganization = user?.accountType === 2 || !!user?.institutionName;
   const isAdmin = isAdminUser(user);
-
+  const remainingCredits = user?.remainingQuota ?? 1500;
 
   const initials = user?.fullName
     ? user.fullName
@@ -60,7 +78,7 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
       className="flex items-center gap-1.5 px-3 py-1 bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800 text-sky-700 dark:text-sky-300 hover:bg-sky-100 transition-colors"
     >
       <SparklesIcon className="size-3.5 fill-sky-500 text-sky-500 animate-pulse" />
-      <span className="font-bold text-xs">1,500</span>
+      <span className="font-bold text-xs">{remainingCredits.toLocaleString()}</span>
       <span className="text-[10px] uppercase font-medium opacity-80 hidden sm:inline">Credits</span>
     </Badge>
   );
@@ -78,24 +96,24 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
         >
           <MenuIcon className="size-5" />
         </Button>
-        <div className="flex flex-col">
-          <h1 className="font-heading text-base font-bold tracking-tight text-foreground md:text-lg">
-            {currentPage.title}
-          </h1>
-          <p className="hidden text-xs text-muted-foreground sm:block">
-            {currentPage.subtitle}
-          </p>
-        </div>
+        {currentPage.title ? (
+          <div className="flex flex-col">
+            <h1 className="font-heading text-base font-bold tracking-tight text-foreground md:text-lg">
+              {currentPage.title}
+            </h1>
+            {currentPage.subtitle && (
+              <p className="hidden text-xs text-muted-foreground sm:block">
+                {currentPage.subtitle}
+              </p>
+            )}
+          </div>
+        ) : null}
       </div>
 
       {/* Right: Credits Counter & User Profile Dropdown */}
       <div className="flex items-center gap-3">
-        {/* Credits Counter Pill - Only Admins can navigate to Topup & Billing */}
-        {isAdmin ? (
-          <Link href="/dashboard/billing">
-            {creditBadgeContent}
-          </Link>
-        ) : (
+        {/* Credits Counter Pill - Only visible for non-admin users/lecturers */}
+        {!isAdmin && (
           <div>{creditBadgeContent}</div>
         )}
 
@@ -122,8 +140,8 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
               <span className="truncate text-xs font-semibold text-foreground max-w-[120px]">
                 {user?.fullName || "Educator"}
               </span>
-              <span className="truncate text-[10px] text-muted-foreground">
-                {isAdmin ? "Admin" : "Lecturer"}
+              <span className="truncate text-[10px] text-muted-foreground font-medium">
+                {user?.email?.toLowerCase() === "neotroltd@gmail.com" ? "Super Admin" : isAdmin ? "Admin" : "Lecturer"}
               </span>
             </div>
           </button>
@@ -140,8 +158,8 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
                   <p className="text-xs font-bold text-foreground truncate">{user?.fullName || "Educator"}</p>
                   <p className="text-[11px] text-muted-foreground truncate">{user?.email}</p>
                   <div className="mt-1 flex items-center gap-1">
-                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0 font-medium">
-                      {isOrganization ? (user?.institutionName || "Organization") : "Individual Lecturer"}
+                    <Badge variant="secondary" className="text-[9px] px-1.5 py-0 font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20">
+                      {user?.email?.toLowerCase() === "neotroltd@gmail.com" ? "Super Admin Workspace" : isOrganization ? (user?.institutionName || "Organization") : "Individual Lecturer"}
                     </Badge>
                   </div>
                 </div>

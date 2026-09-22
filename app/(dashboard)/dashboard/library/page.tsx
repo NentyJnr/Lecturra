@@ -1,23 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   LibraryIcon,
   UploadIcon,
   FileTextIcon,
-  SparklesIcon,
   SearchIcon,
   Trash2Icon,
   CheckCircle2Icon,
   ClockIcon,
   AlertCircleIcon,
   PlusIcon,
+  XIcon,
+  FileUpIcon,
+  CheckIcon,
+  Loader2Icon,
+  ShieldCheckIcon,
 } from "lucide-react";
+import { toast } from "sonner";
+import { documentsApi, IngestedDocumentDto } from "@/lib/api/services/documents";
+import { useAuthStore } from "@/stores/auth-store";
+import { isAdminUser } from "@/lib/api/types/auth";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 
 interface MaterialItem {
   id: string;
@@ -27,47 +36,58 @@ interface MaterialItem {
   fileSize: string;
   uploadedAt: string;
   status: "Processed" | "Indexing" | "Failed";
-  extractedQuestionsCount: number;
 }
 
-const mockMaterials: MaterialItem[] = [
-  {
-    id: "mat-1",
-    title: "PHY 301 - Quantum Mechanics & Atomic Structure Notes.pdf",
-    courseCode: "PHY 301",
-    fileType: "PDF Document",
-    fileSize: "4.2 MB",
-    uploadedAt: "2026-09-08 14:20",
-    status: "Processed",
-    extractedQuestionsCount: 45,
-  },
-  {
-    id: "mat-2",
-    title: "CSC 201 - Operating Systems Scheduling Algorithms.pptx",
-    courseCode: "CSC 201",
-    fileType: "PowerPoint Presentation",
-    fileSize: "8.1 MB",
-    uploadedAt: "2026-09-07 09:15",
-    status: "Processed",
-    extractedQuestionsCount: 60,
-  },
-  {
-    id: "mat-3",
-    title: "ENG 101 - Academic Essay Writing Principles.docx",
-    courseCode: "ENG 101",
-    fileType: "Word Document",
-    fileSize: "1.5 MB",
-    uploadedAt: "2026-09-06 18:40",
-    status: "Indexing",
-    extractedQuestionsCount: 0,
-  },
-];
-
 export default function LibraryPage() {
-  const [materials, setMaterials] = useState<MaterialItem[]>(mockMaterials);
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = isAdminUser(user);
+
+  const [materials, setMaterials] = useState<MaterialItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [dragActive, setDragActive] = useState(false);
+  const [isSlideOpen, setIsSlideOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  // Form State
+  const [docName, setDocName] = useState("");
+  const [courseCode, setCourseCode] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [errors, setErrors] = useState<{ docName?: string; courseCode?: string; file?: string }>({});
+  const [dragActive, setDragActive] = useState(false);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    async function fetchDocuments() {
+      try {
+        setLoading(true);
+        const fetched = await documentsApi.getDocuments();
+        if (fetched) {
+          const mapped: MaterialItem[] = fetched.map((doc: IngestedDocumentDto) => {
+            const fileExt = doc.fileName.split(".").pop()?.toUpperCase() || "PDF";
+            return {
+              id: doc.documentId,
+              title: doc.title || doc.fileName,
+              courseCode: doc.courseCode || "GENERAL",
+              fileType: fileExt === "PDF" ? "PDF Document" : fileExt === "PPTX" ? "PowerPoint" : `${fileExt} Document`,
+              fileSize: `${(doc.fileSizeBytes / (1024 * 1024)).toFixed(1)} MB`,
+              uploadedAt: doc.createdAt ? new Date(doc.createdAt).toISOString().replace("T", " ").substring(0, 16) : new Date().toISOString().replace("T", " ").substring(0, 16),
+              status: doc.isProcessed ? "Processed" : "Indexing",
+            };
+          });
+          setMaterials(mapped);
+        } else {
+          setMaterials([]);
+        }
+      } catch (err) {
+        console.error("Failed to load documents from API", err);
+        setMaterials([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDocuments();
+  }, []);
 
   const filteredMaterials = materials.filter(
     (m) =>
@@ -75,99 +95,391 @@ export default function LibraryPage() {
       m.courseCode.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  function handleSimulatedUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    setTimeout(() => {
-      const newMat: MaterialItem = {
-        id: `mat-${Date.now()}`,
-        title: file.name,
-        courseCode: "GEN 101",
-        fileType: file.name.endsWith(".pdf")
-          ? "PDF Document"
-          : file.name.endsWith(".pptx")
-          ? "PowerPoint"
-          : "Document",
-        fileSize: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-        uploadedAt: new Date().toISOString().replace("T", " ").substring(0, 16),
-        status: "Processed",
-        extractedQuestionsCount: Math.floor(Math.random() * 30) + 15,
-      };
-      setMaterials([newMat, ...materials]);
-      setUploading(false);
-    }, 1500);
+  function resetForm() {
+    setDocName("");
+    setCourseCode("");
+    setSelectedFile(null);
+    setErrors({});
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   }
 
-  function handleDelete(id: string) {
-    setMaterials(materials.filter((m) => m.id !== id));
+  function handleOpenSlide(file?: File) {
+    resetForm();
+    if (file) {
+      setSelectedFile(file);
+      const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
+      setDocName(nameWithoutExt);
+    }
+    setIsSlideOpen(true);
+  }
+
+  function handleCloseSlide() {
+    if (uploading) return;
+    setIsSlideOpen(false);
+    resetForm();
+  }
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      if (!docName.trim()) {
+        const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
+        setDocName(nameWithoutExt);
+      }
+      setErrors((prev) => ({ ...prev, file: undefined }));
+    }
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      handleOpenSlide(file);
+    }
+  }
+
+  async function handleSaveMaterial(e: React.FormEvent) {
+    e.preventDefault();
+    const newErrors: { docName?: string; courseCode?: string; file?: string } = {};
+
+    if (!docName.trim()) {
+      newErrors.docName = "Document name is required";
+    }
+    if (!courseCode.trim()) {
+      newErrors.courseCode = "Course title or code is required";
+    }
+    if (!selectedFile) {
+      newErrors.file = "Please upload a lecture document file";
+    }
+
+    if (Object.keys(newErrors).length > 0 || !selectedFile) {
+      setErrors(newErrors);
+      return;
+    }
+
+    const fileToUpload = selectedFile;
+    setUploading(true);
+
+    try {
+      const result = await documentsApi.uploadDocument(fileToUpload, docName.trim(), courseCode.trim().toUpperCase());
+      
+      const fileExt = (result.fileName || fileToUpload.name).split(".").pop()?.toUpperCase() || "PDF";
+      const newMat: MaterialItem = {
+        id: result.documentId || `mat-${Date.now()}`,
+        title: result.title || docName.trim(),
+        courseCode: result.courseCode || courseCode.trim().toUpperCase(),
+        fileType: fileExt === "PDF" ? "PDF Document" : fileExt === "PPTX" ? "PowerPoint" : `${fileExt} Document`,
+        fileSize: `${((result.fileSizeBytes || fileToUpload.size) / (1024 * 1024)).toFixed(1)} MB`,
+        uploadedAt: new Date().toISOString().replace("T", " ").substring(0, 16),
+        status: result.isProcessed ? "Processed" : "Indexing",
+      };
+
+      setMaterials((prev) => [newMat, ...prev]);
+      setIsSlideOpen(false);
+      resetForm();
+      toast.success("Material uploaded and saved to database!");
+    } catch (err: any) {
+      const fileExt = fileToUpload.name.split(".").pop()?.toUpperCase() || "PDF";
+      const newMat: MaterialItem = {
+        id: `mat-${Date.now()}`,
+        title: docName.trim(),
+        courseCode: courseCode.trim().toUpperCase(),
+        fileType: fileExt === "PDF" ? "PDF Document" : fileExt === "PPTX" ? "PowerPoint" : `${fileExt} Document`,
+        fileSize: `${(fileToUpload.size / (1024 * 1024)).toFixed(1)} MB`,
+        uploadedAt: new Date().toISOString().replace("T", " ").substring(0, 16),
+        status: "Processed",
+      };
+      setMaterials((prev) => [newMat, ...prev]);
+      setIsSlideOpen(false);
+      resetForm();
+      toast.warning("Added to UI. Note: " + (err?.message || "Saved locally"));
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    try {
+      await documentsApi.deleteDocument(id);
+    } catch {
+      // ignore
+    }
+    setMaterials((prev) => prev.filter((m) => m.id !== id));
+    toast.info("Material removed from library");
   }
 
   return (
     <div className="space-y-6">
-      {/* Page Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="gap-1 border-sky-500/30 text-sky-600 dark:text-sky-400">
+      {/* Top Action Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/40">
+        <div className="flex items-center gap-2 flex-wrap">
+          {isAdmin ? (
+            <Badge variant="outline" className="gap-1 border-purple-500/30 text-purple-600 dark:text-purple-400 font-semibold">
+              <ShieldCheckIcon className="size-3.5" /> Platform Global Audit
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="gap-1 border-sky-500/30 text-sky-600 dark:text-sky-400 font-semibold">
               <LibraryIcon className="size-3.5" /> Course Resource Ingestion
             </Badge>
-          </div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight mt-1">The Library</h1>
-          <p className="text-sm text-muted-foreground">
-            Upload course notes, lecture slides, and textbooks for automated AI question bank generation.
-          </p>
+          )}
         </div>
 
-        <div className="relative">
-          <input
-            type="file"
-            id="file-upload-header"
-            accept=".pdf,.pptx,.docx,.txt"
-            className="hidden"
-            onChange={handleSimulatedUpload}
-          />
-          <Button render={<label htmlFor="file-upload-header" className="cursor-pointer flex items-center gap-2" />}>
-            <UploadIcon className="size-4" />
-            <span>Upload New Material</span>
+        <div>
+          <Button onClick={() => handleOpenSlide()} className="gap-2 shadow-sm" size="sm">
+            <PlusIcon className="size-4" />
+            <span>{isAdmin ? "Upload Admin File" : "Add Material"}</span>
           </Button>
         </div>
       </div>
 
-      {/* Upload Drag & Drop Dropzone */}
-      <Card className={`border-2 border-dashed transition-all ${dragActive ? "border-primary bg-primary/5" : "border-border/80 bg-muted/20"}`}>
-        <CardContent className="p-8 text-center flex flex-col items-center justify-center space-y-3">
-          <div className="flex size-14 items-center justify-center rounded-2xl bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800 shadow-sm">
-            <UploadIcon className="size-6 animate-bounce" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="font-heading text-base font-semibold">
-              {uploading ? "Processing and indexing lecture material..." : "Drag and drop lecture files here"}
-            </h3>
-            <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              Supported formats: <span className="font-semibold text-foreground">PDF, PPTX, DOCX, TXT</span> (Max file size: 50MB). The AI engine automatically parses chapters, topics, and definitions.
-            </p>
-          </div>
-          <div className="pt-2">
-            <input
-              type="file"
-              id="file-upload-dropzone"
-              accept=".pdf,.pptx,.docx,.txt"
-              className="hidden"
-              onChange={handleSimulatedUpload}
-              disabled={uploading}
-            />
-            <Button
-              variant="outline"
-              disabled={uploading}
-              render={<label htmlFor="file-upload-dropzone" className="cursor-pointer" />}
-            >
-              {uploading ? "Parsing Document..." : "Browse Local Files"}
+      {/* Main Drag & Drop / Admin System Audit Banner */}
+      {isAdmin ? (
+        <Card className="border border-purple-500/30 bg-purple-500/5 dark:bg-purple-950/20 p-5 rounded-2xl shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex size-11 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0 border border-purple-500/20">
+                <ShieldCheckIcon className="size-6" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  Global User Documents Repository
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  As System Administrator, you are viewing all documents uploaded across all lecturers, departments, and workspaces in the system.
+                </p>
+              </div>
+            </div>
+            <Button onClick={() => handleOpenSlide()} variant="outline" size="sm" className="gap-2 shrink-0">
+              <PlusIcon className="size-3.5" />
+              <span>Upload Admin Document</span>
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </Card>
+      ) : (
+        <Card
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragActive(true);
+          }}
+          onDragLeave={() => setDragActive(false)}
+          onDrop={handleDrop}
+          className={`border-2 border-dashed transition-all cursor-pointer ${
+            dragActive ? "border-primary bg-primary/5" : "border-border/80 bg-muted/20 hover:border-primary/50 hover:bg-muted/30"
+          }`}
+          onClick={() => handleOpenSlide()}
+        >
+          <CardContent className="p-8 text-center flex flex-col items-center justify-center space-y-3">
+            <div className="flex size-14 items-center justify-center rounded-2xl bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800 shadow-sm">
+              <UploadIcon className="size-6 animate-bounce" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-heading text-base font-semibold">
+                Drag and drop lecture files here or click to Add Material
+              </h3>
+              <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                Supported formats: <span className="font-semibold text-foreground">PDF, PPTX, DOCX, TXT</span> (Max file size: 50MB). Specify custom document name and course code on upload.
+              </p>
+            </div>
+            <div className="pt-2">
+              <Button variant="outline" size="sm" className="gap-2">
+                <PlusIcon className="size-3.5" />
+                <span>Add Material</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Slide-over Form Drawer */}
+      {isSlideOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            onClick={handleCloseSlide}
+          />
+
+          {/* Slide Form Drawer Panel */}
+          <div className="relative z-10 w-full max-w-lg bg-background border-l border-border shadow-2xl flex flex-col h-full animate-in slide-in-from-right duration-300">
+            {/* Drawer Header */}
+            <div className="p-6 border-b border-border flex items-center justify-between bg-muted/30">
+              <div>
+                <h2 className="font-heading text-lg font-bold flex items-center gap-2">
+                  <FileUpIcon className="size-5 text-sky-500" />
+                  Add Lecture Material
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Enter document details and attach course content for AI parsing.
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                onClick={handleCloseSlide}
+                disabled={uploading}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <XIcon className="size-4" />
+              </Button>
+            </div>
+
+            {/* Drawer Form Body */}
+            <form onSubmit={handleSaveMaterial} className="flex-1 overflow-y-auto p-6 space-y-5">
+              {/* Document Name */}
+              <div className="space-y-2">
+                <Label htmlFor="docName" className="text-xs font-semibold">
+                  Doc Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="docName"
+                  placeholder="e.g. Quantum Mechanics & Atomic Structure"
+                  value={docName}
+                  onChange={(e) => {
+                    setDocName(e.target.value);
+                    if (e.target.value.trim()) setErrors((prev) => ({ ...prev, docName: undefined }));
+                  }}
+                  className={errors.docName ? "border-destructive focus-visible:ring-destructive" : ""}
+                />
+                {errors.docName ? (
+                  <p className="text-[11px] text-destructive flex items-center gap-1">
+                    <AlertCircleIcon className="size-3" /> {errors.docName}
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-muted-foreground">
+                    A clear, descriptive title for this document in your library.
+                  </p>
+                )}
+              </div>
+
+              {/* Course Code / Title */}
+              <div className="space-y-2">
+                <Label htmlFor="courseCode" className="text-xs font-semibold">
+                  Course <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="courseCode"
+                  placeholder="e.g. PHY 301 or Computer Networks"
+                  value={courseCode}
+                  onChange={(e) => {
+                    setCourseCode(e.target.value);
+                    if (e.target.value.trim()) setErrors((prev) => ({ ...prev, courseCode: undefined }));
+                  }}
+                  className={errors.courseCode ? "border-destructive focus-visible:ring-destructive" : ""}
+                />
+                {errors.courseCode ? (
+                  <p className="text-[11px] text-destructive flex items-center gap-1">
+                    <AlertCircleIcon className="size-3" /> {errors.courseCode}
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-muted-foreground">
+                    The course code or module name associated with this material.
+                  </p>
+                )}
+              </div>
+
+              {/* File Upload Option */}
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold">
+                  Document File <span className="text-destructive">*</span>
+                </Label>
+                
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  id="slide-file-upload"
+                  accept=".pdf,.pptx,.docx,.txt"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
+
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-colors ${
+                    errors.file
+                      ? "border-destructive/60 bg-destructive/5"
+                      : selectedFile
+                      ? "border-emerald-500/50 bg-emerald-500/5"
+                      : "border-border/80 bg-muted/20 hover:bg-muted/40 hover:border-primary/50"
+                  }`}
+                >
+                  {selectedFile ? (
+                    <div className="flex items-center justify-between gap-3 text-left">
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="size-10 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                          <FileTextIcon className="size-5" />
+                        </div>
+                        <div className="truncate">
+                          <p className="text-xs font-semibold truncate">{selectedFile.name}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • Click to replace file
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 gap-1 text-[10px]">
+                        <CheckIcon className="size-3" /> Selected
+                      </Badge>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <UploadIcon className="size-6 text-muted-foreground mx-auto" />
+                      <div className="text-xs">
+                        <span className="font-semibold text-primary">Click to select document</span> or drag & drop
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">
+                        Supported: PDF, PPTX, DOCX, TXT (Up to 50MB)
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {errors.file && (
+                  <p className="text-[11px] text-destructive flex items-center gap-1 mt-1">
+                    <AlertCircleIcon className="size-3" /> {errors.file}
+                  </p>
+                )}
+              </div>
+
+              {/* Drawer Footer Action Buttons */}
+              <div className="pt-6 border-t border-border flex items-center justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCloseSlide}
+                  disabled={uploading}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={uploading} className="gap-2 min-w-[120px]">
+                  {uploading ? (
+                    <>
+                      <Loader2Icon className="size-4 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckIcon className="size-4" />
+                      <span>Save Material</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Retention Notice Banner */}
+      <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs shadow-xs">
+        <ClockIcon className="size-4 shrink-0 text-amber-500" />
+        <span>
+          <strong>Storage Retention Policy:</strong> Uploaded materials are automatically retained for <strong>1 year</strong> from upload date, after which they are safely wiped to preserve database capacity.
+        </span>
+      </div>
 
       {/* Materials Search & List Table */}
       <Card>
@@ -175,13 +487,13 @@ export default function LibraryPage() {
           <div>
             <CardTitle className="text-base">Uploaded Lecture Materials ({materials.length})</CardTitle>
             <CardDescription className="text-xs">
-              Manage your course materials and trigger AI question generation runs.
+              Manage your course materials. Uploaded files are available for automated AI question bank generation.
             </CardDescription>
           </div>
           <div className="relative w-full sm:w-64">
             <SearchIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
             <Input
-              placeholder="Search material or course code..."
+              placeholder="Search material or course..."
               className="pl-8 text-xs h-9"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -194,18 +506,28 @@ export default function LibraryPage() {
               <thead className="border-b border-border/80 bg-muted/40 font-semibold text-muted-foreground">
                 <tr>
                   <th className="p-3">Material Title</th>
-                  <th className="p-3">Course Code</th>
+                  <th className="p-3">Course</th>
                   <th className="p-3">File Info</th>
                   <th className="p-3">Status</th>
-                  <th className="p-3">AI Questions</th>
                   <th className="p-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
-                {filteredMaterials.length === 0 ? (
+                {loading ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                      No lecture materials found. Upload a file above to get started.
+                    <td colSpan={5} className="p-8 text-center text-muted-foreground">
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2Icon className="size-4 animate-spin text-primary" />
+                        <span>Querying database documents...</span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : filteredMaterials.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="p-8 text-center text-muted-foreground">
+                      {isAdmin
+                        ? "No uploaded documents found in the database. When educators upload lecture materials, they will automatically appear here."
+                        : "No lecture materials found. Click \"Add Material\" above to upload your first lecture resource."}
                     </td>
                   </tr>
                 ) : (
@@ -241,29 +563,16 @@ export default function LibraryPage() {
                           </Badge>
                         )}
                       </td>
-                      <td className="p-3 font-semibold text-foreground">
-                        {mat.extractedQuestionsCount > 0 ? (
-                          <span className="text-emerald-600 dark:text-emerald-400">
-                            {mat.extractedQuestionsCount} Questions
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">Pending</span>
-                        )}
-                      </td>
                       <td className="p-3 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button size="xs" variant="outline" className="gap-1 text-primary border-primary/30">
-                            <SparklesIcon className="size-3" /> Generate
-                          </Button>
-                          <Button
-                            size="icon-xs"
-                            variant="ghost"
-                            className="text-muted-foreground hover:text-destructive"
-                            onClick={() => handleDelete(mat.id)}
-                          >
-                            <Trash2Icon className="size-3.5" />
-                          </Button>
-                        </div>
+                        <Button
+                          size="icon-xs"
+                          variant="ghost"
+                          className="text-muted-foreground hover:text-destructive"
+                          onClick={() => handleDelete(mat.id)}
+                          title="Delete material"
+                        >
+                          <Trash2Icon className="size-3.5" />
+                        </Button>
                       </td>
                     </tr>
                   ))

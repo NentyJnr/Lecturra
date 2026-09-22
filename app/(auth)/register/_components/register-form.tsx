@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -149,10 +150,10 @@ export function RegisterForm() {
 
             {selectedAccountType === 2 && (
               <Field data-invalid={!!errors.institutionName}>
-                <FieldLabel htmlFor="institutionName">Institution / School Name</FieldLabel>
+                <FieldLabel htmlFor="institutionName">Institution / School Name (Optional)</FieldLabel>
                 <Input
                   id="institutionName"
-                  placeholder="e.g. University of Lagos"
+                  placeholder="e.g. University of Lagos (Optional)"
                   aria-invalid={!!errors.institutionName}
                   {...register("institutionName")}
                 />
@@ -340,9 +341,9 @@ export function RegisterForm() {
       <CardFooter className="justify-center text-sm">
         <p className="text-muted-foreground">
           Already have an account?{" "}
-          <a href="/login" className="text-primary underline-offset-4 hover:underline">
+          <Link href="/login" className="text-primary underline-offset-4 hover:underline">
             Log in
-          </a>
+          </Link>
         </p>
       </CardFooter>
     </Card>

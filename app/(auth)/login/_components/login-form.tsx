@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -97,14 +98,14 @@ export function LoginForm() {
         </form>
       </CardContent>
       <CardFooter className="flex-col items-stretch gap-2 text-center text-sm">
-        <a href="/forgot-password" className="text-primary underline-offset-4 hover:underline">
+        <Link href="/forgot-password" className="text-primary underline-offset-4 hover:underline">
           Forgot your password?
-        </a>
+        </Link>
         <p className="text-muted-foreground">
           No account yet?{" "}
-          <a href="/register" className="text-primary underline-offset-4 hover:underline">
+          <Link href="/register" className="text-primary underline-offset-4 hover:underline">
             Create one
-          </a>
+          </Link>
         </p>
       </CardFooter>
     </Card>

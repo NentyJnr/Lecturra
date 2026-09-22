@@ -39,10 +39,10 @@ export function Navbar() {
             </Button>
           ) : (
             <>
-              <Button variant="ghost" render={<a href="/login" />}>
+              <Button variant="ghost" render={<Link href="/login" />}>
                 Log in
               </Button>
-              <Button render={<a href="/register" />}>Start free</Button>
+              <Button render={<Link href="/register" />}>Start free</Button>
             </>
           )}
         </div>
@@ -77,10 +77,10 @@ export function Navbar() {
                 </Button>
               ) : (
                 <>
-                  <Button variant="outline" className="flex-1" render={<a href="/login" />}>
+                  <Button variant="outline" className="flex-1" render={<Link href="/login" />}>
                     Log in
                   </Button>
-                  <Button className="flex-1" render={<a href="/register" />}>
+                  <Button className="flex-1" render={<Link href="/register" />}>
                     Start free
                   </Button>
                 </>
