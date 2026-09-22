@@ -299,7 +299,7 @@ export default function ResultStationPage() {
                           <td className="p-3 font-medium text-foreground">
                             <div className="flex items-center gap-1.5">
                               <Building2Icon className="size-3.5 text-purple-500 shrink-0" />
-                              <span className="truncate max-w-[160px] font-semibold">{row.tenantName || "Lectura Workspace"}</span>
+                              <span className="truncate max-w-40 font-semibold">{row.tenantName || "Lectura Workspace"}</span>
                             </div>
                           </td>
                         )}

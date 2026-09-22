@@ -5,7 +5,6 @@ import {
   UserIcon,
   MailIcon,
   PhoneIcon,
-  MapPinIcon,
   ShieldCheckIcon,
   SaveIcon,
   CameraIcon,
@@ -14,11 +13,8 @@ import {
   LockIcon,
   ShieldIcon,
   CalendarIcon,
-  Building2Icon,
-  SparklesIcon,
   XIcon,
   CheckIcon,
-  ImageIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -34,9 +30,19 @@ type ProfileTab = "bio-data" | "roles" | "profile-image";
 
 export default function ProfilePage() {
   const user = useAuthStore((s) => s.user);
-  console.log({user})
+  const setUser = useAuthStore((s) => s.setUser);
 
-  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<ProfileTab>("bio-data");
+  const [isEditing, setIsEditing] = useState(false);
+
+  const [title, setTitle] = useState(user?.title || "");
+  const [fullName, setFullName] = useState(user?.fullName || "");
+  const [email, setEmail] = useState(user?.email || "");
+  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || "");
+  const [location, setLocation] = useState(user?.location || "");
+  const [profileImageUrl, setProfileImageUrl] = useState(user?.profileImageUrl || "");
+
+  const [_loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -79,7 +85,7 @@ export default function ProfilePage() {
     loadProfile();
   }, [setUser]);
 
-  const isOrganization = user?.accountType === 2 || !!user?.institutionName;
+  const _isOrganization = user?.accountType === 2 || !!user?.institutionName;
   const isAdmin = user?.role === "InstitutionAdmin" || user?.role === "SystemAdmin" || user?.accountType === 2;
   const assignedRoleName = isAdmin ? "Institution Admin" : "Lecturer / Director";
 
@@ -97,8 +103,9 @@ export default function ProfilePage() {
       setUser(updatedUser);
       setIsEditing(false);
       toast.success("Profile updated successfully!");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update profile. Please try again.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to update profile. Please try again.";
+      toast.error(message);
     } finally {
       setSaving(false);
     }
@@ -113,6 +120,7 @@ export default function ProfilePage() {
       }
       const reader = new FileReader();
       reader.onloadend = () => {
+        // SAFETY: readAsDataURL guarantees string result when file is image/*
         const result = reader.result as string;
         setProfileImageUrl(result);
         toast.success("Profile photo preview updated. Click 'Save Changes' to apply.");
@@ -138,7 +146,7 @@ export default function ProfilePage() {
       {/* Design System Hero Header Container */}
       <div className="relative rounded-2xl border border-border/80 bg-card overflow-hidden shadow-sm">
         {/* Deep Navy Gradient Banner */}
-        <div className="h-36 sm:h-44 w-full bg-gradient-to-r from-[#0a1128] via-[#101b42] to-[#1e1b4b] relative flex items-center justify-end px-8">
+        <div className="h-36 sm:h-44 w-full bg-linear-to-r from-[#0a1128] via-[#101b42] to-[#1e1b4b] relative flex items-center justify-end px-8">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.2),transparent_50%)]" />
           <div className="hidden sm:block text-right z-10">
             <span className="text-white/40 text-xs font-mono tracking-widest uppercase">Lecturra Academic Identity</span>
@@ -253,7 +261,7 @@ export default function ProfilePage() {
                   <span className="text-[10px] font-mono tracking-wider text-muted-foreground uppercase block">
                     Email
                   </span>
-                  <p className="text-xs font-semibold text-foreground truncate max-w-[170px]" title={email}>
+                  <p className="text-xs font-semibold text-foreground truncate max-w-42.5" title={email}>
                     {email || "Not provided"}
                   </p>
                 </div>

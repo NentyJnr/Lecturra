@@ -22,7 +22,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/stores/auth-store";
 import { isAdminUser } from "@/lib/api/types/auth";
-import Link from "next/link";
 import { getCurrentUserProfile } from "@/lib/api/services/users";
 import { billingService, type PricingPackage } from "@/lib/api/services/billing";
 
@@ -115,7 +114,7 @@ export default function BillingPage() {
     async function syncProfileQuota() {
       try {
         const profile = await getCurrentUserProfile();
-        if (profile && typeof profile.remainingQuota === "number") {
+        if (profile && profile.remainingQuota !== undefined && Number.isFinite(profile.remainingQuota)) {
           useAuthStore.getState().setRemainingQuota(profile.remainingQuota);
         }
       } catch {
@@ -211,7 +210,7 @@ export default function BillingPage() {
     setEditingPkg(null);
   }
 
-  async function handleSavePackage(e: React.FormEvent) {
+  async function handleSavePackage(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!editingPkg) return;
 
@@ -293,7 +292,7 @@ export default function BillingPage() {
     }
   }
 
-  async function handleCompleteCheckout(e: React.FormEvent) {
+  async function handleCompleteCheckout(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!checkoutModalPkg) return;
 
@@ -309,7 +308,7 @@ export default function BillingPage() {
 
       // 2. Sync profile quota balance from DB
       const profile = await getCurrentUserProfile();
-      if (profile && typeof profile.remainingQuota === "number") {
+      if (profile && profile.remainingQuota !== undefined && Number.isFinite(profile.remainingQuota)) {
         useAuthStore.getState().setRemainingQuota(profile.remainingQuota);
       } else {
         const addedCredits = checkoutModalPkg.credits;
@@ -334,7 +333,7 @@ export default function BillingPage() {
     <div className="space-y-6">
       {/* Toast Alert */}
       {toastMsg && (
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-emerald-600 text-white px-4 py-3 rounded-lg shadow-lg border border-emerald-500 animate-in fade-in slide-in-from-top-2">
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-[#00B578] text-white px-4 py-3 rounded-lg shadow-lg border border-[#00B578]/70 animate-in fade-in slide-in-from-top-2">
           <CheckCircle2Icon className="size-5" />
           <span className="text-sm font-semibold">{toastMsg}</span>
         </div>
@@ -343,11 +342,11 @@ export default function BillingPage() {
       {/* Top Action & Status Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/40">
         <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="outline" className="gap-1 border-amber-500/30 text-amber-600 dark:text-amber-400">
+          <Badge variant="outline" className="gap-1 border-[#00B578]/30 text-[#00B578]">
             <CreditCardIcon className="size-3.5" /> Quota Billing & OPay Integration
           </Badge>
           {isAdmin && (
-            <Badge className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 font-mono text-[10px]">
+            <Badge className="bg-[#00B578]/10 text-[#00B578] border-[#00B578]/30 font-mono text-[10px]">
               Admin Price Controls Active
             </Badge>
           )}
@@ -355,7 +354,7 @@ export default function BillingPage() {
 
         {isAdmin && (
           <div className="flex items-center gap-3 shrink-0">
-            <Button onClick={handleOpenAddModal} size="sm" className="gap-2 bg-purple-600 hover:bg-purple-700 text-white shadow-sm">
+            <Button onClick={handleOpenAddModal} size="sm" className="gap-2 bg-[#00B578] hover:bg-[#009B63] text-white shadow-sm">
               <PlusIcon className="size-4" /> Add New Package
             </Button>
             <Button variant="outline" size="sm" onClick={loadPackages} className="gap-2 shrink-0">
@@ -368,16 +367,16 @@ export default function BillingPage() {
 
       {/* Current Quota Status Banner - Only visible for non-admin users/lecturers */}
       {!isAdmin && (
-        <Card className="relative overflow-hidden border-sky-500/30 bg-gradient-to-r from-sky-50/50 via-background to-blue-50/50 dark:from-sky-950/20 dark:to-blue-950/20">
+        <Card className="border-[#00B578]/20 bg-card">
           <CardContent className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="flex size-14 items-center justify-center rounded-2xl bg-sky-500 text-white shadow-md shrink-0">
-                <SparklesIcon className="size-7 animate-pulse" />
+              <div className="flex size-14 items-center justify-center rounded-2xl bg-[#00B578] text-white shadow-md shrink-0">
+                <SparklesIcon className="size-7" />
               </div>
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Current Available Balance</p>
                 <h2 className="font-heading text-3xl font-extrabold text-foreground">{remainingCredits.toLocaleString()} Credits</h2>
-                <p className="text-xs text-sky-600 dark:text-sky-400 font-medium mt-0.5">
+                <p className="text-xs text-[#00B578] font-medium mt-0.5">
                   {remainingCredits > 0
                     ? `Enough to generate ~${Math.floor(remainingCredits / 25)} exam questions.`
                     : "No credits remaining. Select a package below to topup."}
@@ -401,13 +400,13 @@ export default function BillingPage() {
           <div>
             <h2 className="font-heading text-lg font-bold tracking-tight">Select Topup Credit Package</h2>
             {isAdmin && (
-              <p className="text-xs text-purple-600 dark:text-purple-400 font-medium">
+              <p className="text-xs text-[#00B578] font-medium">
                 As System Admin, click &quot;Edit Price&quot; to configure pricing or &quot;Add New Package&quot; to expand offerings.
               </p>
             )}
           </div>
           <Badge variant="secondary" className="gap-1 text-xs">
-            <ShieldCheckIcon className="size-3.5 text-emerald-500" /> Instant OPay Activation
+            <ShieldCheckIcon className="size-3.5 text-[#00B578]" /> Instant OPay Activation
           </Badge>
         </div>
 
@@ -436,7 +435,7 @@ export default function BillingPage() {
                       variant="ghost"
                       size="xs"
                       onClick={() => handleOpenEditModal(pkg)}
-                      className="gap-1 text-xs text-purple-600 dark:text-purple-400 hover:bg-purple-500/10 border border-purple-500/30 shrink-0"
+                      className="gap-1 text-xs text-[#00B578] hover:bg-[#00B578]/10 border border-[#00B578]/30 shrink-0"
                       title="Edit package price and details"
                     >
                       <PencilIcon className="size-3" /> Edit Price
@@ -455,7 +454,7 @@ export default function BillingPage() {
                   {pkg.features &&
                     pkg.features.map((feat: string) => (
                       <li key={feat} className="flex items-center gap-2">
-                        <CheckCircle2Icon className="size-4 shrink-0 text-emerald-500" />
+                        <CheckCircle2Icon className="size-4 shrink-0 text-[#00B578]" />
                         <span>{feat}</span>
                       </li>
                     ))}
@@ -478,7 +477,7 @@ export default function BillingPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => handleOpenEditModal(pkg)}
-                    className="w-full gap-1 text-xs border-purple-500/30 text-purple-600 dark:text-purple-400 hover:bg-purple-500/10"
+                    className="w-full gap-1 text-xs border-[#00B578]/30 text-[#00B578] hover:bg-[#00B578]/10"
                   >
                     <PencilIcon className="size-3.5" /> Configure Price & Features
                   </Button>
@@ -521,11 +520,11 @@ export default function BillingPage() {
                 {history.map((h) => (
                   <tr key={h.id} className="hover:bg-muted/30 transition-colors">
                     <td className="p-3 font-mono font-medium">{h.orderRef}</td>
-                    <td className="p-3 font-bold text-sky-600 dark:text-sky-400">+{h.credits.toLocaleString()} Credits</td>
+                    <td className="p-3 font-bold text-[#00B578]">+{h.credits.toLocaleString()} Credits</td>
                     <td className="p-3 font-semibold">{h.amount}</td>
                     <td className="p-3 text-muted-foreground">{h.provider}</td>
                     <td className="p-3">
-                      <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1">
+                      <Badge className="bg-[#00B578]/10 text-[#00B578] border-[#00B578]/30 gap-1">
                         <CheckCircle2Icon className="size-3" /> {h.status}
                       </Badge>
                     </td>
@@ -543,7 +542,7 @@ export default function BillingPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
           <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
             {/* OPay Header Banner */}
-            <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-green-600 p-5 text-white flex items-center justify-between">
+            <div className="bg-[#00B578] p-5 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="size-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center text-white font-extrabold text-lg shadow-sm">
                   OP
@@ -567,11 +566,11 @@ export default function BillingPage() {
                 </div>
                 <div className="flex justify-between items-center text-xs text-muted-foreground">
                   <span>Quota Allocated</span>
-                  <span className="font-bold text-sky-600 dark:text-sky-400">+{checkoutModalPkg.credits.toLocaleString()} Credits</span>
+                  <span className="font-bold text-[#00B578]">+{checkoutModalPkg.credits.toLocaleString()} Credits</span>
                 </div>
                 <div className="pt-2 border-t border-border/60 flex justify-between items-center">
                   <span className="text-xs font-bold text-foreground">Total Amount</span>
-                  <span className="font-heading text-xl font-extrabold text-emerald-600 dark:text-emerald-400">
+                  <span className="font-heading text-xl font-extrabold text-[#00B578]">
                     ₦{checkoutModalPkg.priceNGN.toLocaleString()}
                   </span>
                 </div>
@@ -586,7 +585,7 @@ export default function BillingPage() {
                     onClick={() => setCheckoutPaymentMethod("card")}
                     className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-medium transition-all ${
                       checkoutPaymentMethod === "card"
-                        ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold shadow-sm"
+                        ? "border-[#00B578] bg-[#00B578]/10 text-[#00B578] font-bold shadow-sm"
                         : "border-border hover:bg-muted/50 text-muted-foreground"
                     }`}
                   >
@@ -599,7 +598,7 @@ export default function BillingPage() {
                     onClick={() => setCheckoutPaymentMethod("opay_wallet")}
                     className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-medium transition-all ${
                       checkoutPaymentMethod === "opay_wallet"
-                        ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold shadow-sm"
+                        ? "border-[#00B578] bg-[#00B578]/10 text-[#00B578] font-bold shadow-sm"
                         : "border-border hover:bg-muted/50 text-muted-foreground"
                     }`}
                   >
@@ -612,7 +611,7 @@ export default function BillingPage() {
                     onClick={() => setCheckoutPaymentMethod("bank_transfer")}
                     className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-medium transition-all ${
                       checkoutPaymentMethod === "bank_transfer"
-                        ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold shadow-sm"
+                        ? "border-[#00B578] bg-[#00B578]/10 text-[#00B578] font-bold shadow-sm"
                         : "border-border hover:bg-muted/50 text-muted-foreground"
                     }`}
                   >
@@ -623,8 +622,8 @@ export default function BillingPage() {
               </div>
 
               {/* Security Badge */}
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[11px]">
-                <ShieldCheckIcon className="size-4 shrink-0 text-emerald-500" />
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-[#00B578]/10 border border-[#00B578]/20 text-[#00B578] text-[11px]">
+                <ShieldCheckIcon className="size-4 shrink-0 text-[#00B578]" />
                 <span>256-Bit SSL Encrypted OPay Gateway Simulation. Instant Quota Credit.</span>
               </div>
 
@@ -636,7 +635,7 @@ export default function BillingPage() {
                 <Button
                   type="submit"
                   disabled={isSubmittingPayment}
-                  className="w-2/3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-2 shadow-md"
+                  className="w-2/3 bg-[#00B578] hover:bg-[#009B63] text-white font-bold gap-2 shadow-md"
                 >
                   <ZapIcon className="size-4" />
                   {isSubmittingPayment ? "Processing..." : `Pay ₦${checkoutModalPkg.priceNGN.toLocaleString()}`}
@@ -653,7 +652,7 @@ export default function BillingPage() {
           <div className="bg-background border border-border rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between p-4 border-b border-border bg-muted/30">
               <div className="flex items-center gap-2">
-                <div className="size-8 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center border border-purple-500/20">
+                <div className="size-8 rounded-lg bg-[#00B578]/10 text-[#00B578] flex items-center justify-center border border-[#00B578]/20">
                   {isNewPackage ? <PlusIcon className="size-4" /> : <PencilIcon className="size-4" />}
                 </div>
                 <div>
@@ -738,7 +737,7 @@ export default function BillingPage() {
                   id="popularCheckbox"
                   checked={editingPkg.popular}
                   onChange={(e) => setEditingPkg({ ...editingPkg, popular: e.target.checked })}
-                  className="size-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                  className="size-4 rounded border-gray-300 text-[#00B578] focus:ring-[#00B578]"
                 />
                 <Label htmlFor="popularCheckbox" className="text-xs font-medium cursor-pointer">
                   Highlight as &quot;Most Popular&quot; Package
@@ -762,7 +761,7 @@ export default function BillingPage() {
                   <Button type="button" variant="outline" size="sm" onClick={handleCloseModal}>
                     Cancel
                   </Button>
-                  <Button type="submit" size="sm" className="gap-2 bg-purple-600 hover:bg-purple-700 text-white" disabled={isSaving}>
+                  <Button type="submit" size="sm" className="gap-2 bg-[#00B578] hover:bg-[#009B63] text-white" disabled={isSaving}>
                     <SaveIcon className="size-4" />
                     {isSaving ? "Saving..." : isNewPackage ? "Create Package" : "Save Package Price"}
                   </Button>

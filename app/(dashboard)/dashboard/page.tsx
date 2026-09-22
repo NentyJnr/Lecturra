@@ -9,10 +9,7 @@ import {
   CreditCardIcon,
   SparklesIcon,
   UploadIcon,
-  PlusIcon,
   ArrowRightIcon,
-  FileTextIcon,
-  CheckCircle2Icon,
   UsersIcon,
   Building2Icon,
 } from "lucide-react";
@@ -36,10 +33,10 @@ export default function DashboardOverviewPage() {
         setLoading(true);
         const data = await getDashboardOverview();
         setOverview(data);
-        if (data && typeof data.remainingQuota === "number") {
+        if (data && Number.isFinite(data.remainingQuota)) {
           useAuthStore.getState().setRemainingQuota(data.remainingQuota);
         }
-      } catch (err) {
+      } catch {
         // Silent fallback to user store properties
       } finally {
         setLoading(false);
@@ -65,28 +62,28 @@ export default function DashboardOverviewPage() {
           value: membersCountFormatted,
           change: overview?.membersCount ? `${overview.membersCount} faculty & staff members enrolled` : "Registered faculty & staff members",
           icon: UsersIcon,
-          accent: "text-purple-500 bg-purple-50 dark:bg-purple-950/40 border-purple-200 dark:border-purple-900",
+          accent: "text-foreground bg-muted border-border",
         },
         {
           title: "Library Materials",
           value: libraryCount,
           change: overview?.libraryMaterialsCount ? `${overview.libraryMaterialsCount} materials uploaded` : "Lecture notes & slides uploaded",
           icon: LibraryIcon,
-          accent: "text-sky-500 bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-900",
+          accent: "text-foreground bg-muted border-border",
         },
         {
           title: "Question Banks Generated",
           value: questionsCount,
           change: overview?.questionBanksCount ? `${overview.questionBanksCount} question banks generated` : "AI question runs completed",
           icon: HelpCircleIcon,
-          accent: "text-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-900",
+          accent: "text-foreground bg-muted border-border",
         },
         {
           title: "Submissions & Results",
           value: submissionsCount,
           change: overview?.submissionsCount ? `${overview.submissionsCount} student submissions recorded` : "Student assessment submissions",
           icon: BarChart3Icon,
-          accent: "text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900",
+          accent: "text-foreground bg-muted border-border",
         },
       ]
     : [
@@ -95,58 +92,50 @@ export default function DashboardOverviewPage() {
           value: remainingQuotaFormatted,
           change: "Available quota",
           icon: SparklesIcon,
-          accent: "text-amber-500 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900",
+          accent: "text-foreground bg-muted border-border",
         },
         {
           title: "Library Materials",
           value: libraryCount,
           change: overview?.libraryMaterialsCount ? `${overview.libraryMaterialsCount} documents` : "Lecture notes & slides",
           icon: LibraryIcon,
-          accent: "text-sky-500 bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-900",
+          accent: "text-foreground bg-muted border-border",
         },
         {
           title: "Question Banks Generated",
           value: questionsCount,
           change: overview?.questionBanksCount ? `${overview.questionBanksCount} items generated` : "AI question runs",
           icon: HelpCircleIcon,
-          accent: "text-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-900",
+          accent: "text-foreground bg-muted border-border",
         },
         {
           title: "Submissions & Results",
           value: submissionsCount,
           change: overview?.submissionsCount ? `${overview.submissionsCount} submissions` : "Student test submissions",
           icon: BarChart3Icon,
-          accent: "text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900",
+          accent: "text-foreground bg-muted border-border",
         },
       ];
 
   return (
     <div className="space-y-8">
       {/* Hero Welcome Banner */}
-      <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-primary/5 p-6 md:p-8 shadow-sm">
+      <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="secondary" className="gap-1 bg-primary/15 text-primary border-primary/20 font-medium">
+              <Badge variant="secondary" className="gap-1 font-medium">
                 {isOrganization ? <Building2Icon className="size-3.5" /> : <SparklesIcon className="size-3.5" />}
                 {isOrganization ? (overview?.institutionName || user?.institutionName || "School Organization") : "Individual Lecturer Workspace"}
               </Badge>
               {user?.email?.toLowerCase() === "neotroltd@gmail.com" ? (
-                <Badge variant="outline" className="border-purple-500/40 text-purple-600 dark:text-purple-400">
-                  Super Admin
-                </Badge>
+                <Badge variant="outline">Super Admin</Badge>
               ) : isAdmin ? (
-                <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400">
-                  Administrator
-                </Badge>
+                <Badge variant="outline">Administrator</Badge>
               ) : isOrganization ? (
-                <Badge variant="outline" className="border-sky-500/40 text-sky-600 dark:text-sky-400">
-                  Faculty Member
-                </Badge>
+                <Badge variant="outline">Faculty Member</Badge>
               ) : (
-                <Badge variant="outline" className="border-indigo-500/40 text-indigo-600 dark:text-indigo-400">
-                  Independent Lecturer
-                </Badge>
+                <Badge variant="outline">Independent Lecturer</Badge>
               )}
             </div>
             <h1 className="font-heading text-2xl md:text-3xl font-bold tracking-tight">
@@ -166,7 +155,7 @@ export default function DashboardOverviewPage() {
                   <UsersIcon className="size-4" /> Manage Members
                 </Button>
                 <Button size="lg" variant="outline" render={<Link href="/dashboard/billing" />}>
-                  <CreditCardIcon className="size-4 text-amber-500" /> Quota Topup
+                  <CreditCardIcon className="size-4" /> Quota Topup
                 </Button>
               </>
             ) : (
@@ -175,7 +164,7 @@ export default function DashboardOverviewPage() {
                   <UploadIcon className="size-4" /> Upload Material
                 </Button>
                 <Button size="lg" variant="outline" render={<Link href="/dashboard/billing" />}>
-                  <CreditCardIcon className="size-4 text-amber-500" /> Quota Topup
+                  <CreditCardIcon className="size-4" /> Quota Topup
                 </Button>
               </>
             )}
@@ -210,10 +199,10 @@ export default function DashboardOverviewPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {/* Organization Members Card - Only for School Admin */}
           {isAdmin && (
-            <Card className="group hover:border-primary/50 transition-all hover:shadow-md border-sky-500/30">
+            <Card className="group hover:border-primary/50 transition-all hover:shadow-md">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-xl bg-sky-100 dark:bg-sky-950 text-sky-600 dark:text-sky-400 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-muted text-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                     <UsersIcon className="size-5" />
                   </div>
                   <div>
@@ -239,7 +228,7 @@ export default function DashboardOverviewPage() {
             <Card className="group hover:border-primary/50 transition-all hover:shadow-md">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                  <div className="flex size-10 items-center justify-center rounded-xl bg-muted text-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                     <CreditCardIcon className="size-5" />
                   </div>
                   <div>
@@ -264,7 +253,7 @@ export default function DashboardOverviewPage() {
           <Card className="group hover:border-primary/50 transition-all hover:shadow-md">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-muted text-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                   <LibraryIcon className="size-5" />
                 </div>
                 <div>
@@ -288,7 +277,7 @@ export default function DashboardOverviewPage() {
           <Card className="group hover:border-primary/50 transition-all hover:shadow-md">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-muted text-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                   <HelpCircleIcon className="size-5" />
                 </div>
                 <div>
@@ -312,7 +301,7 @@ export default function DashboardOverviewPage() {
           <Card className="group hover:border-primary/50 transition-all hover:shadow-md">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <div className="flex size-10 items-center justify-center rounded-xl bg-muted text-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                   <BarChart3Icon className="size-5" />
                 </div>
                 <div>

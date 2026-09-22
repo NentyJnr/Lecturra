@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { GraduationCapIcon } from "lucide-react";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-svh flex-col">
       <header className="border-b">
-        <nav aria-label="Auth" className="mx-auto flex h-14 max-w-5xl items-center px-6">
+        <nav aria-label="Auth" className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
           <Link
             href="/"
             className="flex items-center gap-2 font-heading text-lg font-medium"
@@ -14,6 +15,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <GraduationCapIcon className="size-5 text-primary" aria-hidden />
             Lecturra
           </Link>
+          <ModeToggle />
         </nav>
       </header>
       <main className="flex flex-1 items-center justify-center p-6">

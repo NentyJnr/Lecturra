@@ -17,7 +17,7 @@ import {
   AwardIcon,
 } from "lucide-react";
 import { toast } from "sonner";
-import { assessmentsApi, PublicAssessmentDto, SubmissionResultDto } from "@/lib/api/services/assessments";
+import { assessmentsApi, PublicAssessmentDto, SubmissionResultDto, SubmitStudentAssessmentRequest } from "@/lib/api/services/assessments";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label";
 
 export default function PublicStudentAssessmentPage() {
   const params = useParams();
+  // SAFETY: route param token is defined by Next.js dynamic segment [token]
   const token = params?.token as string;
 
   const [assessment, setAssessment] = useState<PublicAssessmentDto | null>(null);
@@ -121,7 +122,8 @@ export default function PublicStudentAssessmentPage() {
           studentName: sName,
           matricNumber: mNum,
           studentEmail: sMail,
-          answers: formattedAnswers as any,
+          // SAFETY: formattedAnswers mapped from answers record to { questionId, selectedOptionIndex } shape required by API
+          answers: formattedAnswers as SubmitStudentAssessmentRequest["answers"],
         });
 
         setResult(
@@ -445,7 +447,7 @@ export default function PublicStudentAssessmentPage() {
                     q.options.map((opt, optIdx) => {
                       const isSelected = studentSelectedOptIdx === optIdx;
                       const isOptionCorrect = correctOptIdx !== undefined ? optIdx === correctOptIdx : false;
-                      const displayOpt = opt.replace(/^[A-D][\.\)\-\:\s]+/i, "").trim();
+                      const displayOpt = opt.replace(/^[A-D][.)\-:\s]+/i, "").trim();
 
                       let containerClass = "bg-background border-border/70 text-foreground";
                       let circleClass = "border-muted-foreground/40 text-muted-foreground";
