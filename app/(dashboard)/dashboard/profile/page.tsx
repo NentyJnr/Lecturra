@@ -34,17 +34,7 @@ type ProfileTab = "bio-data" | "roles" | "profile-image";
 
 export default function ProfilePage() {
   const user = useAuthStore((s) => s.user);
-  const setUser = useAuthStore((s) => s.setUser);
-
-  const [activeTab, setActiveTab] = useState<ProfileTab>("bio-data");
-  const [isEditing, setIsEditing] = useState(false);
-
-  const [title, setTitle] = useState(user?.title || "");
-  const [fullName, setFullName] = useState(user?.fullName || "");
-  const [email, setEmail] = useState(user?.email || "");
-  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || "");
-  const [location, setLocation] = useState(user?.location || "");
-  const [profileImageUrl, setProfileImageUrl] = useState(user?.profileImageUrl || "");
+  console.log({user})
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
