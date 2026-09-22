@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { GraduationCapIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -13,10 +14,10 @@ export function Footer() {
           Create a free account and generate your first assessment today.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
-          <Button size="lg" render={<a href="/register" />}>
+          <Button size="lg" render={<Link href="/register" />}>
             Get 1,500 free credits
           </Button>
-          <Button size="lg" variant="outline" render={<a href="/login" />}>
+          <Button size="lg" variant="outline" render={<Link href="/login" />}>
             Log in
           </Button>
         </div>
@@ -28,12 +29,12 @@ export function Footer() {
             lecturers
           </span>
           <nav aria-label="Footer" className="flex gap-4">
-            <a href="/login" className="hover:text-foreground">
+            <Link href="/login" className="hover:text-foreground">
               Log in
-            </a>
-            <a href="/register" className="hover:text-foreground">
+            </Link>
+            <Link href="/register" className="hover:text-foreground">
               Sign up
-            </a>
+            </Link>
             <a href="#faq" className="hover:text-foreground">
               FAQ
             </a>

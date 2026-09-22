@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, Suspense } from "react";
+import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { CircleCheckIcon, Loader2Icon, OctagonXIcon } from "lucide-react";
 
@@ -68,9 +69,9 @@ function VerifyEmailStatusInner() {
         )}
       </CardContent>
       <CardFooter className="justify-center text-sm">
-        <a href="/login" className="text-primary underline-offset-4 hover:underline">
+        <Link href="/login" className="text-primary underline-offset-4 hover:underline">
           Back to login
-        </a>
+        </Link>
       </CardFooter>
     </Card>
   );

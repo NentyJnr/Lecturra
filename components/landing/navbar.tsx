@@ -5,6 +5,7 @@ import Link from "next/link";
 import { GraduationCapIcon, MenuIcon, XIcon, LayoutDashboardIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/mode-toggle";
 import { useAuthStore } from "@/stores/auth-store";
 
 const links = [
@@ -33,29 +34,32 @@ export function Navbar() {
           ))}
         </div>
         <div className="ml-auto hidden items-center gap-2 md:flex">
+          <ModeToggle />
           {isAuthenticated ? (
             <Button render={<Link href="/dashboard" />}>
               <LayoutDashboardIcon className="size-4" /> Go to Dashboard
             </Button>
           ) : (
             <>
-              <Button variant="ghost" render={<a href="/login" />}>
+              <Button variant="ghost" render={<Link href="/login" />}>
                 Log in
               </Button>
-              <Button render={<a href="/register" />}>Start free</Button>
+              <Button render={<Link href="/register" />}>Start free</Button>
             </>
           )}
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="ml-auto md:hidden"
-          aria-expanded={open}
-          aria-label={open ? "Close menu" : "Open menu"}
-          onClick={() => setOpen((v) => !v)}
-        >
-          {open ? <XIcon /> : <MenuIcon />}
-        </Button>
+        <div className="ml-auto flex items-center gap-1 md:hidden">
+          <ModeToggle />
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-expanded={open}
+            aria-label={open ? "Close menu" : "Open menu"}
+            onClick={() => setOpen((v) => !v)}
+          >
+            {open ? <XIcon /> : <MenuIcon />}
+          </Button>
+        </div>
       </nav>
       {open && (
         <div className="border-t px-6 py-4 md:hidden">
@@ -77,10 +81,10 @@ export function Navbar() {
                 </Button>
               ) : (
                 <>
-                  <Button variant="outline" className="flex-1" render={<a href="/login" />}>
+                  <Button variant="outline" className="flex-1" render={<Link href="/login" />}>
                     Log in
                   </Button>
-                  <Button className="flex-1" render={<a href="/register" />}>
+                  <Button className="flex-1" render={<Link href="/register" />}>
                     Start free
                   </Button>
                 </>
