@@ -42,6 +42,7 @@ export function useLogin() {
 export function useVerifyEmail(token: string | null) {
   return useQuery({
     queryKey: authKeys.verifyEmail(token),
+    // SAFETY: enabled: !!token guarantees token is string when queryFn runs
     queryFn: () => verifyEmail({ token: token as string }),
     enabled: !!token,
     retry: false,

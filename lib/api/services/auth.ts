@@ -14,8 +14,14 @@ import {
 
 /** Normalize raw / wrapped backend responses into a flat AuthSession. */
 export function normalizeSession(raw: RawAuthResponse): AuthSession {
-  if ("accessToken" in raw) return raw as AuthSession;
-  if ("data" in raw && raw.data) return (raw as { data: AuthSession }).data;
+  if ("accessToken" in raw) {
+    // SAFETY: "accessToken" discriminant proves raw is AuthSession per RawAuthResponse union
+    return raw as AuthSession;
+  }
+  if ("data" in raw && raw.data) {
+    // SAFETY: "data" discriminant proves raw is wrapped { data: AuthSession }
+    return (raw as { data: AuthSession }).data;
+  }
   throw new Error("Unexpected auth response shape");
 }
 

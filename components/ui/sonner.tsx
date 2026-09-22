@@ -9,6 +9,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
 
   return (
     <Sonner
+      // SAFETY: next-themes theme is "light" | "dark" | "system", ToasterProps["theme"] accepts same union
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       icons={{
@@ -29,6 +30,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         ),
       }}
       style={
+        // SAFETY: CSS variable map is valid React.CSSProperties, keys are custom properties
         {
           "--normal-bg": "var(--popover)",
           "--normal-text": "var(--popover-foreground)",

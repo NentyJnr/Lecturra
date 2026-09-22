@@ -171,6 +171,12 @@ export interface PaginatedList<T> {
   hasNextPage: boolean;
 }
 
+type AssessmentsListParams = {
+  pageNumber: number;
+  pageSize: number;
+  filterTenantId?: string;
+};
+
 export const tenantsApi = {
   async getAllTenants(): Promise<TenantLookupDto[]> {
     try {
@@ -184,10 +190,8 @@ export const tenantsApi = {
 
 export const assessmentsApi = {
   async getAssessmentsList(pageNumber = 1, pageSize = 50, filterTenantId?: string): Promise<PaginatedList<AssessmentSummaryDto>> {
-    const params: Record<string, any> = { pageNumber, pageSize };
-    if (filterTenantId) {
-      params.filterTenantId = filterTenantId;
-    }
+    const params: AssessmentsListParams = { pageNumber, pageSize };
+    if (filterTenantId) params.filterTenantId = filterTenantId;
     const res = await api.get<ApiResponse<PaginatedList<AssessmentSummaryDto>>>("/api/v1/assessments", {
       params,
     });
@@ -213,9 +217,11 @@ export const assessmentsApi = {
   },
 
   async createAssessment(req: CreateAssessmentRequest): Promise<{ id: string }> {
-    const res = await api.post<ApiResponse<any>>("/api/v1/assessments", req);
-    const data = res.data?.data;
-    const id = typeof data === "string" ? data : (data?.id || "");
+    const res = await api.post<ApiResponse<unknown>>("/api/v1/assessments", req);
+    const data: unknown = res.data?.data;
+    const isStringData = Object.prototype.toString.call(data) === "[object String]";
+    // SAFETY: boundary parse - string discriminant via Object.prototype.toString, else object with id
+    const id = isStringData ? (data as string) : ((data as { id?: string } | null)?.id || "");
     return { id };
   },
 

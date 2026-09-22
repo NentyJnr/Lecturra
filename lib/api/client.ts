@@ -9,7 +9,7 @@ export const api = axios.create({
 });
 
 // Attach auth token only on the client — server requests carry auth explicitly per-call.
-if (typeof window !== "undefined") {
+if (globalThis.window !== undefined) {
   api.interceptors.request.use((config) => {
     const token = useAuthStore.getState().accessToken;
     if (token) {

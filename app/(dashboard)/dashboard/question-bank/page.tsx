@@ -39,7 +39,6 @@ import {
   assessmentsApi,
   tenantsApi,
   TenantLookupDto,
-  GeneratedQuestionDto,
   AssessmentSummaryDto,
   AssessmentDetailsDto,
 } from "@/lib/api/services/assessments";
@@ -130,7 +129,7 @@ export default function QuestionBankPage() {
   const [savedAssessments, setSavedAssessments] = useState<AssessmentSummaryDto[]>([]);
   const [isLoadingAssessments, setIsLoadingAssessments] = useState(false);
   const [activeAssessmentModal, setActiveAssessmentModal] = useState<AssessmentDetailsDto | null>(null);
-  const [isLoadingAssessmentDetails, setIsLoadingAssessmentDetails] = useState(false);
+  const [_isLoadingAssessmentDetails, setIsLoadingAssessmentDetails] = useState(false);
   const [modalShareToken, setModalShareToken] = useState("");
   const [activeSlide, setActiveSlide] = useState<1 | 2 | 3>(1); // 1 = View Questions, 2 = View Answers, 3 = View Link
   const [modalCopiedLink, setModalCopiedLink] = useState(false);
@@ -347,7 +346,7 @@ export default function QuestionBankPage() {
             const opts = rawOpts.map((opt, optIdx) => {
               const clean = opt.trim();
               const letter = String.fromCharCode(65 + optIdx);
-              if (/^[A-D][\.\)\-\:\s]/i.test(clean)) return clean;
+              if (/^[A-D][.)\-:\s]/i.test(clean)) return clean;
               return `${letter}. ${clean}`;
             });
             const correctOptStr = opts[q.correctOptionIndex] || opts[0];
@@ -357,8 +356,10 @@ export default function QuestionBankPage() {
               courseCode: currentMaterial?.courseCode || "COURSE",
               topic: q.topic || selectedTopics[idx % selectedTopics.length] || "General Topic",
               type: opts.length === 2 ? "TrueFalse" : "MCQ",
-              difficulty: (q.difficulty as any) || "Medium",
-              bloomsTaxonomy: (q.bloomLevel as any) || "Understand",
+              // SAFETY: AI payload difficulty is string, fallback to Medium validated via domain
+              difficulty: (q.difficulty as QuestionItem["difficulty"]) || "Medium",
+              // SAFETY: AI payload bloomLevel is string, fallback to Understand validated via domain
+              bloomsTaxonomy: (q.bloomLevel as QuestionItem["bloomsTaxonomy"]) || "Understand",
               ageRange: `${targetAgeRange} Yrs`,
               knowledgeLevel: knowledgeLevel,
               questionText: q.questionText,
@@ -496,7 +497,7 @@ export default function QuestionBankPage() {
             ${q.options.map((opt, optIdx) => {
               const clean = opt.trim();
               const letter = String.fromCharCode(65 + optIdx);
-              const formatted = /^[A-D][\.\)\-\:\s]/i.test(clean) ? clean : `${letter}. ${clean}`;
+              const formatted = /^[A-D][.)\-:\s]/i.test(clean) ? clean : `${letter}. ${clean}`;
               return `<div style="padding: 6px 10px; border: 1px solid #e5e7eb; border-radius: 6px; background: #f9fafb;">${formatted}</div>`;
             }).join("")}
           </div>
@@ -588,7 +589,7 @@ export default function QuestionBankPage() {
     questions.forEach((q) => {
       txt += `${q.questionText}\n`;
       q.options.forEach((opt, i) => {
-        txt += `${String.fromCharCode(65 + i)}. ${opt.replace(/^[A-D][\.\)]\s*/, "")}\n`;
+        txt += `${String.fromCharCode(65 + i)}. ${opt.replace(/^[A-D][.)]\s*/, "")}\n`;
       });
       txt += `ANSWER: ${String.fromCharCode(65 + q.correctOptionIndex)}\n\n`;
     });
@@ -611,7 +612,7 @@ export default function QuestionBankPage() {
       txt += `// Topic: ${q.topic}\n`;
       txt += `::${q.topic}:: ${q.questionText} {\n`;
       q.options.forEach((opt, i) => {
-        const cleanOpt = opt.replace(/^[A-D][\.\)]\s*/, "");
+        const cleanOpt = opt.replace(/^[A-D][.)]\s*/, "");
         const prefix = i === q.correctOptionIndex ? "=" : "~";
         txt += `  ${prefix}${cleanOpt}\n`;
       });
@@ -709,7 +710,7 @@ export default function QuestionBankPage() {
 
       {/* AI Generator Control Panel Grid (Educators Only - Hidden for Admin) */}
       {!isAdmin && (
-        <Card className="border-indigo-500/30 bg-gradient-to-r from-indigo-50/40 via-background to-purple-50/40 dark:from-indigo-950/20 dark:to-purple-950/20">
+        <Card className="border-border bg-card">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <SlidersIcon className="size-4 text-indigo-600 dark:text-indigo-400" />
@@ -1142,7 +1143,7 @@ export default function QuestionBankPage() {
                       {q.options.map((opt, optIdx) => {
                         const letter = String.fromCharCode(65 + optIdx);
                         const cleanOpt = opt.trim();
-                        const formattedOpt = /^[A-D][\.\)\-\:\s]/i.test(cleanOpt)
+                        const formattedOpt = /^[A-D][.)\-:\s]/i.test(cleanOpt)
                           ? cleanOpt
                           : `${letter}. ${cleanOpt}`;
 
@@ -1169,7 +1170,7 @@ export default function QuestionBankPage() {
                   <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
                     <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
                       <CheckCircle2Icon className="size-3.5" /> Correct Answer: {
-                        /^[A-D][\.\)\-\:\s]/i.test(q.correctAnswer.trim())
+                        /^[A-D][.)\-:\s]/i.test(q.correctAnswer.trim())
                           ? q.correctAnswer
                           : `${String.fromCharCode(65 + q.correctOptionIndex)}. ${q.correctAnswer}`
                       }
@@ -1416,7 +1417,7 @@ export default function QuestionBankPage() {
                             <div className="size-5 rounded-full border border-muted-foreground/40 flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0">
                               {String.fromCharCode(65 + optIdx)}
                             </div>
-                            <span className="truncate">{opt.replace(/^[A-D][\.\)\-\:\s]+/i, "").trim()}</span>
+                            <span className="truncate">{opt.replace(/^[A-D][.)\-:\s]+/i, "").trim()}</span>
                           </div>
                         ))}
                       </div>
@@ -1461,7 +1462,7 @@ export default function QuestionBankPage() {
                                 }`}>
                                   {String.fromCharCode(65 + optIdx)}
                                 </div>
-                                <span className="truncate">{opt.replace(/^[A-D][\.\)\-\:\s]+/i, "").trim()}</span>
+                                <span className="truncate">{opt.replace(/^[A-D][.)\-:\s]+/i, "").trim()}</span>
                               </div>
                               {isCorrect && (
                                 <Badge className="bg-white/20 text-white text-[9px] px-1.5 py-0.5 border-none shrink-0">
@@ -1552,7 +1553,10 @@ export default function QuestionBankPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => setActiveSlide((prev) => (prev - 1) as any)}
+                    onClick={() => {
+                      // SAFETY: decrement stays within 1|2|3, validated by activeSlide > 1 guard
+                      setActiveSlide((prev) => (prev - 1) as 1 | 2 | 3);
+                    }}
                     className="text-xs gap-1"
                   >
                     <ChevronLeftIcon className="size-3.5" /> Back
@@ -1568,7 +1572,10 @@ export default function QuestionBankPage() {
                 {activeSlide < 3 ? (
                   <Button
                     size="sm"
-                    onClick={() => setActiveSlide((prev) => (prev + 1) as any)}
+                    onClick={() => {
+                      // SAFETY: increment stays within 1|2|3, validated by activeSlide < 3 guard
+                      setActiveSlide((prev) => (prev + 1) as 1 | 2 | 3);
+                    }}
                     className="text-xs gap-1 bg-indigo-600 hover:bg-indigo-700 text-white"
                   >
                     <span>{activeSlide === 1 ? "Next: View Answers" : "Next: View Link"}</span>

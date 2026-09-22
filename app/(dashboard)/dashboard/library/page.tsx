@@ -28,6 +28,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 
+type MaterialValidationErrors = {
+  docName?: string;
+  courseCode?: string;
+  file?: string;
+};
+
 interface MaterialItem {
   id: string;
   title: string;
@@ -143,9 +149,9 @@ export default function LibraryPage() {
     }
   }
 
-  async function handleSaveMaterial(e: React.FormEvent) {
+  async function handleSaveMaterial(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
-    const newErrors: { docName?: string; courseCode?: string; file?: string } = {};
+    const newErrors: MaterialValidationErrors = {};
 
     if (!docName.trim()) {
       newErrors.docName = "Document name is required";
@@ -454,7 +460,7 @@ export default function LibraryPage() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={uploading} className="gap-2 min-w-[120px]">
+                <Button type="submit" disabled={uploading} className="gap-2 min-w-30">
                   {uploading ? (
                     <>
                       <Loader2Icon className="size-4 animate-spin" />
@@ -536,7 +542,7 @@ export default function LibraryPage() {
                       <td className="p-3 font-medium">
                         <div className="flex items-center gap-2.5">
                           <FileTextIcon className="size-4 shrink-0 text-sky-500" />
-                          <span className="truncate max-w-[280px] font-semibold text-foreground">{mat.title}</span>
+                          <span className="truncate max-w-70 font-semibold text-foreground">{mat.title}</span>
                         </div>
                       </td>
                       <td className="p-3">

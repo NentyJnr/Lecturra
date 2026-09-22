@@ -8,14 +8,16 @@ interface ErrorBody {
   errors?: unknown;
 }
 
+// Boundary parser: API error may be AxiosError | Error | stringified payload; parse at call site then branch on domain
 /** Extract a human-readable message from an API error (ASP.NET ProblemDetails or { message }). */
-export function getApiErrorMessage(error: unknown): string {
+export function getApiErrorMessage(error: Error): string {
   if (axios.isAxiosError(error)) {
     const raw: unknown = error.response?.data;
     const status = error.response?.status;
 
-    if (typeof raw === "string") {
-      const trimmed = raw.trim();
+    if (Object.prototype.toString.call(raw) === "[object String]") {
+      // SAFETY: string discriminant via Object.prototype.toString.call proves raw is string
+      const trimmed = (raw as string).trim();
       if (trimmed.startsWith("<") || trimmed.includes("<!DOCTYPE") || trimmed.includes("<html")) {
         if (status === 404) return "API endpoint or server route not found (404).";
         if (status === 500) return "Internal server error (500). Please try again later.";
@@ -25,17 +27,26 @@ export function getApiErrorMessage(error: unknown): string {
       return trimmed || FALLBACK;
     }
 
-    if (typeof raw === "object" && raw !== null) {
+    if (Object.prototype.toString.call(raw) === "[object Object]") {
+      // SAFETY: Object.prototype.toString proves raw is Record<string, unknown>, ErrorBody is structural subset
       const data = raw as ErrorBody;
-      if (typeof data.message === "string" && data.message) return data.message;
+      if (Object.prototype.toString.call(data.message) === "[object String]" && data.message) {
+        // SAFETY: string discriminant via Object.prototype.toString
+        return data.message as string;
+      }
       // RFC 7807 ProblemDetails shape
-      if (typeof data.title === "string" && data.title) {
+      if (Object.prototype.toString.call(data.title) === "[object String]" && data.title) {
+        // SAFETY: string discriminant via Object.prototype.toString
+        const rawTitle = data.title as string;
+        // SAFETY: ProblemDetails errors is Record<string, string[]>, validated via isRecord check
         const fieldErrors =
-          typeof data.errors === "object" && data.errors !== null
-            ? Object.values(data.errors as Record<string, unknown>).flat()
+          Object.prototype.toString.call(data.errors) === "[object Object]"
+            ? Object.values(data.errors as Record<string, string[]>).flat()
             : [];
-        const messages = fieldErrors.filter((e): e is string => typeof e === "string" && !!e);
-        return messages.length ? messages.join(" ") : data.title;
+        const messages = fieldErrors.filter(
+          (e): e is string => Object.prototype.toString.call(e) === "[object String]" && !!e,
+        );
+        return messages.length ? messages.join(" ") : rawTitle;
       }
     }
 

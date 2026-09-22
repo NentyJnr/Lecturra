@@ -17,12 +17,13 @@ import { useLogout } from "@/hooks/use-auth";
 import { isAdminUser } from "@/lib/api/types/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ModeToggle } from "@/components/mode-toggle";
 
 interface DashboardHeaderProps {
   onOpenMobileSidebar: () => void;
 }
 
-const pageTitles: Record<string, { title: string; subtitle: string }> = {
+const pageTitles = {
   "/dashboard": { title: "", subtitle: "" },
   "/dashboard/library": { title: "System Library", subtitle: "Upload & manage lecture materials for AI question generation." },
   "/dashboard/question-bank": { title: "Questionbank", subtitle: "Generate AI multiple choice, true/false, and short answer questions." },
@@ -31,7 +32,7 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
   "/dashboard/profile": { title: "User Profile", subtitle: "Manage your personal information and workspace credentials." },
   "/dashboard/members": { title: "Organization Members", subtitle: "Manage faculty staff access and school access codes." },
   "/dashboard/setup": { title: "Organization Setup", subtitle: "Configure institution settings, domain mapping, and defaults." },
-};
+} satisfies Record<string, { title: string; subtitle: string }>;
 
 import { useEffect } from "react";
 import { getCurrentUserProfile } from "@/lib/api/services/users";
@@ -47,7 +48,7 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
     async function syncRemainingQuota() {
       try {
         const profile = await getCurrentUserProfile();
-        if (profile && typeof profile.remainingQuota === "number") {
+        if (profile && profile.remainingQuota !== undefined && Number.isFinite(profile.remainingQuota)) {
           setRemainingQuota(profile.remainingQuota);
         }
       } catch {
@@ -57,7 +58,8 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
     syncRemainingQuota();
   }, [setRemainingQuota]);
 
-  const currentPage = pageTitles[pathname] || { title: "", subtitle: "" };
+  // SAFETY: pathname is a validated dashboard route string, fallback to empty covers unknown routes
+  const currentPage = pageTitles[pathname as keyof typeof pageTitles] || { title: "", subtitle: "" };
 
   const isOrganization = user?.accountType === 2 || !!user?.institutionName;
   const isAdmin = isAdminUser(user);
@@ -112,6 +114,7 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
 
       {/* Right: Credits Counter & User Profile Dropdown */}
       <div className="flex items-center gap-3">
+        <ModeToggle />
         {/* Credits Counter Pill - Only visible for non-admin users/lecturers */}
         {!isAdmin && (
           <div>{creditBadgeContent}</div>

@@ -221,7 +221,7 @@ export default function MembersPage() {
         <CardContent className="p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
             {/* Tenant/Organization Filter Dropdown */}
-            <div className="flex flex-col gap-1 min-w-[240px]">
+            <div className="flex flex-col gap-1 min-w-60">
               <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                 <FilterIcon className="size-3 text-purple-500" /> Filter by Organization / Tenant
               </label>
@@ -240,7 +240,7 @@ export default function MembersPage() {
             </div>
 
             {/* Member Status Filter */}
-            <div className="flex flex-col gap-1 min-w-[150px]">
+            <div className="flex flex-col gap-1 min-w-37.5">
               <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                 Member Status
               </label>

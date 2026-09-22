@@ -20,7 +20,6 @@ import {
 import { useAuthStore } from "@/stores/auth-store";
 import { useLogout } from "@/hooks/use-auth";
 import { isAdminUser } from "@/lib/api/types/auth";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 interface DashboardSidebarProps {

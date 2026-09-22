@@ -9,13 +9,12 @@ import {
   SaveIcon,
   ShieldCheckIcon,
   RefreshCwIcon,
-  CheckCircle2Icon,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useAuthStore } from "@/stores/auth-store";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Badge } from "@/components/ui/badge";
