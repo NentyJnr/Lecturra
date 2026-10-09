@@ -77,11 +77,11 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
   const creditBadgeContent = (
     <Badge
       variant="outline"
-      className="flex items-center gap-1.5 px-3 py-1 bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800 text-sky-700 dark:text-sky-300 hover:bg-sky-100 transition-colors"
+      className="flex items-center gap-1.5 px-3 py-1 border border-[#80802B]/30 bg-[#80802B]/10 text-[#80802B] dark:border-[#8FB373]/30 dark:bg-[#8FB373]/10 dark:text-[#8FB373] transition-colors"
     >
-      <SparklesIcon className="size-3.5 fill-sky-500 text-sky-500 animate-pulse" />
+      <SparklesIcon className="size-3.5 fill-[#80802B] text-[#80802B] dark:fill-[#8FB373] dark:text-[#8FB373] animate-pulse" />
       <span className="font-bold text-xs">{remainingCredits.toLocaleString()}</span>
-      <span className="text-[10px] uppercase font-medium opacity-80 hidden sm:inline">Credits</span>
+      <span className="text-[10px] uppercase font-semibold opacity-90 hidden sm:inline">Credits</span>
     </Badge>
   );
 
@@ -135,7 +135,7 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
                 className="size-8 rounded-full object-cover border border-border"
               />
             ) : (
-              <div className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-sm">
+              <div className="flex size-8 items-center justify-center rounded-full bg-[#38492A] text-white text-xs font-bold shadow-xs dark:bg-[#8FB373] dark:text-[#11160E]">
                 {initials}
               </div>
             )}

@@ -8,6 +8,11 @@
     --font-heading: var(--font-serif);
     --font-sans: var(--font-sans);
     --font-mono: var(--font-mono);
+    --color-forest: #38492A;
+    --color-olive: #80802B;
+    --color-sage: #6D8382;
+    --color-terracotta: #A0795C;
+    --color-cream: #FAF9F5;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,72 +54,72 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.148 0.004 228.8);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.148 0.004 228.8);
+    --background: oklch(0.985 0.005 95); /* #FAF9F5 Warm Alabaster */
+    --foreground: oklch(0.22 0.025 135); /* #1A2416 Deep Botanical Charcoal */
+    --card: oklch(1 0 0); /* Pure White Card Elevation */
+    --card-foreground: oklch(0.22 0.025 135);
     --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.148 0.004 228.8);
-    --primary: oklch(0.491 0.27 292.581);
-    --primary-foreground: oklch(0.969 0.016 293.756);
-    --secondary: oklch(0.967 0.001 286.375);
-    --secondary-foreground: oklch(0.21 0.006 285.885);
-    --muted: oklch(0.963 0.002 197.1);
-    --muted-foreground: oklch(0.56 0.021 213.5);
-    --accent: oklch(0.963 0.002 197.1);
-    --accent-foreground: oklch(0.218 0.008 223.9);
+    --popover-foreground: oklch(0.22 0.025 135);
+    --primary: oklch(0.38 0.07 135); /* #38492A São Tomé Rainforest Moss */
+    --primary-foreground: oklch(0.985 0.005 95);
+    --secondary: oklch(0.95 0.015 95); /* #F3EFE8 Warm Sand Sub-surface */
+    --secondary-foreground: oklch(0.28 0.03 135);
+    --muted: oklch(0.95 0.012 95);
+    --muted-foreground: oklch(0.48 0.025 135); /* Muted Moss Stone */
+    --accent: oklch(0.94 0.018 95);
+    --accent-foreground: oklch(0.22 0.025 135);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.925 0.005 214.3);
-    --input: oklch(0.925 0.005 214.3);
-    --ring: oklch(0.723 0.014 214.4);
-    --chart-1: oklch(0.811 0.111 293.571);
-    --chart-2: oklch(0.606 0.25 292.717);
-    --chart-3: oklch(0.541 0.281 293.009);
-    --chart-4: oklch(0.491 0.27 292.581);
-    --chart-5: oklch(0.432 0.232 292.759);
+    --border: oklch(0.915 0.01 95); /* #EAE6DC Warm Organic Line */
+    --input: oklch(0.915 0.01 95);
+    --ring: oklch(0.45 0.06 135);
+    --chart-1: oklch(0.38 0.07 135); /* Forest */
+    --chart-2: oklch(0.55 0.12 110); /* Olive */
+    --chart-3: oklch(0.58 0.03 195); /* Sage */
+    --chart-4: oklch(0.59 0.08 55);  /* Terracotta */
+    --chart-5: oklch(0.48 0.06 120);
     --radius: 0.625rem;
-    --sidebar: oklch(0.987 0.002 197.1);
-    --sidebar-foreground: oklch(0.148 0.004 228.8);
-    --sidebar-primary: oklch(0.541 0.281 293.009);
-    --sidebar-primary-foreground: oklch(0.969 0.016 293.756);
-    --sidebar-accent: oklch(0.963 0.002 197.1);
-    --sidebar-accent-foreground: oklch(0.218 0.008 223.9);
-    --sidebar-border: oklch(0.925 0.005 214.3);
-    --sidebar-ring: oklch(0.723 0.014 214.4);
+    --sidebar: oklch(0.975 0.008 95);
+    --sidebar-foreground: oklch(0.22 0.025 135);
+    --sidebar-primary: oklch(0.38 0.07 135);
+    --sidebar-primary-foreground: oklch(0.985 0.005 95);
+    --sidebar-accent: oklch(0.94 0.015 95);
+    --sidebar-accent-foreground: oklch(0.22 0.025 135);
+    --sidebar-border: oklch(0.915 0.01 95);
+    --sidebar-ring: oklch(0.45 0.06 135);
 }
 
 .dark {
-    --background: oklch(0.148 0.004 228.8);
-    --foreground: oklch(0.987 0.002 197.1);
-    --card: oklch(0.218 0.008 223.9);
-    --card-foreground: oklch(0.987 0.002 197.1);
-    --popover: oklch(0.218 0.008 223.9);
-    --popover-foreground: oklch(0.987 0.002 197.1);
-    --primary: oklch(0.432 0.232 292.759);
-    --primary-foreground: oklch(0.969 0.016 293.756);
-    --secondary: oklch(0.274 0.006 286.033);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.275 0.011 216.9);
-    --muted-foreground: oklch(0.723 0.014 214.4);
-    --accent: oklch(0.275 0.011 216.9);
-    --accent-foreground: oklch(0.987 0.002 197.1);
+    --background: oklch(0.18 0.02 135); /* #11160E Midnight Equatorial Jungle */
+    --foreground: oklch(0.96 0.005 110); /* #F4F5F0 Warm Ivory */
+    --card: oklch(0.23 0.025 135); /* #182014 Elevated Dark Moss Surface */
+    --card-foreground: oklch(0.96 0.005 110);
+    --popover: oklch(0.23 0.025 135);
+    --popover-foreground: oklch(0.96 0.005 110);
+    --primary: oklch(0.72 0.11 135); /* #8FB373 Luminous Jungle Green */
+    --primary-foreground: oklch(0.15 0.02 135);
+    --secondary: oklch(0.26 0.02 135);
+    --secondary-foreground: oklch(0.96 0.005 110);
+    --muted: oklch(0.26 0.02 135);
+    --muted-foreground: oklch(0.72 0.02 135); /* #9EAC97 */
+    --accent: oklch(0.26 0.02 135);
+    --accent-foreground: oklch(0.96 0.005 110);
     --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.56 0.021 213.5);
-    --chart-1: oklch(0.811 0.111 293.571);
-    --chart-2: oklch(0.606 0.25 292.717);
-    --chart-3: oklch(0.541 0.281 293.009);
-    --chart-4: oklch(0.491 0.27 292.581);
-    --chart-5: oklch(0.432 0.232 292.759);
-    --sidebar: oklch(0.218 0.008 223.9);
-    --sidebar-foreground: oklch(0.987 0.002 197.1);
-    --sidebar-primary: oklch(0.606 0.25 292.717);
-    --sidebar-primary-foreground: oklch(0.969 0.016 293.756);
-    --sidebar-accent: oklch(0.275 0.011 216.9);
-    --sidebar-accent-foreground: oklch(0.987 0.002 197.1);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.56 0.021 213.5);
+    --border: oklch(0.30 0.02 135); /* Subtle Jungle Border */
+    --input: oklch(0.30 0.02 135);
+    --ring: oklch(0.72 0.11 135);
+    --chart-1: oklch(0.72 0.11 135);
+    --chart-2: oklch(0.70 0.10 110);
+    --chart-3: oklch(0.68 0.04 195);
+    --chart-4: oklch(0.70 0.08 55);
+    --chart-5: oklch(0.60 0.08 120);
+    --sidebar: oklch(0.20 0.02 135);
+    --sidebar-foreground: oklch(0.96 0.005 110);
+    --sidebar-primary: oklch(0.72 0.11 135);
+    --sidebar-primary-foreground: oklch(0.15 0.02 135);
+    --sidebar-accent: oklch(0.26 0.02 135);
+    --sidebar-accent-foreground: oklch(0.96 0.005 110);
+    --sidebar-border: oklch(0.30 0.02 135);
+    --sidebar-ring: oklch(0.72 0.11 135);
 }
 
 @layer base {
@@ -152,4 +157,41 @@
     font-size: 0.75rem;
     line-height: 1.45;
   }
+}
+
+/* São Tomé Signature Nature Motif Utilities */
+.font-heading {
+  font-family: var(--font-heading), var(--font-serif), serif;
+  letter-spacing: -0.02em;
+}
+
+.title-immersive {
+  font-family: var(--font-heading), var(--font-serif), serif;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.card-organic {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px 0 rgba(56, 73, 42, 0.04), 0 1px 2px -1px rgba(56, 73, 42, 0.04);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-organic:hover {
+  border-color: rgba(56, 73, 42, 0.28);
+  box-shadow: 0 12px 24px -6px rgba(56, 73, 42, 0.08), 0 4px 8px -4px rgba(56, 73, 42, 0.04);
+}
+
+.dark .card-organic:hover {
+  border-color: rgba(143, 179, 115, 0.35);
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.4);
+}
+
+.ambient-nature-glow {
+  background: radial-gradient(circle at 50% 0%, rgba(56, 73, 42, 0.08) 0%, rgba(128, 128, 43, 0.04) 40%, transparent 70%);
+}
+
+.dark .ambient-nature-glow {
+  background: radial-gradient(circle at 50% 0%, rgba(143, 179, 115, 0.12) 0%, rgba(109, 131, 130, 0.06) 40%, transparent 70%);
 }
