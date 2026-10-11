@@ -7,7 +7,7 @@ export function Footer() {
   return (
     <footer className="border-t border-border/70 bg-card/60">
       {/* High-Impact Closing CTA Banner */}
-      <div className="mx-auto max-w-7xl 2xl:max-w-[1536px] px-4 sm:px-6 lg:px-8 py-20">
+      <div className="mx-auto max-w-7xl 2xl:max-w-[1400px] px-6 sm:px-8 lg:px-12 py-20">
         <div className="card-organic relative overflow-hidden rounded-3xl border border-border/80 p-8 sm:p-12 lg:p-16 text-center shadow-lg">
           {/* Subtle Ambient Radial Highlight */}
           <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(56,73,42,0.12)_0%,transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(143,179,115,0.15)_0%,transparent_70%)]" />
@@ -55,7 +55,7 @@ export function Footer() {
 
       {/* Structured Footer Navigation */}
       <div className="border-t border-border/70 py-12">
-        <div className="mx-auto max-w-7xl 2xl:max-w-[1536px] px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl 2xl:max-w-[1400px] px-6 sm:px-8 lg:px-12">
           <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
             {/* Brand Information */}
             <div>

@@ -35,7 +35,7 @@ const rows = [
 
 export function Comparison() {
   return (
-    <section id="comparison" aria-labelledby="comparison-heading" className="mx-auto max-w-7xl 2xl:max-w-[1536px] scroll-mt-20 px-4 sm:px-6 lg:px-8 py-20">
+    <section id="comparison" aria-labelledby="comparison-heading" className="mx-auto max-w-7xl 2xl:max-w-[1400px] scroll-mt-20 px-6 sm:px-8 lg:px-12 py-20">
       {/* Header */}
       <div className="mx-auto max-w-3xl text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-[#38492A]/20 bg-[#38492A]/5 px-3 py-1 text-xs font-semibold text-[#38492A] dark:border-[#8FB373]/30 dark:bg-[#8FB373]/10 dark:text-[#8FB373]">

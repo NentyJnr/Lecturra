@@ -38,7 +38,7 @@ const accreditations = [
 export function TrustBar() {
   return (
     <section aria-label="Institutional Standards" className="border-y border-border/70 bg-card/40 py-8 backdrop-blur-xs">
-      <div className="mx-auto max-w-7xl 2xl:max-w-[1536px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl 2xl:max-w-[1400px] px-6 sm:px-8 lg:px-12">
         <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
           <div className="flex shrink-0 items-center gap-2.5">
             <span className="flex size-7 items-center justify-center rounded-md bg-[#38492A]/10 text-[#38492A] dark:bg-[#8FB373]/20 dark:text-[#8FB373]">

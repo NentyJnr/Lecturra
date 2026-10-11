@@ -16,7 +16,7 @@ export function Hero() {
       {/* Ambient Nature Atmospheric Glow */}
       <div className="ambient-nature-glow pointer-events-none absolute inset-0 -z-10" />
 
-      <div className="mx-auto max-w-7xl 2xl:max-w-[1536px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl 2xl:max-w-[1400px] px-6 sm:px-8 lg:px-12">
         <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-12">
           {/* Left Column: Value Proposition & High-Conversion Copy */}
           <div className="flex flex-col items-start gap-6 lg:col-span-6 xl:col-span-6">

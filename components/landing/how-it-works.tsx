@@ -56,7 +56,7 @@ export function HowItWorks() {
       aria-labelledby="how-it-works-heading"
       className="border-y border-border/70 bg-[#FAF9F5]/80 py-20 dark:bg-[#151C12]/80"
     >
-      <div className="mx-auto max-w-7xl 2xl:max-w-[1536px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl 2xl:max-w-[1400px] px-6 sm:px-8 lg:px-12">
         {/* Section Heading */}
         <div className="max-w-3xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-[#80802B]/30 bg-[#80802B]/10 px-3 py-1 text-xs font-semibold text-[#80802B] dark:text-[#8FB373]">

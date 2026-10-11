@@ -77,7 +77,7 @@ export function Pricing() {
   const totalHoursSaved = draftingHoursSaved + gradingHoursSaved;
 
   return (
-    <section id="pricing" aria-labelledby="pricing-heading" className="mx-auto max-w-7xl 2xl:max-w-[1536px] scroll-mt-20 px-4 sm:px-6 lg:px-8 py-20">
+    <section id="pricing" aria-labelledby="pricing-heading" className="mx-auto max-w-7xl 2xl:max-w-[1400px] scroll-mt-20 px-6 sm:px-8 lg:px-12 py-20">
       {/* Header */}
       <div className="max-w-3xl">
         <div className="inline-flex items-center gap-2 rounded-full border border-[#A0795C]/30 bg-[#A0795C]/10 px-3 py-1 text-xs font-semibold text-[#A0795C]">

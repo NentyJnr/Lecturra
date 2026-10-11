@@ -13,7 +13,6 @@ const links = [
   { href: "#how-it-works", label: "Workflow" },
   { href: "#comparison", label: "Why Lecturra" },
   { href: "#pricing", label: "Pricing & ROI" },
-  { href: "#testimonials", label: "Faculty Proof" },
   { href: "#faq", label: "FAQ" },
 ];
 
@@ -31,7 +30,7 @@ export function Navbar() {
         <div className="bg-[#A0795C]" title="Volcanic Terracotta" />
       </div>
 
-      <nav aria-label="Main Navigation" className="mx-auto flex h-16 max-w-7xl 2xl:max-w-[1536px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <nav aria-label="Main Navigation" className="mx-auto flex h-16 max-w-7xl 2xl:max-w-[1400px] items-center justify-between gap-4 px-6 sm:px-8 lg:px-12">
         {/* Brand Lockup */}
         <div className="flex items-center gap-3">
           <Link href="/" className="group flex items-center gap-2.5 font-heading text-xl font-medium tracking-tight">

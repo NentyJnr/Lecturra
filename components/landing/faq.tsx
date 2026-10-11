@@ -35,7 +35,7 @@ const faqs = [
 
 export function Faq() {
   return (
-    <section id="faq" aria-labelledby="faq-heading" className="mx-auto max-w-5xl 2xl:max-w-6xl scroll-mt-20 px-4 sm:px-6 lg:px-8 py-20">
+    <section id="faq" aria-labelledby="faq-heading" className="mx-auto max-w-5xl 2xl:max-w-6xl scroll-mt-20 px-6 sm:px-8 lg:px-12 py-20">
       {/* Header */}
       <div className="max-w-3xl">
         <div className="inline-flex items-center gap-2 rounded-full border border-[#6D8382]/30 bg-[#6D8382]/10 px-3 py-1 text-xs font-semibold text-[#6D8382] dark:text-[#8FB373]">
