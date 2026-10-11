@@ -97,9 +97,9 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
   }
 
   const sidebarContent = (
-    <div className="flex h-full flex-col justify-between bg-card text-card-foreground border-r border-border/80">
+    <div className="flex h-full flex-col bg-card text-card-foreground border-r border-border/80">
       {/* Signature São Tomé Organic Palette Top Ribbon */}
-      <div className="grid h-[3px] w-full grid-cols-4">
+      <div className="grid h-[3px] w-full grid-cols-4 shrink-0">
         <div className="bg-[#38492A]" />
         <div className="bg-[#80802B]" />
         <div className="bg-[#6D8382]" />
@@ -107,32 +107,33 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
       </div>
 
       {/* Top Header & Brand Logo */}
-      <div>
-        <div className="flex items-center justify-between p-4 border-b border-border/60">
-          <Link href="/dashboard" className="flex items-center gap-2.5 font-heading text-lg font-bold tracking-tight">
-            <div className="relative flex size-9 items-center justify-center overflow-hidden rounded-xl bg-[#FAF9F5] p-1 shadow-xs ring-1 ring-[#38492A]/15 dark:bg-[#182015] dark:ring-[#8FB373]/25">
-              <Image src="/logo-icon.png" alt="Lecturra Logo" width={30} height={30} className="object-contain" priority />
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="text-foreground">Lecturra</span>
-              <span className="text-[10px] font-normal text-muted-foreground">Question Bank Engine</span>
-            </div>
-          </Link>
-          {setMobileOpen && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="md:hidden"
-              onClick={() => setMobileOpen(false)}
-              aria-label="Close Sidebar"
-            >
-              <XIcon className="size-4" />
-            </Button>
-          )}
-        </div>
+      <div className="flex items-center justify-between p-4 border-b border-border/60 shrink-0">
+        <Link href="/dashboard" className="flex items-center gap-2.5 font-heading text-lg font-bold tracking-tight">
+          <div className="relative flex size-9 items-center justify-center overflow-hidden rounded-xl bg-[#FAF9F5] p-1 shadow-xs ring-1 ring-[#38492A]/15 dark:bg-[#182015] dark:ring-[#8FB373]/25">
+            <Image src="/logo-icon.png" alt="Lecturra Logo" width={30} height={30} className="object-contain" priority />
+          </div>
+          <div className="flex flex-col leading-none">
+            <span className="text-foreground">Lecturra</span>
+            <span className="text-[10px] font-normal text-muted-foreground">Question Bank Engine</span>
+          </div>
+        </Link>
+        {setMobileOpen && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="md:hidden"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Close Sidebar"
+          >
+            <XIcon className="size-4" />
+          </Button>
+        )}
+      </div>
 
+      {/* Main Scrollable Navigation Area */}
+      <div className="flex-1 overflow-y-auto py-2">
         {/* Workspace Identity Pill */}
-        <div className="p-3">
+        <div className="px-3 pb-2">
           <div className="flex items-center gap-2.5 rounded-xl border border-[#38492A]/15 bg-[#38492A]/5 p-2.5 dark:border-[#8FB373]/20 dark:bg-[#8FB373]/5">
             <div className="flex size-8 items-center justify-center rounded-lg bg-[#38492A]/10 text-[#38492A] shrink-0 dark:bg-[#8FB373]/20 dark:text-[#8FB373]">
               {isOrganization ? <Building2Icon className="size-4" /> : <SparklesIcon className="size-4" />}
@@ -152,7 +153,7 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
         </div>
 
         {/* Navigation Links */}
-        <div className="px-3 py-2 space-y-1 overflow-y-auto max-h-[calc(100vh-220px)]">
+        <div className="px-3 space-y-1">
           {allNavItems.map((item) => {
             const active = isActive(item.href, item.exact);
             const Icon = item.icon;
@@ -184,7 +185,7 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
       </div>
 
       {/* Footer Profile & Logout */}
-      <div className="p-3 border-t border-border/60">
+      <div className="p-3 border-t border-border/60 shrink-0 mt-auto">
         <button
           onClick={handleLogout}
           className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors"
