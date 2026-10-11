@@ -82,7 +82,7 @@ export function Footer() {
                 Why Lecturra
               </a>
               <a href="#pricing" className="transition-colors hover:text-[#38492A] dark:hover:text-[#8FB373]">
-                Pricing & ROI
+                Pricing
               </a>
               <a href="#testimonials" className="transition-colors hover:text-[#38492A] dark:hover:text-[#8FB373]">
                 Faculty Proof

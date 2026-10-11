@@ -12,7 +12,7 @@ const links = [
   { href: "#features", label: "Features" },
   { href: "#how-it-works", label: "Workflow" },
   { href: "#comparison", label: "Why Lecturra" },
-  { href: "#pricing", label: "Pricing & ROI" },
+  { href: "#pricing", label: "Pricing" },
   { href: "#faq", label: "FAQ" },
 ];
 
@@ -39,10 +39,6 @@ export function Navbar() {
             </div>
             <span className="font-heading text-xl font-semibold tracking-tight text-foreground">Lecturra</span>
           </Link>
-          <span className="hidden items-center gap-1 rounded-full border border-border/80 bg-muted/60 px-2 py-0.5 text-[10px] font-mono font-medium text-muted-foreground sm:inline-flex">
-            <span className="size-1.5 rounded-full bg-emerald-500" />
-            v2.0 Academic Engine
-          </span>
         </div>
 
         {/* Center Desktop Navigation */}
