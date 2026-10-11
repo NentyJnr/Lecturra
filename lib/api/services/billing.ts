@@ -71,13 +71,55 @@ export interface PaginatedList<T> {
   totalPages: number;
 }
 
+export const DEFAULT_PRICING_PACKAGES: PricingPackage[] = [
+  {
+    id: "pkg-1",
+    packageCode: "pkg-1",
+    name: "Starter Pack",
+    credits: 5000,
+    priceNGN: 5000,
+    costPerQuestion: "200 questions (~₦25/Q)",
+    popular: false,
+    features: ["5,000 Credits", "All Question Types (MCQ, T/F, Essay)", "Aiken & GIFT Exporters", "Standard Generation Speed"],
+    displayOrder: 1,
+    isActive: true,
+  },
+  {
+    id: "pkg-2",
+    packageCode: "pkg-2",
+    name: "Faculty Pro",
+    credits: 15000,
+    priceNGN: 13500,
+    costPerQuestion: "600 questions (10% Discount)",
+    popular: true,
+    features: ["15,000 Credits", "Priority Processing Queue", "Full Result CSV Analytics", "Multi-Course Tagging", "24/7 Priority Support"],
+    displayOrder: 2,
+    isActive: true,
+  },
+  {
+    id: "pkg-3",
+    packageCode: "pkg-3",
+    name: "Institutional Bulk",
+    credits: 50000,
+    priceNGN: 40000,
+    costPerQuestion: "2,000 questions (20% Discount)",
+    popular: false,
+    features: ["50,000 Credits", "Department-Wide Sharing", "Dedicated Account Manager", "Custom Exam Template Export", "Paystack & Instant Transfer Billing"],
+    displayOrder: 3,
+    isActive: true,
+  },
+];
+
 export const billingService = {
   async getPricingPackages(): Promise<PricingPackage[]> {
     try {
       const res = await api.get<{ success: boolean; data: PricingPackage[] }>("/api/v1/billing/packages");
-      return res.data?.data || [];
+      if (res.data?.data && res.data.data.length > 0) {
+        return res.data.data;
+      }
+      return DEFAULT_PRICING_PACKAGES;
     } catch {
-      return [];
+      return DEFAULT_PRICING_PACKAGES;
     }
   },
 
