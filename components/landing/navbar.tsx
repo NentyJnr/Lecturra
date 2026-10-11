@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { GraduationCapIcon, MenuIcon, XIcon, LayoutDashboardIcon, SparklesIcon, ArrowRightIcon } from "lucide-react";
+import Image from "next/image";
+import { MenuIcon, XIcon, LayoutDashboardIcon, SparklesIcon, ArrowRightIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -34,8 +35,15 @@ export function Navbar() {
         {/* Brand Lockup */}
         <div className="flex items-center gap-3">
           <Link href="/" className="group flex items-center gap-2.5 font-heading text-xl font-medium tracking-tight">
-            <div className="flex size-8.5 items-center justify-center rounded-lg bg-[#38492A] text-white shadow-xs transition-transform group-hover:scale-105 dark:bg-[#8FB373] dark:text-[#11160E]">
-              <GraduationCapIcon className="size-5" aria-hidden />
+            <div className="relative flex size-9 items-center justify-center overflow-hidden rounded-lg bg-[#FAF9F5] p-1 shadow-xs ring-1 ring-[#38492A]/15 transition-transform group-hover:scale-105 dark:bg-[#182015] dark:ring-[#8FB373]/25">
+              <Image
+                src="/logo-icon.png"
+                alt="Lecturra Logo"
+                width={30}
+                height={30}
+                className="object-contain"
+                priority
+              />
             </div>
             <span className="font-heading text-xl font-semibold tracking-tight text-foreground">Lecturra</span>
           </Link>

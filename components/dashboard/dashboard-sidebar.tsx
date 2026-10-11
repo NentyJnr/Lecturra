@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboardIcon,
@@ -109,12 +110,12 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
       <div>
         <div className="flex items-center justify-between p-4 border-b border-border/60">
           <Link href="/dashboard" className="flex items-center gap-2.5 font-heading text-lg font-bold tracking-tight">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-[#38492A] text-white shadow-xs dark:bg-[#8FB373] dark:text-[#11160E]">
-              <GraduationCapIcon className="size-5" />
+            <div className="relative flex size-9 items-center justify-center overflow-hidden rounded-xl bg-[#FAF9F5] p-1 shadow-xs ring-1 ring-[#38492A]/15 dark:bg-[#182015] dark:ring-[#8FB373]/25">
+              <Image src="/logo-icon.png" alt="Lecturra Logo" width={30} height={30} className="object-contain" priority />
             </div>
             <div className="flex flex-col leading-none">
-              <span className="text-foreground">Lectura</span>
-              <span className="text-[10px] font-normal text-muted-foreground">Academic AI Platform</span>
+              <span className="text-foreground">Lecturra</span>
+              <span className="text-[10px] font-normal text-muted-foreground">Question Bank Engine</span>
             </div>
           </Link>
           {setMobileOpen && (

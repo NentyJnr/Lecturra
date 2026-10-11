@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRightIcon, GraduationCapIcon, ShieldCheckIcon } from "lucide-react";
+import Image from "next/image";
+import { ArrowRightIcon, ShieldCheckIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -12,8 +13,8 @@ export function Footer() {
           {/* Subtle Ambient Radial Highlight */}
           <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,rgba(56,73,42,0.12)_0%,transparent_70%)] dark:bg-[radial-gradient(ellipse_at_center,rgba(143,179,115,0.15)_0%,transparent_70%)]" />
 
-          <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-[#38492A] text-white shadow-sm dark:bg-[#8FB373] dark:text-[#11160E]">
-            <GraduationCapIcon className="size-6" aria-hidden />
+          <div className="mx-auto flex size-14 items-center justify-center overflow-hidden rounded-2xl bg-[#FAF9F5] p-2 shadow-sm ring-1 ring-[#38492A]/15 dark:bg-[#182015] dark:ring-[#8FB373]/25">
+            <Image src="/logo-icon.png" alt="Lecturra Logo" width={40} height={40} className="object-contain" />
           </div>
 
           <h2 className="title-immersive mx-auto mt-6 max-w-3xl text-3xl font-normal text-balance text-[#1A2416] sm:text-4xl lg:text-5xl dark:text-[#F4F5F0]">
@@ -60,8 +61,8 @@ export function Footer() {
             {/* Brand Information */}
             <div>
               <Link href="/" className="flex items-center gap-2.5 font-heading text-xl font-bold tracking-tight text-foreground">
-                <div className="flex size-7 items-center justify-center rounded-lg bg-[#38492A] text-white dark:bg-[#8FB373] dark:text-[#11160E]">
-                  <GraduationCapIcon className="size-4" />
+                <div className="relative flex size-8 items-center justify-center overflow-hidden rounded-lg bg-[#FAF9F5] p-1 shadow-xs ring-1 ring-[#38492A]/15 dark:bg-[#182015] dark:ring-[#8FB373]/25">
+                  <Image src="/logo-icon.png" alt="Lecturra Logo" width={24} height={24} className="object-contain" />
                 </div>
                 <span>Lecturra</span>
               </Link>

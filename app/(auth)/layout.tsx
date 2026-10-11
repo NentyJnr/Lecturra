@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GraduationCapIcon } from "lucide-react";
+import Image from "next/image";
 import { ModeToggle } from "@/components/mode-toggle";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -9,10 +9,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <nav aria-label="Auth" className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
           <Link
             href="/"
-            className="flex items-center gap-2 font-heading text-lg font-medium"
+            className="group flex items-center gap-2.5 font-heading text-lg font-medium"
             aria-label="Back to Lecturra home"
           >
-            <GraduationCapIcon className="size-5 text-primary" aria-hidden />
+            <div className="relative flex size-8 items-center justify-center overflow-hidden rounded-lg bg-[#FAF9F5] p-1 shadow-xs ring-1 ring-[#38492A]/15 transition-transform group-hover:scale-105 dark:bg-[#182015] dark:ring-[#8FB373]/25">
+              <Image src="/logo-icon.png" alt="Lecturra Logo" width={26} height={26} className="object-contain" priority />
+            </div>
             Lecturra
           </Link>
           <ModeToggle />
