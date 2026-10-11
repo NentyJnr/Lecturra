@@ -5,6 +5,8 @@ import { useAuthStore } from "@/stores/auth-store";
 import {
   forgotPassword,
   login,
+  googleLogin,
+  microsoftLogin,
   refreshToken as refreshTokenService,
   register,
   resetPassword,
@@ -35,6 +37,22 @@ export function useLogin() {
   const setSession = useAuthStore((s) => s.setSession);
   return useMutation({
     mutationFn: (payload: LoginPayload) => login(payload),
+    onSuccess: (session) => setSession(session),
+  });
+}
+
+export function useGoogleLogin() {
+  const setSession = useAuthStore((s) => s.setSession);
+  return useMutation({
+    mutationFn: (idToken: string) => googleLogin(idToken),
+    onSuccess: (session) => setSession(session),
+  });
+}
+
+export function useMicrosoftLogin() {
+  const setSession = useAuthStore((s) => s.setSession);
+  return useMutation({
+    mutationFn: (token: string) => microsoftLogin(token),
     onSuccess: (session) => setSession(session),
   });
 }

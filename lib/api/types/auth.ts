@@ -1,6 +1,8 @@
 export const AUTH_ENDPOINTS = {
   register: "/api/v1/auth/register",
   login: "/api/v1/auth/login",
+  google: "/api/auth/google",
+  microsoft: "/api/auth/microsoft",
   verifyEmail: "/api/v1/auth/verify-email",
   forgotPassword: "/api/v1/auth/forgot-password",
   resetPassword: "/api/v1/auth/reset-password",
@@ -13,12 +15,13 @@ export enum ProviderType {
 }
 
 export interface RegisterPayload {
-  title: string;
   fullName: string;
   email: string;
   password: string;
-  phoneNumber: string;
-  location: string;
+  accountType?: number;
+  title?: string;
+  phoneNumber?: string;
+  location?: string;
   profileImageUrl?: string;
   // Optional backend onboarding fields (see API spec)
   institutionName?: string;

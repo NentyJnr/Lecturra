@@ -35,6 +35,40 @@ export async function login(payload: LoginPayload): Promise<AuthSession> {
   return normalizeSession(data);
 }
 
+export interface SsoAuthResult extends AuthSession {
+  isNewUser?: boolean;
+}
+
+export async function googleLogin(idToken: string): Promise<SsoAuthResult> {
+  const { data } = await api.post<any>(AUTH_ENDPOINTS.google, { idToken });
+  const raw = data?.data || data;
+  return {
+    accessToken: raw.token || raw.accessToken,
+    refreshToken: raw.refreshToken || "",
+    user: raw.user ?? {
+      id: raw.userId ?? "",
+      email: raw.email,
+      fullName: raw.name,
+    },
+    isNewUser: !!raw.isNewUser,
+  };
+}
+
+export async function microsoftLogin(token: string): Promise<SsoAuthResult> {
+  const { data } = await api.post<any>(AUTH_ENDPOINTS.microsoft, { token });
+  const raw = data?.data || data;
+  return {
+    accessToken: raw.token || raw.accessToken,
+    refreshToken: raw.refreshToken || "",
+    user: raw.user ?? {
+      id: raw.userId ?? "",
+      email: raw.email,
+      fullName: raw.name,
+    },
+    isNewUser: !!raw.isNewUser,
+  };
+}
+
 export async function verifyEmail(params: VerifyEmailParams): Promise<ApiMessage> {
   const { data } = await api.get<ApiMessage>(AUTH_ENDPOINTS.verifyEmail, {
     params: { token: params.token },

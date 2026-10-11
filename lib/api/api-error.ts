@@ -10,7 +10,7 @@ interface ErrorBody {
 
 // Boundary parser: API error may be AxiosError | Error | stringified payload; parse at call site then branch on domain
 /** Extract a human-readable message from an API error (ASP.NET ProblemDetails or { message }). */
-export function getApiErrorMessage(error: Error): string {
+export function getApiErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const raw: unknown = error.response?.data;
     const status = error.response?.status;
