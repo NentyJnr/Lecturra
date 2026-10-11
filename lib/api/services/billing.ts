@@ -32,6 +32,26 @@ export interface InitializePaymentResponse {
   amount: number;
 }
 
+export interface InitializePaymentPayload {
+  packageId?: string;
+  tier?: number;
+  amount?: number;
+  credits?: number;
+  email?: string;
+  callbackUrl?: string;
+  paymentProvider?: string;
+}
+
+export interface VerifyPaymentResponse {
+  isSuccess: boolean;
+  orderReference: string;
+  amount: number;
+  creditsAdded: number;
+  remainingQuota: number;
+  status: string;
+  message: string;
+}
+
 export interface PaymentTransactionItem {
   transactionId: string;
   orderReference: string;
@@ -61,11 +81,33 @@ export const billingService = {
     }
   },
 
-  async initializePayment(packageId?: string, tier: number = 1): Promise<InitializePaymentResponse | null> {
+  async initializePayment(
+    payloadOrPackageId?: InitializePaymentPayload | string,
+    tier: number = 1
+  ): Promise<InitializePaymentResponse | null> {
     try {
-      const res = await api.post<{ success: boolean; data: InitializePaymentResponse }>("/api/v1/billing/initialize", {
-        tier,
-      });
+      let body: InitializePaymentPayload = { tier, paymentProvider: "Paystack" };
+      if (typeof payloadOrPackageId === "string") {
+        body = { packageId: payloadOrPackageId, tier, paymentProvider: "Paystack" };
+      } else if (payloadOrPackageId && typeof payloadOrPackageId === "object") {
+        body = { paymentProvider: "Paystack", ...payloadOrPackageId };
+      }
+
+      const res = await api.post<{ success: boolean; data: InitializePaymentResponse }>(
+        "/api/v1/billing/initialize",
+        body
+      );
+      return res.data?.data || null;
+    } catch {
+      return null;
+    }
+  },
+
+  async verifyPayment(orderReference: string): Promise<VerifyPaymentResponse | null> {
+    try {
+      const res = await api.get<{ success: boolean; data: VerifyPaymentResponse }>(
+        `/api/v1/billing/verify/${encodeURIComponent(orderReference)}`
+      );
       return res.data?.data || null;
     } catch {
       return null;

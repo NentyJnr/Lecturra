@@ -104,11 +104,12 @@ export default function BillingPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
-  // OPay Interactive Checkout Modal State
+  // Paystack & Gateway Checkout Modal State
   const [checkoutModalPkg, setCheckoutModalPkg] = useState<PricingPackage | null>(null);
   const [checkoutOrderRef, setCheckoutOrderRef] = useState<string>("");
   const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState<string>("card");
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
 
   useEffect(() => {
     async function syncProfileQuota() {
@@ -126,6 +127,50 @@ export default function BillingPage() {
     loadHistory();
   }, []);
 
+  // Listen for Paystack redirect callback (reference/trxref in URL)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const reference = urlParams.get("reference") || urlParams.get("trxref");
+    if (!reference) return;
+
+    const safeRef: string = reference;
+    let isMounted = true;
+    async function verifyPaystackTx() {
+      setIsVerifyingPayment(true);
+      try {
+        const verifyRes = await billingService.verifyPayment(safeRef);
+        if (verifyRes?.isSuccess) {
+          if (verifyRes.remainingQuota !== undefined && Number.isFinite(verifyRes.remainingQuota)) {
+            useAuthStore.getState().setRemainingQuota(verifyRes.remainingQuota);
+          } else if (verifyRes.creditsAdded > 0) {
+            const current = user?.remainingQuota ?? 1500;
+            useAuthStore.getState().setRemainingQuota(current + verifyRes.creditsAdded);
+          }
+          await loadHistory();
+          setToastMsg(verifyRes.message || `🎉 Payment Verified! +${verifyRes.creditsAdded.toLocaleString()} Credits added to your balance.`);
+          setTimeout(() => setToastMsg(null), 6000);
+        } else {
+          setToastMsg(verifyRes?.message || "Payment verification could not be confirmed.");
+          setTimeout(() => setToastMsg(null), 5000);
+        }
+      } catch {
+        setToastMsg("Payment verification encountered a network error.");
+        setTimeout(() => setToastMsg(null), 5000);
+      } finally {
+        if (isMounted) {
+          setIsVerifyingPayment(false);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+    }
+
+    verifyPaystackTx();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   async function loadHistory() {
     try {
       const records = await billingService.getPaymentHistory(1, 50, true);
@@ -141,7 +186,11 @@ export default function BillingPage() {
             orderRef: r.orderReference || "LECTURA-ORDER",
             credits: r.amount > 0 ? (r.amount >= 5000 ? r.amount : r.amount * 1) : 5000,
             amount: `₦${r.amount.toLocaleString()}`,
-            provider: r.tenantName ? `OPay (${r.tenantName})` : "OPay Gateway",
+            provider: r.orderReference?.includes("PS")
+              ? "Paystack (Card, Transfer, OPay)"
+              : r.tenantName
+              ? `Payment (${r.tenantName})`
+              : "Paystack Unified Gateway",
             status: r.status === 1 || r.status === "Successful" || r.status === "Completed" ? "Completed" : "Pending",
             date: dateStr,
           };
@@ -266,25 +315,38 @@ export default function BillingPage() {
     setSelectedPackage(pkg.id);
     setIsProcessing(true);
     try {
-      const res = await billingService.initializePayment(pkg.id);
+      const callbackUrl = typeof window !== "undefined"
+        ? `${window.location.origin}/dashboard/billing?status=verify`
+        : "";
+
+      const res = await billingService.initializePayment({
+        packageId: pkg.id,
+        amount: pkg.priceNGN,
+        credits: pkg.credits,
+        email: user?.email,
+        callbackUrl,
+        paymentProvider: "Paystack",
+      });
+
       const cashierUrl = res?.checkoutUrl || "";
 
-      // If OPay returned a live cashier URL with order token/session
+      // If live Paystack cashier URL returned, redirect user directly!
+      // Paystack hosts Cards, Bank Transfers, USSD, and OPay directly on this URL.
       if (
         cashierUrl &&
-        (cashierUrl.includes("index.html") || cashierUrl.includes("orderNo=") || cashierUrl.includes("token=")) &&
-        !cashierUrl.includes("ref=LECTURA-ORDER")
+        (cashierUrl.startsWith("http://") || cashierUrl.startsWith("https://")) &&
+        !cashierUrl.includes("test-checkout")
       ) {
         window.location.href = cashierUrl;
         return;
       }
 
-      // Open OPay Express Checkout modal overlay for testing and instant topup
-      const orderRef = res?.orderReference || `LECTURA-ORDER-${Date.now().toString(36).toUpperCase()}`;
+      // Simulation modal for offline/local sandbox testing
+      const orderRef = res?.orderReference || `LECTURA-PS-${Date.now().toString(36).toUpperCase()}`;
       setCheckoutOrderRef(orderRef);
       setCheckoutModalPkg(pkg);
     } catch {
-      const orderRef = `LECTURA-ORDER-${Date.now().toString(36).toUpperCase()}`;
+      const orderRef = `LECTURA-PS-${Date.now().toString(36).toUpperCase()}`;
       setCheckoutOrderRef(orderRef);
       setCheckoutModalPkg(pkg);
     } finally {
@@ -298,25 +360,22 @@ export default function BillingPage() {
 
     setIsSubmittingPayment(true);
     try {
-      // 1. Send complete payment command to backend database
-      await billingService.completePayment({
-        orderReference: checkoutOrderRef,
-        amount: checkoutModalPkg.priceNGN,
-        credits: checkoutModalPkg.credits,
-        paymentMethod: checkoutPaymentMethod,
-      });
-
-      // 2. Sync profile quota balance from DB
-      const profile = await getCurrentUserProfile();
-      if (profile && profile.remainingQuota !== undefined && Number.isFinite(profile.remainingQuota)) {
-        useAuthStore.getState().setRemainingQuota(profile.remainingQuota);
+      // 1. Try to verify transaction with backend
+      const verifyRes = await billingService.verifyPayment(checkoutOrderRef);
+      if (verifyRes?.isSuccess && verifyRes.remainingQuota !== undefined) {
+        useAuthStore.getState().setRemainingQuota(verifyRes.remainingQuota);
       } else {
-        const addedCredits = checkoutModalPkg.credits;
-        const currentQuota = user?.remainingQuota ?? 1500;
-        useAuthStore.getState().setRemainingQuota(currentQuota + addedCredits);
+        const profile = await getCurrentUserProfile();
+        if (profile && profile.remainingQuota !== undefined && Number.isFinite(profile.remainingQuota)) {
+          useAuthStore.getState().setRemainingQuota(profile.remainingQuota);
+        } else {
+          const addedCredits = checkoutModalPkg.credits;
+          const currentQuota = user?.remainingQuota ?? 1500;
+          useAuthStore.getState().setRemainingQuota(currentQuota + addedCredits);
+        }
       }
 
-      // 3. Reload payment history from database
+      // 2. Reload payment history from database
       await loadHistory();
 
       setToastMsg(`Payment Completed Successfully! +${checkoutModalPkg.credits.toLocaleString()} Credits added to your balance.`);
@@ -339,11 +398,26 @@ export default function BillingPage() {
         </div>
       )}
 
+      {/* Paystack Payment Verifying Overlay */}
+      {isVerifyingPayment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in">
+          <div className="bg-card border border-border rounded-2xl p-6 shadow-2xl max-w-sm w-full text-center space-y-4">
+            <RefreshCwIcon className="size-10 text-[#00B578] animate-spin mx-auto" />
+            <div>
+              <h3 className="font-heading font-bold text-lg text-foreground">Confirming Payment...</h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Verifying transaction with Paystack and synchronizing your workspace quota credits.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Action & Status Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/40">
         <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="outline" className="gap-1 border-[#00B578]/30 text-[#00B578]">
-            <CreditCardIcon className="size-3.5" /> Quota Billing & OPay Integration
+            <CreditCardIcon className="size-3.5" /> Paystack Unified Checkout (Cards, Bank Transfer, USSD & OPay)
           </Badge>
           {isAdmin && (
             <Badge className="bg-[#00B578]/10 text-[#00B578] border-[#00B578]/30 font-mono text-[10px]">
@@ -387,7 +461,7 @@ export default function BillingPage() {
             <div className="flex items-center gap-3 shrink-0">
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-medium text-muted-foreground">Rate: 25 Credits / Question</p>
-                <p className="text-[11px] text-muted-foreground">Secure Instant Checkout via OPay</p>
+                <p className="text-[11px] text-muted-foreground">Secure Checkout via Paystack (Cards, Transfer & OPay)</p>
               </div>
             </div>
           </CardContent>
@@ -541,14 +615,14 @@ export default function BillingPage() {
       {checkoutModalPkg && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
           <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
-            {/* OPay Header Banner */}
+            {/* Paystack Header Banner */}
             <div className="bg-[#00B578] p-5 text-white flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="size-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center text-white font-extrabold text-lg shadow-sm">
-                  OP
+                  PS
                 </div>
                 <div>
-                  <h3 className="font-heading font-extrabold text-lg leading-none">OPay Express Checkout</h3>
+                  <h3 className="font-heading font-extrabold text-lg leading-none">Paystack Unified Checkout</h3>
                   <p className="text-xs text-white/80 mt-1 font-mono">Ref: {checkoutOrderRef}</p>
                 </div>
               </div>
@@ -578,7 +652,9 @@ export default function BillingPage() {
 
               {/* Payment Method Selector */}
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Select OPay Payment Method</Label>
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Channels Included (Cards, Bank Transfer, USSD & OPay)
+                </Label>
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
@@ -595,15 +671,15 @@ export default function BillingPage() {
 
                   <button
                     type="button"
-                    onClick={() => setCheckoutPaymentMethod("opay_wallet")}
+                    onClick={() => setCheckoutPaymentMethod("opay")}
                     className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-medium transition-all ${
-                      checkoutPaymentMethod === "opay_wallet"
+                      checkoutPaymentMethod === "opay"
                         ? "border-[#00B578] bg-[#00B578]/10 text-[#00B578] font-bold shadow-sm"
                         : "border-border hover:bg-muted/50 text-muted-foreground"
                     }`}
                   >
                     <SparklesIcon className="size-5 mb-1" />
-                    <span>OPay Wallet</span>
+                    <span>Pay with OPay</span>
                   </button>
 
                   <button
@@ -624,7 +700,7 @@ export default function BillingPage() {
               {/* Security Badge */}
               <div className="flex items-center gap-2 p-3 rounded-lg bg-[#00B578]/10 border border-[#00B578]/20 text-[#00B578] text-[11px]">
                 <ShieldCheckIcon className="size-4 shrink-0 text-[#00B578]" />
-                <span>256-Bit SSL Encrypted OPay Gateway Simulation. Instant Quota Credit.</span>
+                <span>256-Bit SSL Encrypted Paystack Gateway. Supports Cards, Transfer & OPay.</span>
               </div>
 
               {/* Action Buttons */}
