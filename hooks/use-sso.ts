@@ -217,7 +217,10 @@ export function useSso() {
 
     const redirectUri = typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : "";
     const nonce = Math.random().toString(36).substring(2, 15);
-    const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=${microsoftClientId}&response_type=id_token&redirect_uri=${encodeURIComponent(
+    const tenant = process.env.NEXT_PUBLIC_MICROSOFT_TENANT_ID || "common";
+    const authUrl = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize?client_id=${encodeURIComponent(
+      microsoftClientId
+    )}&response_type=id_token&redirect_uri=${encodeURIComponent(
       redirectUri
     )}&scope=openid%20profile%20email&response_mode=fragment&nonce=${nonce}`;
 
@@ -240,11 +243,18 @@ export function useSso() {
       return;
     }
 
+    // Safety timeout: Never leave user stuck on infinite spinner
+    const safetyTimeout = setTimeout(() => {
+      setIsMicrosoftLoading(false);
+      window.removeEventListener("message", messageListener);
+    }, 60000);
+
     // Listen for OAuth token callback from popup
     const messageListener = async (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
 
       if (event.data?.type === "MS_AUTH_SUCCESS" && event.data?.token) {
+        clearTimeout(safetyTimeout);
         window.removeEventListener("message", messageListener);
         popup?.close();
 
@@ -261,10 +271,28 @@ export function useSso() {
         } finally {
           setIsMicrosoftLoading(false);
         }
+      } else if (event.data?.type === "MS_AUTH_ERROR") {
+        clearTimeout(safetyTimeout);
+        window.removeEventListener("message", messageListener);
+        popup?.close();
+        setIsMicrosoftLoading(false);
+        toast.error("Microsoft Sign-In Failed", {
+          description: event.data.error || "Authentication was denied or cancelled.",
+        });
       }
     };
 
     window.addEventListener("message", messageListener);
+
+    // Watch for manual popup close
+    const checkClosedInterval = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(checkClosedInterval);
+        clearTimeout(safetyTimeout);
+        window.removeEventListener("message", messageListener);
+        setIsMicrosoftLoading(false);
+      }
+    }, 1000);
   }, [microsoftClientId, microsoftMutation, router]);
 
   return {
