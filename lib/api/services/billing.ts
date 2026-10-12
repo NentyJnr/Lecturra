@@ -85,40 +85,61 @@ export interface PaginatedList<T> {
 
 export const DEFAULT_PRICING_PACKAGES: PricingPackage[] = [
   {
-    id: "pkg-1",
-    packageCode: "pkg-1",
+    id: "pkg-starter",
+    packageCode: "pkg-starter",
     name: "Starter Pack",
     credits: 5000,
     priceNGN: 5000,
-    costPerQuestion: "200 questions (~₦25/Q)",
+    costPerQuestion: "200 Questions (₦25/Question)",
     popular: false,
-    features: ["5,000 Credits", "All Question Types (MCQ, T/F, Essay)", "Aiken & GIFT Exporters", "Standard Generation Speed"],
+    features: [
+      "200 AI-Generated Exam Questions",
+      "MCQ, True/False & Short Answer Formats",
+      "Bloom's Taxonomy Cognitive Targeting",
+      "Aiken, GIFT & Print-Ready PDF Export",
+      "Instant OPay & Bank Transfer Activation",
+      "Lifetime Credit Validity (No Expiry)",
+    ],
     displayOrder: 1,
     isActive: true,
     isCustomQuote: false,
   },
   {
-    id: "pkg-2",
-    packageCode: "pkg-2",
-    name: "Faculty Pro",
-    credits: 15000,
-    priceNGN: 13500,
-    costPerQuestion: "600 questions (10% Discount)",
+    id: "pkg-department",
+    packageCode: "pkg-department",
+    name: "Department Pack",
+    credits: 50000,
+    priceNGN: 40000,
+    costPerQuestion: "Ideal for academic departments running semester assessments across multiple courses.",
     popular: true,
-    features: ["15,000 Credits", "Priority Processing Queue", "Full Result CSV Analytics", "Multi-Course Tagging", "24/7 Priority Support"],
+    features: [
+      "Up to 2,000 Exam Questions (25 credits/question)",
+      "50,000 Generation Credits (Never expire)",
+      "Multi-Course & Syllabus Tagging",
+      "Instant LMS Export (Aiken, GIFT & Print-Ready PDF)",
+      "Full Gradebook & CSV Result Analytics",
+      "OPay & Bank Transfer Instant Activation",
+    ],
     displayOrder: 2,
     isActive: true,
     isCustomQuote: false,
   },
   {
-    id: "pkg-3",
-    packageCode: "pkg-3",
-    name: "Institutional Bulk",
-    credits: 50000,
-    priceNGN: 40000,
-    costPerQuestion: "2,000 questions (20% Discount)",
+    id: "pkg-faculty-pro",
+    packageCode: "pkg-faculty-pro",
+    name: "Faculty / Institutional Pro",
+    credits: 100000,
+    priceNGN: 75000,
+    costPerQuestion: "Built for entire faculties, polytechnics, and multi-lecturer exam moderation committees.",
     popular: false,
-    features: ["50,000 Credits", "Department-Wide Sharing", "Dedicated Account Manager", "Custom Exam Template Export", "Paystack & Instant Transfer Billing"],
+    features: [
+      "Up to 4,000+ Exam Questions (Bulk volume discount)",
+      "100,000 Generation Credits",
+      "Department-Wide Seat & Credit Sharing",
+      "Priority Generation Processing Queue",
+      "Custom Institutional Exam Header Templates",
+      "Dedicated Account Support & WhatsApp Onboarding",
+    ],
     displayOrder: 3,
     isActive: true,
     isCustomQuote: false,
@@ -129,14 +150,16 @@ export const DEFAULT_PRICING_PACKAGES: PricingPackage[] = [
     name: "Enterprise & Institution",
     credits: 0,
     priceNGN: 0,
-    costPerQuestion: "Custom Volume & Pricing",
+    costPerQuestion: "Custom Volume · Multi-Faculty Assessment Licensing",
     popular: false,
     features: [
-      "Tailored Campus-Wide Credits",
-      "Dedicated Private Tenant Instance",
-      "SSO & Active Directory Integration",
-      "Custom SLA & 24/7 Phone Support",
-      "Bespoke Exam Security & LMS Adapters",
+      "High-Volume / Unlimited Custom Credit Pool",
+      "Multi-Department & Multi-Lecturer Collaboration",
+      "Custom Exam Header Templates & School Branding",
+      "Aiken, GIFT, Moodle & Print-Ready PDF Bundles",
+      "Official Invoice, Bank Transfer & Purchase Order Support",
+      "Dedicated Account Specialist & Priority SLAs",
+      "Hands-on Lecturer & Departmental Onboarding",
     ],
     displayOrder: 4,
     isActive: true,
@@ -248,6 +271,18 @@ export const billingService = {
       return true;
     } catch {
       return false;
+    }
+  },
+
+  async resetPricingPackages(): Promise<PricingPackage[]> {
+    try {
+      const res = await api.post<{ success: boolean; data: PricingPackage[] }>("/api/v1/billing/packages/reset");
+      if (res.data?.data && res.data.data.length > 0) {
+        return res.data.data;
+      }
+      return DEFAULT_PRICING_PACKAGES;
+    } catch {
+      return DEFAULT_PRICING_PACKAGES;
     }
   },
 
