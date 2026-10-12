@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -68,21 +68,22 @@ function MicrosoftIcon(props: React.SVGProps<SVGSVGElement>) {
 
 export function RegisterForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const registerMutation = useRegister();
   const { triggerGoogleLogin, triggerMicrosoftLogin, isGoogleLoading, isMicrosoftLoading } = useSso();
   const [showPassword, setShowPassword] = useState(false);
   const [referralBonusActive, setReferralBonusActive] = useState(false);
 
   useEffect(() => {
-    const ref = searchParams?.get("ref");
+    if (typeof window === "undefined") return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const ref = urlParams.get("ref");
     if (ref) {
       localStorage.setItem("lectura_referral_code", ref.trim());
       setReferralBonusActive(true);
-    } else if (typeof window !== "undefined" && localStorage.getItem("lectura_referral_code")) {
+    } else if (localStorage.getItem("lectura_referral_code")) {
       setReferralBonusActive(true);
     }
-  }, [searchParams]);
+  }, []);
 
   const {
     register,

@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { RegisterForm } from "./_components/register-form";
 
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Create account — Lecturra" };
 
 export default function RegisterPage() {
