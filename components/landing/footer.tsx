@@ -108,7 +108,7 @@ export function Footer() {
                 LMS Standard Compliant (Aiken & GIFT)
               </span>
               <span>•</span>
-              <span>OPay Secured Checkout</span>
+              <span>Paystack Secured Checkout</span>
             </div>
           </div>
         </div>

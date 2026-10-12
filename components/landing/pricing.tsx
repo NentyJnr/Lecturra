@@ -40,7 +40,7 @@ const tiers = [
     href: "/register",
     includes: [
       "5,000 credits (covers 10 complete 50-Q exam batches)",
-      "Instant checkout via secure OPay integration",
+      "Instant checkout via secure Paystack gateway",
       "Permanent question bank repository storage",
       "Aiken, GIFT & print-ready PDF exam export",
       "Credits never expire — full rollover across semesters",

@@ -73,10 +73,10 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
       description: "Extract test result reports",
     },
     {
-      title: "Quota Topup / Payments",
+      title: isAdmin ? "Pricing & Packages" : "Quota Topup / Payments",
       href: "/dashboard/billing",
       icon: CreditCardIcon,
-      description: "Credit packages & billing",
+      description: isAdmin ? "Configure tiers & prices" : "Credit packages & billing",
     },
   ];
 

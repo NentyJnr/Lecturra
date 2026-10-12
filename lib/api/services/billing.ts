@@ -55,7 +55,8 @@ export interface VerifyPaymentResponse {
 export interface PaymentTransactionItem {
   transactionId: string;
   orderReference: string;
-  oPayTransactionId: string;
+  gatewayTransactionId?: string;
+  oPayTransactionId?: string;
   amount: number;
   currency: string;
   status: number | string;

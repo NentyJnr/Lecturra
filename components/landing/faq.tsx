@@ -13,7 +13,7 @@ const faqs = [
   },
   {
     q: "How does the credit system and top-up work?",
-    a: "Question generation is metered at 10 credits per question (e.g. 500 credits for a standard 50-item exam). Every new user starts with 1,500 complimentary credits — enough for 3 full exam creation runs. When needed, top up 5,000 credits for ₦5,000 via secure OPay checkout. Credits never expire and roll over indefinitely.",
+    a: "Question generation is metered at 10 credits per question (e.g. 500 credits for a standard 50-item exam). Every new user starts with 1,500 complimentary credits — enough for 3 full exam creation runs. When needed, top up 5,000 credits for ₦5,000 via secure Paystack checkout. Credits never expire and roll over indefinitely.",
   },
   {
     q: "How does duplicate vector detection protect exam integrity?",

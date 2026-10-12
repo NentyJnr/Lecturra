@@ -65,6 +65,13 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
   const isAdmin = isAdminUser(user);
   const remainingCredits = user?.remainingQuota ?? 1500;
 
+  const pageTitle = pathname === "/dashboard/billing" && isAdmin
+    ? "Pricing & Packages Setup"
+    : currentPage.title;
+  const pageSubtitle = pathname === "/dashboard/billing" && isAdmin
+    ? "Configure generation packages, quotas, and pricing for your institution."
+    : currentPage.subtitle;
+
   const initials = user?.fullName
     ? user.fullName
         .split(" ")
@@ -98,14 +105,14 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
         >
           <MenuIcon className="size-5" />
         </Button>
-        {currentPage.title ? (
+        {pageTitle ? (
           <div className="flex flex-col">
             <h1 className="font-heading text-base font-bold tracking-tight text-foreground md:text-lg">
-              {currentPage.title}
+              {pageTitle}
             </h1>
-            {currentPage.subtitle && (
+            {pageSubtitle && (
               <p className="hidden text-xs text-muted-foreground sm:block">
-                {currentPage.subtitle}
+                {pageSubtitle}
               </p>
             )}
           </div>

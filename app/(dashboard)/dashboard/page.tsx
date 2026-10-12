@@ -223,7 +223,7 @@ export default function DashboardOverviewPage() {
             </Card>
           )}
 
-          {/* Quota Topup / Payments Card - Only for School Admin */}
+          {/* Pricing & Packages Card - Only for School Admin */}
           {isAdmin && (
             <Card className="group hover:border-primary/50 transition-all hover:shadow-md">
               <CardHeader className="pb-3">
@@ -232,17 +232,17 @@ export default function DashboardOverviewPage() {
                     <CreditCardIcon className="size-5" />
                   </div>
                   <div>
-                    <CardTitle className="text-base">Quota Topup / Payments</CardTitle>
-                    <CardDescription className="text-xs">Credits & Billing Packages</CardDescription>
+                    <CardTitle className="text-base">Pricing & Packages</CardTitle>
+                    <CardDescription className="text-xs">Setup Tiers & Price Matrix</CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="text-xs text-muted-foreground">
-                  {remainingQuotaFormatted} credits available. Top up your generation quota anytime via OPay payment integration.
+                  Configure question generation packages, credit quotas, and pricing for your institution.
                 </p>
                 <Button variant="ghost" size="xs" className="w-full justify-between text-primary hover:text-primary" render={<Link href="/dashboard/billing" />}>
-                  <span>Topup Quota</span>
+                  <span>Configure Packages</span>
                   <ArrowRightIcon className="size-3.5" />
                 </Button>
               </CardContent>

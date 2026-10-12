@@ -58,7 +58,7 @@ const defaultFallbackPackages: PricingPackage[] = [
     priceNGN: 40000,
     costPerQuestion: "2,000 questions (20% Discount)",
     popular: false,
-    features: ["50,000 Credits", "Department-Wide Sharing", "Dedicated Account Manager", "Custom Exam Template Export", "OPay & Direct Transfer Billing"],
+    features: ["50,000 Credits", "Department-Wide Sharing", "Dedicated Account Manager", "Custom Exam Template Export", "Paystack & Instant Transfer Billing"],
     displayOrder: 3,
     isActive: true,
   },
@@ -187,7 +187,7 @@ export default function BillingPage() {
             credits: r.amount > 0 ? (r.amount >= 5000 ? r.amount : r.amount * 1) : 5000,
             amount: `₦${r.amount.toLocaleString()}`,
             provider: r.orderReference?.includes("PS")
-              ? "Paystack (Card, Transfer, OPay)"
+              ? "Paystack (Card, Transfer, USSD)"
               : r.tenantName
               ? `Payment (${r.tenantName})`
               : "Paystack Unified Gateway",
@@ -331,7 +331,7 @@ export default function BillingPage() {
       const cashierUrl = res?.checkoutUrl || "";
 
       // If live Paystack cashier URL returned, redirect user directly!
-      // Paystack hosts Cards, Bank Transfers, USSD, and OPay directly on this URL.
+      // Paystack hosts Cards, Bank Transfers, and USSD directly on this URL.
       if (
         cashierUrl &&
         (cashierUrl.startsWith("http://") || cashierUrl.startsWith("https://")) &&
@@ -416,12 +416,18 @@ export default function BillingPage() {
       {/* Top Action & Status Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/40">
         <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="outline" className="gap-1 border-[#00B578]/30 text-[#00B578]">
-            <CreditCardIcon className="size-3.5" /> Paystack Unified Checkout (Cards, Bank Transfer, USSD & OPay)
-          </Badge>
-          {isAdmin && (
-            <Badge className="bg-[#00B578]/10 text-[#00B578] border-[#00B578]/30 font-mono text-[10px]">
-              Admin Price Controls Active
+          {isAdmin ? (
+            <>
+              <Badge variant="outline" className="gap-1 border-[#00B578]/30 text-[#00B578]">
+                <SparklesIcon className="size-3.5" /> Credit Packages & Pricing Setup
+              </Badge>
+              <Badge className="bg-[#00B578]/10 text-[#00B578] border-[#00B578]/30 font-mono text-[10px]">
+                Admin Price Controls Active
+              </Badge>
+            </>
+          ) : (
+            <Badge variant="outline" className="gap-1 border-[#00B578]/30 text-[#00B578]">
+              <CreditCardIcon className="size-3.5" /> Paystack Unified Checkout (Cards, Bank Transfer & USSD)
             </Badge>
           )}
         </div>
@@ -461,7 +467,7 @@ export default function BillingPage() {
             <div className="flex items-center gap-3 shrink-0">
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-medium text-muted-foreground">Rate: 25 Credits / Question</p>
-                <p className="text-[11px] text-muted-foreground">Secure Checkout via Paystack (Cards, Transfer & OPay)</p>
+                <p className="text-[11px] text-muted-foreground">Secure Checkout via Paystack (Cards, Transfer & USSD)</p>
               </div>
             </div>
           </CardContent>
@@ -472,16 +478,24 @@ export default function BillingPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-heading text-lg font-bold tracking-tight">Select Topup Credit Package</h2>
-            {isAdmin && (
+            <h2 className="font-heading text-lg font-bold tracking-tight">
+              {isAdmin ? "System Pricing Packages & Configuration" : "Select Topup Credit Package"}
+            </h2>
+            {isAdmin ? (
               <p className="text-xs text-[#00B578] font-medium">
-                As System Admin, click &quot;Edit Price&quot; to configure pricing or &quot;Add New Package&quot; to expand offerings.
+                As System Admin, you can set up and adjust package pricing, credit allotments, and feature descriptions. Click &quot;Configure Price &amp; Features&quot; to edit packages.
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Select a topup credit package to replenish your question generation quota.
               </p>
             )}
           </div>
-          <Badge variant="secondary" className="gap-1 text-xs">
-            <ShieldCheckIcon className="size-3.5 text-[#00B578]" /> Instant OPay Activation
-          </Badge>
+          {!isAdmin && (
+            <Badge variant="secondary" className="gap-1 text-xs">
+              <ShieldCheckIcon className="size-3.5 text-[#00B578]" /> Instant Credit Allocation
+            </Badge>
+          )}
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
@@ -536,24 +550,22 @@ export default function BillingPage() {
               </CardContent>
 
               <CardFooter className="pt-4 flex flex-col gap-2">
-                <Button
-                  className="w-full gap-2"
-                  variant={pkg.popular ? "default" : "outline"}
-                  onClick={() => handleInitializePayment(pkg)}
-                  disabled={isProcessing && selectedPackage === pkg.id}
-                >
-                  <ZapIcon className="size-4" />
-                  {isProcessing && selectedPackage === pkg.id ? "Connecting to OPay..." : `Pay ₦${pkg.priceNGN.toLocaleString()}`}
-                </Button>
-
-                {isAdmin && (
+                {isAdmin ? (
                   <Button
-                    variant="outline"
-                    size="sm"
+                    className="w-full gap-2 bg-[#00B578] hover:bg-[#009B63] text-white shadow-sm font-semibold"
                     onClick={() => handleOpenEditModal(pkg)}
-                    className="w-full gap-1 text-xs border-[#00B578]/30 text-[#00B578] hover:bg-[#00B578]/10"
                   >
-                    <PencilIcon className="size-3.5" /> Configure Price & Features
+                    <PencilIcon className="size-4" /> Configure Price & Features
+                  </Button>
+                ) : (
+                  <Button
+                    className="w-full gap-2"
+                    variant={pkg.popular ? "default" : "outline"}
+                    onClick={() => handleInitializePayment(pkg)}
+                    disabled={isProcessing && selectedPackage === pkg.id}
+                  >
+                    <ZapIcon className="size-4" />
+                    {isProcessing && selectedPackage === pkg.id ? "Connecting to Gateway..." : `Pay ₦${pkg.priceNGN.toLocaleString()}`}
                   </Button>
                 )}
               </CardFooter>
@@ -611,7 +623,7 @@ export default function BillingPage() {
         </CardContent>
       </Card>
 
-      {/* Interactive OPay Express Checkout Gateway Modal */}
+      {/* Interactive Paystack Express Checkout Gateway Modal */}
       {checkoutModalPkg && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
           <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
@@ -653,9 +665,9 @@ export default function BillingPage() {
               {/* Payment Method Selector */}
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Channels Included (Cards, Bank Transfer, USSD & OPay)
+                  Channels Included (Cards, Bank Transfer & USSD)
                 </Label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setCheckoutPaymentMethod("card")}
@@ -667,19 +679,6 @@ export default function BillingPage() {
                   >
                     <CreditCardIcon className="size-5 mb-1" />
                     <span>Debit Card</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setCheckoutPaymentMethod("opay")}
-                    className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-medium transition-all ${
-                      checkoutPaymentMethod === "opay"
-                        ? "border-[#00B578] bg-[#00B578]/10 text-[#00B578] font-bold shadow-sm"
-                        : "border-border hover:bg-muted/50 text-muted-foreground"
-                    }`}
-                  >
-                    <SparklesIcon className="size-5 mb-1" />
-                    <span>Pay with OPay</span>
                   </button>
 
                   <button
@@ -700,7 +699,7 @@ export default function BillingPage() {
               {/* Security Badge */}
               <div className="flex items-center gap-2 p-3 rounded-lg bg-[#00B578]/10 border border-[#00B578]/20 text-[#00B578] text-[11px]">
                 <ShieldCheckIcon className="size-4 shrink-0 text-[#00B578]" />
-                <span>256-Bit SSL Encrypted Paystack Gateway. Supports Cards, Transfer & OPay.</span>
+                <span>256-Bit SSL Encrypted Paystack Gateway. Supports Cards, Bank Transfer & USSD.</span>
               </div>
 
               {/* Action Buttons */}
