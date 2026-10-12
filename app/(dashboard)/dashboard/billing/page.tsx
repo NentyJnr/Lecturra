@@ -181,11 +181,13 @@ export default function BillingPage() {
       try {
         const verifyRes = await billingService.verifyPayment(safeRef);
         if (verifyRes?.isSuccess) {
-          if (verifyRes.remainingQuota !== undefined && Number.isFinite(verifyRes.remainingQuota)) {
+          if (verifyRes.remainingQuota !== undefined && Number.isFinite(verifyRes.remainingQuota) && verifyRes.remainingQuota > 0) {
             useAuthStore.getState().setRemainingQuota(verifyRes.remainingQuota);
-          } else if (verifyRes.creditsAdded > 0) {
-            const current = user?.remainingQuota ?? 1500;
-            useAuthStore.getState().setRemainingQuota(current + verifyRes.creditsAdded);
+          } else {
+            const profile = await getCurrentUserProfile();
+            if (profile && profile.remainingQuota !== undefined && Number.isFinite(profile.remainingQuota)) {
+              useAuthStore.getState().setRemainingQuota(profile.remainingQuota);
+            }
           }
           await loadHistory();
           setToastMsg(verifyRes.message || `🎉 Payment Verified! +${verifyRes.creditsAdded.toLocaleString()} Credits added to your balance.`);
@@ -527,16 +529,12 @@ export default function BillingPage() {
     try {
       // 1. Try to verify transaction with backend
       const verifyRes = await billingService.verifyPayment(checkoutOrderRef);
-      if (verifyRes?.isSuccess && verifyRes.remainingQuota !== undefined) {
+      if (verifyRes?.isSuccess && verifyRes.remainingQuota !== undefined && verifyRes.remainingQuota > 0) {
         useAuthStore.getState().setRemainingQuota(verifyRes.remainingQuota);
       } else {
         const profile = await getCurrentUserProfile();
         if (profile && profile.remainingQuota !== undefined && Number.isFinite(profile.remainingQuota)) {
           useAuthStore.getState().setRemainingQuota(profile.remainingQuota);
-        } else {
-          const addedCredits = checkoutModalPkg.credits;
-          const currentQuota = user?.remainingQuota ?? 1500;
-          useAuthStore.getState().setRemainingQuota(currentQuota + addedCredits);
         }
       }
 
