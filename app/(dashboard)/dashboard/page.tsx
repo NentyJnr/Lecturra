@@ -147,11 +147,7 @@ export default function DashboardOverviewPage() {
                 </Badge>
               ) : isAdmin ? (
                 <Badge variant="outline">Administrator</Badge>
-              ) : isOrganization ? (
-                <Badge variant="outline">Faculty Member</Badge>
-              ) : (
-                <Badge variant="outline">Independent Lecturer</Badge>
-              )}
+              ) : null}
             </div>
             <h1 className="font-heading text-2xl md:text-3xl font-bold tracking-tight">
               Welcome back, {user?.title ? `${user.title} ` : ""}{user?.fullName || "Educator"}!
