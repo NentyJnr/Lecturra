@@ -728,7 +728,7 @@ export default function BillingPage() {
             </h2>
             {isAdmin ? (
               <p className="text-xs text-[#00B578] font-medium">
-                As System Admin, you can set up and adjust package pricing, credit allotments, and feature descriptions. Click &quot;Configure Price &amp; Features&quot; to edit packages.
+                As System Admin, you can set up and adjust package pricing, credit allotments, and feature descriptions. Click &quot;Edit Price&quot; on any package to customize price, credits, and features.
               </p>
             ) : (
               <p className="text-xs text-muted-foreground">
@@ -768,7 +768,7 @@ export default function BillingPage() {
                       variant="ghost"
                       size="xs"
                       onClick={() => handleOpenEditModal(pkg)}
-                      className="gap-1 text-xs text-[#00B578] hover:bg-[#00B578]/10 border border-[#00B578]/30 shrink-0"
+                      className="gap-1 text-xs text-[#00B578] hover:bg-[#00B578]/10 border border-[#00B578]/30 shrink-0 font-medium"
                       title="Edit package price and details"
                     >
                       <PencilIcon className="size-3" /> Edit Price
@@ -791,7 +791,7 @@ export default function BillingPage() {
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-3 flex-1">
+              <CardContent className="space-y-3 flex-1 pb-6">
                 <ul className="space-y-2 text-xs">
                   {pkg.features &&
                     pkg.features.map((feat: string) => (
@@ -803,33 +803,28 @@ export default function BillingPage() {
                 </ul>
               </CardContent>
 
-              <CardFooter className="pt-4 flex flex-col gap-2">
-                {isAdmin ? (
-                  <Button
-                    className="w-full gap-2 bg-[#00B578] hover:bg-[#009B63] text-white shadow-sm font-semibold"
-                    onClick={() => handleOpenEditModal(pkg)}
-                  >
-                    <PencilIcon className="size-4" /> Configure Price & Features
-                  </Button>
-                ) : pkg.isCustomQuote || pkg.priceNGN <= 0 ? (
-                  <Button
-                    className="w-full gap-2 bg-[#38492A] hover:bg-[#2b3820] text-white shadow-sm font-semibold transition-all"
-                    onClick={() => handleOpenContactSales(pkg)}
-                  >
-                    <MessageSquareIcon className="size-4" /> Contact Sales
-                  </Button>
-                ) : (
-                  <Button
-                    className="w-full gap-2"
-                    variant={pkg.popular ? "default" : "outline"}
-                    onClick={() => handleInitializePayment(pkg)}
-                    disabled={isProcessing && selectedPackage === pkg.id}
-                  >
-                    <ZapIcon className="size-4" />
-                    {isProcessing && selectedPackage === pkg.id ? "Connecting to Gateway..." : `Pay ₦${pkg.priceNGN.toLocaleString()}`}
-                  </Button>
-                )}
-              </CardFooter>
+              {!isAdmin && (
+                <CardFooter className="pt-4 flex flex-col gap-2">
+                  {pkg.isCustomQuote || pkg.priceNGN <= 0 ? (
+                    <Button
+                      className="w-full gap-2 bg-[#38492A] hover:bg-[#2b3820] text-white shadow-sm font-semibold transition-all"
+                      onClick={() => handleOpenContactSales(pkg)}
+                    >
+                      <MessageSquareIcon className="size-4" /> Contact Sales
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full gap-2"
+                      variant={pkg.popular ? "default" : "outline"}
+                      onClick={() => handleInitializePayment(pkg)}
+                      disabled={isProcessing && selectedPackage === pkg.id}
+                    >
+                      <ZapIcon className="size-4" />
+                      {isProcessing && selectedPackage === pkg.id ? "Connecting to Gateway..." : `Pay ₦${pkg.priceNGN.toLocaleString()}`}
+                    </Button>
+                  )}
+                </CardFooter>
+              )}
             </Card>
           ))}
         </div>
