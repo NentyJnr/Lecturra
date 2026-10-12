@@ -370,11 +370,28 @@ export default function BillingPage() {
           isCustomQuote: Boolean(p.isCustomQuote || p.priceNGN <= 0 || p.name.toLowerCase().includes("enterprise")),
         }));
 
-        // 2. Guarantee Enterprise tier is included even if legacy deployed API did not return it
-        const hasEnterprise = sanitized.some((p) => p.isCustomQuote || p.name.toLowerCase().includes("enterprise"));
-        const combined = hasEnterprise
-          ? sanitized
-          : [...sanitized, ...defaultFallbackPackages.filter((p) => p.isCustomQuote)];
+        // 2. Guarantee all standard default packages (Course Pack, Enterprise, etc.) are preserved
+        // even if legacy deployed backend has not yet synced or returned them
+        const missingDefaults = defaultFallbackPackages.filter(
+          (def) =>
+            !sanitized.some(
+              (p) =>
+                (p.id && p.id.toLowerCase() === def.id.toLowerCase()) ||
+                (p.packageCode && p.packageCode.toLowerCase() === def.packageCode.toLowerCase()) ||
+                p.name.toLowerCase() === def.name.toLowerCase()
+            )
+        );
+
+        if (isAdmin && missingDefaults.length > 0) {
+          // As admin, automatically sync missing standard packages to backend database
+          for (const missing of missingDefaults) {
+            billingService.createPricingPackage(missing).catch(() => {});
+          }
+        }
+
+        const combined = [...sanitized, ...missingDefaults].sort(
+          (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
+        );
 
         setPackages(deduplicatePackages(combined));
       } else {
@@ -509,7 +526,7 @@ export default function BillingPage() {
   async function handleResetDefaultPackages() {
     if (
       !confirm(
-        "Reset all pricing packages to the recommended standard configuration?\n\nThis will configure:\n1. Starter Pack (₦5,000 / 5,000 credits)\n2. Department Pack (₦40,000 / 50,000 credits)\n3. Faculty / Institutional Pro (₦75,000 / 100,000 credits)\n4. Enterprise & Institution (Custom / Tailored)"
+        "Reset all pricing packages to the recommended standard configuration?\n\nThis will configure:\n1. Starter Pack (₦5,000 / 5,000 credits)\n2. Course Pack (₦18,000 / 20,000 credits)\n3. Department Pack (₦40,000 / 50,000 credits)\n4. Faculty / Institutional Pro (₦75,000 / 100,000 credits)\n5. Enterprise & Institution (Custom / Tailored)"
       )
     ) {
       return;

@@ -193,7 +193,20 @@ export const billingService = {
     try {
       const res = await api.get<{ success: boolean; data: PricingPackage[] }>("/api/v1/billing/packages");
       if (res.data?.data && res.data.data.length > 0) {
-        return res.data.data;
+        const serverPackages = res.data.data;
+        const missingDefaults = DEFAULT_PRICING_PACKAGES.filter(
+          (def) =>
+            !serverPackages.some(
+              (p) =>
+                (p.id && p.id.toLowerCase() === def.id.toLowerCase()) ||
+                (p.packageCode && p.packageCode.toLowerCase() === def.packageCode.toLowerCase()) ||
+                p.name.toLowerCase() === def.name.toLowerCase()
+            )
+        );
+
+        return [...serverPackages, ...missingDefaults].sort(
+          (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
+        );
       }
       return DEFAULT_PRICING_PACKAGES;
     } catch {
