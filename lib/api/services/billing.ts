@@ -11,6 +11,7 @@ export interface PricingPackage {
   features: string[];
   displayOrder: number;
   isActive: boolean;
+  isCustomQuote?: boolean;
 }
 
 export interface UpdatePricingPackageRequest {
@@ -24,6 +25,16 @@ export interface UpdatePricingPackageRequest {
   features: string[];
   displayOrder: number;
   isActive: boolean;
+  isCustomQuote?: boolean;
+}
+
+export interface InstitutionalInquiryPayload {
+  name: string;
+  email: string;
+  institution: string;
+  phone: string;
+  estimatedVolume?: string;
+  notes?: string;
 }
 
 export interface InitializePaymentResponse {
@@ -84,6 +95,7 @@ export const DEFAULT_PRICING_PACKAGES: PricingPackage[] = [
     features: ["5,000 Credits", "All Question Types (MCQ, T/F, Essay)", "Aiken & GIFT Exporters", "Standard Generation Speed"],
     displayOrder: 1,
     isActive: true,
+    isCustomQuote: false,
   },
   {
     id: "pkg-2",
@@ -96,6 +108,7 @@ export const DEFAULT_PRICING_PACKAGES: PricingPackage[] = [
     features: ["15,000 Credits", "Priority Processing Queue", "Full Result CSV Analytics", "Multi-Course Tagging", "24/7 Priority Support"],
     displayOrder: 2,
     isActive: true,
+    isCustomQuote: false,
   },
   {
     id: "pkg-3",
@@ -108,6 +121,26 @@ export const DEFAULT_PRICING_PACKAGES: PricingPackage[] = [
     features: ["50,000 Credits", "Department-Wide Sharing", "Dedicated Account Manager", "Custom Exam Template Export", "Paystack & Instant Transfer Billing"],
     displayOrder: 3,
     isActive: true,
+    isCustomQuote: false,
+  },
+  {
+    id: "pkg-enterprise",
+    packageCode: "pkg-enterprise",
+    name: "Enterprise & Institution",
+    credits: 0,
+    priceNGN: 0,
+    costPerQuestion: "Custom Volume & Pricing",
+    popular: false,
+    features: [
+      "Tailored Campus-Wide Credits",
+      "Dedicated Private Tenant Instance",
+      "SSO & Active Directory Integration",
+      "Custom SLA & 24/7 Phone Support",
+      "Bespoke Exam Security & LMS Adapters",
+    ],
+    displayOrder: 4,
+    isActive: true,
+    isCustomQuote: true,
   },
 ];
 
@@ -193,6 +226,7 @@ export const billingService = {
       features: pkg.features,
       displayOrder: pkg.displayOrder,
       isActive: pkg.isActive,
+      isCustomQuote: pkg.isCustomQuote ?? (pkg.priceNGN === 0),
     });
     return res.data?.data || null;
   },
@@ -212,6 +246,15 @@ export const billingService = {
         isActive: false,
       });
       return true;
+    } catch {
+      return false;
+    }
+  },
+
+  async submitInquiry(payload: InstitutionalInquiryPayload): Promise<boolean> {
+    try {
+      const res = await api.post<{ success: boolean }>("/api/v1/billing/inquiry", payload);
+      return res.data?.success ?? true;
     } catch {
       return false;
     }

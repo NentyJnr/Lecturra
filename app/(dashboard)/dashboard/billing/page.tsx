@@ -13,6 +13,11 @@ import {
   XIcon,
   SaveIcon,
   RefreshCwIcon,
+  MessageSquareIcon,
+  Building2Icon,
+  MailIcon,
+  PhoneIcon,
+  ExternalLinkIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -37,6 +42,7 @@ const defaultFallbackPackages: PricingPackage[] = [
     features: ["5,000 Credits", "All Question Types (MCQ, T/F, Essay)", "Aiken & GIFT Exporters", "Standard Generation Speed"],
     displayOrder: 1,
     isActive: true,
+    isCustomQuote: false,
   },
   {
     id: "pkg-2",
@@ -49,6 +55,7 @@ const defaultFallbackPackages: PricingPackage[] = [
     features: ["15,000 Credits", "Priority Processing Queue", "Full Result CSV Analytics", "Multi-Course Tagging", "24/7 Priority Support"],
     displayOrder: 2,
     isActive: true,
+    isCustomQuote: false,
   },
   {
     id: "pkg-3",
@@ -61,6 +68,26 @@ const defaultFallbackPackages: PricingPackage[] = [
     features: ["50,000 Credits", "Department-Wide Sharing", "Dedicated Account Manager", "Custom Exam Template Export", "Paystack & Instant Transfer Billing"],
     displayOrder: 3,
     isActive: true,
+    isCustomQuote: false,
+  },
+  {
+    id: "pkg-enterprise",
+    packageCode: "pkg-enterprise",
+    name: "Enterprise & Institution",
+    credits: 0,
+    priceNGN: 0,
+    costPerQuestion: "Custom Volume & Pricing",
+    popular: false,
+    features: [
+      "Tailored Campus-Wide Credits",
+      "Dedicated Private Tenant Instance",
+      "SSO & Active Directory Integration",
+      "Custom SLA & 24/7 Phone Support",
+      "Bespoke Exam Security & LMS Adapters",
+    ],
+    displayOrder: 4,
+    isActive: true,
+    isCustomQuote: true,
   },
 ];
 
@@ -110,6 +137,16 @@ export default function BillingPage() {
   const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState<string>("card");
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
+
+  // Contact Sales / Institutional Inquiry Modal State
+  const [contactSalesPkg, setContactSalesPkg] = useState<PricingPackage | null>(null);
+  const [inquiryName, setInquiryName] = useState(user?.fullName || "");
+  const [inquiryEmail, setInquiryEmail] = useState(user?.email || "");
+  const [inquiryInstitution, setInquiryInstitution] = useState(user?.institutionName || "");
+  const [inquiryPhone, setInquiryPhone] = useState("");
+  const [inquiryVolume, setInquiryVolume] = useState("50,000+ Questions / Year");
+  const [inquiryNotes, setInquiryNotes] = useState("");
+  const [isSubmittingInquiry, setIsSubmittingInquiry] = useState(false);
 
   useEffect(() => {
     async function syncProfileQuota() {
@@ -232,6 +269,44 @@ export default function BillingPage() {
     }
   }
 
+  function handleOpenContactSales(pkg: PricingPackage) {
+    setContactSalesPkg(pkg);
+    setInquiryName(user?.fullName || "");
+    setInquiryEmail(user?.email || "");
+    setInquiryInstitution(user?.institutionName || "");
+  }
+
+  function handleSendWhatsApp(pkg: PricingPackage) {
+    const institutionText = inquiryInstitution ? ` for ${inquiryInstitution}` : "";
+    const msg = encodeURIComponent(
+      `Hello Lecturra, our institution${institutionText} is interested in discussing a custom Enterprise credit package for our examinations (${pkg.name}).`
+    );
+    window.open(`https://wa.me/2348030000000?text=${msg}`, "_blank");
+  }
+
+  async function handleSubmitInquiry(e: React.SubmitEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!contactSalesPkg) return;
+    setIsSubmittingInquiry(true);
+    try {
+      await billingService.submitInquiry({
+        name: inquiryName,
+        email: inquiryEmail,
+        institution: inquiryInstitution,
+        phone: inquiryPhone,
+        estimatedVolume: inquiryVolume,
+        notes: inquiryNotes,
+      });
+      setToastMsg(`Inquiry received for ${contactSalesPkg.name}! Our enterprise team will contact you shortly.`);
+      setTimeout(() => setToastMsg(null), 5000);
+      setContactSalesPkg(null);
+    } catch {
+      alert("Failed to submit inquiry. You can also chat directly via WhatsApp.");
+    } finally {
+      setIsSubmittingInquiry(false);
+    }
+  }
+
   function handleOpenAddModal() {
     setEditingPkg({
       id: "",
@@ -244,6 +319,7 @@ export default function BillingPage() {
       features: ["10,000 Credits", "All Question Types (MCQ, T/F, Essay)", "Aiken & GIFT Exporters"],
       displayOrder: packages.length + 1,
       isActive: true,
+      isCustomQuote: false,
     });
     setEditFeaturesText("10,000 Credits\nAll Question Types (MCQ, T/F, Essay)\nAiken & GIFT Exporters");
     setIsNewPackage(true);
@@ -273,6 +349,7 @@ export default function BillingPage() {
       const pkgToSave = {
         ...editingPkg,
         features: updatedFeatures,
+        isCustomQuote: editingPkg.isCustomQuote || editingPkg.priceNGN <= 0,
       };
 
       const result = await billingService.updatePricingPackage(pkgToSave);
@@ -312,6 +389,12 @@ export default function BillingPage() {
   }
 
   async function handleInitializePayment(pkg: PricingPackage) {
+    // Safety guard: Custom quote packages must NEVER initialize online payment
+    if (pkg.isCustomQuote || pkg.priceNGN <= 0) {
+      handleOpenContactSales(pkg);
+      return;
+    }
+
     setSelectedPackage(pkg.id);
     setIsProcessing(true);
     try {
@@ -532,8 +615,17 @@ export default function BillingPage() {
                 </div>
                 <CardDescription className="text-xs">{pkg.costPerQuestion}</CardDescription>
                 <div className="pt-3">
-                  <span className="font-heading text-3xl font-bold">₦{pkg.priceNGN.toLocaleString()}</span>
-                  <span className="text-xs text-muted-foreground font-normal"> / {pkg.credits.toLocaleString()} credits</span>
+                  {pkg.isCustomQuote || pkg.priceNGN <= 0 ? (
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-heading text-3xl font-extrabold text-foreground">Custom</span>
+                      <span className="text-xs text-muted-foreground font-normal"> / tailored credits</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-heading text-3xl font-bold">₦{pkg.priceNGN.toLocaleString()}</span>
+                      <span className="text-xs text-muted-foreground font-normal"> / {pkg.credits.toLocaleString()} credits</span>
+                    </div>
+                  )}
                 </div>
               </CardHeader>
 
@@ -556,6 +648,13 @@ export default function BillingPage() {
                     onClick={() => handleOpenEditModal(pkg)}
                   >
                     <PencilIcon className="size-4" /> Configure Price & Features
+                  </Button>
+                ) : pkg.isCustomQuote || pkg.priceNGN <= 0 ? (
+                  <Button
+                    className="w-full gap-2 bg-[#38492A] hover:bg-[#2b3820] text-white shadow-sm font-semibold transition-all"
+                    onClick={() => handleOpenContactSales(pkg)}
+                  >
+                    <MessageSquareIcon className="size-4" /> Contact Sales
                   </Button>
                 ) : (
                   <Button
@@ -819,6 +918,27 @@ export default function BillingPage() {
                 </Label>
               </div>
 
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="customQuoteCheckbox"
+                  checked={editingPkg.isCustomQuote || false}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setEditingPkg({
+                      ...editingPkg,
+                      isCustomQuote: checked,
+                      priceNGN: checked ? 0 : (editingPkg.priceNGN || 10000),
+                      credits: checked ? 0 : (editingPkg.credits || 10000),
+                    });
+                  }}
+                  className="size-4 rounded border-gray-300 text-[#00B578] focus:ring-[#00B578]"
+                />
+                <Label htmlFor="customQuoteCheckbox" className="text-xs font-medium cursor-pointer">
+                  Custom Quote / Enterprise Tier (Renders &quot;Contact Sales&quot; — bypasses online payment)
+                </Label>
+              </div>
+
               <div className="flex items-center justify-between gap-3 pt-4 border-t border-border">
                 {!isNewPackage ? (
                   <Button
@@ -839,6 +959,138 @@ export default function BillingPage() {
                   <Button type="submit" size="sm" className="gap-2 bg-[#00B578] hover:bg-[#009B63] text-white" disabled={isSaving}>
                     <SaveIcon className="size-4" />
                     {isSaving ? "Saving..." : isNewPackage ? "Create Package" : "Save Package Price"}
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Contact Sales / Institutional Inquiry Modal */}
+      {contactSalesPkg && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-background border border-border rounded-xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between p-4 border-b border-border bg-[#38492A]/10">
+              <div className="flex items-center gap-2">
+                <div className="size-8 rounded-lg bg-[#38492A] text-white flex items-center justify-center shadow-xs">
+                  <Building2Icon className="size-4" />
+                </div>
+                <div>
+                  <h3 className="font-heading font-bold text-base text-foreground">
+                    Institutional Consultation
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Enterprise tier arrangements for {contactSalesPkg.name}
+                  </p>
+                </div>
+              </div>
+              <Button variant="ghost" size="icon-sm" onClick={() => setContactSalesPkg(null)}>
+                <XIcon className="size-4" />
+              </Button>
+            </div>
+
+            <form onSubmit={handleSubmitInquiry} className="p-5 space-y-4 overflow-y-auto flex-1">
+              <div className="p-3 rounded-lg bg-muted/60 border border-border/60 text-xs text-muted-foreground space-y-1">
+                <p className="font-semibold text-foreground">Custom Institutional Arrangement</p>
+                <p>
+                  This tier is designed for faculties, polytechnics, and multi-campus universities. Our institutional solutions team will coordinate with your exam moderation committee to allocate customized quota pools, SLAs, and dedicated integrations.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="inquiryName" className="text-xs font-semibold">Contact Officer Name</Label>
+                  <Input
+                    id="inquiryName"
+                    value={inquiryName}
+                    onChange={(e) => setInquiryName(e.target.value)}
+                    placeholder="e.g. Prof. Adebayo"
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="inquiryEmail" className="text-xs font-semibold">Institutional Email</Label>
+                  <Input
+                    id="inquiryEmail"
+                    type="email"
+                    value={inquiryEmail}
+                    onChange={(e) => setInquiryEmail(e.target.value)}
+                    placeholder="e.g. adebayo@unilag.edu.ng"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="inquiryInstitution" className="text-xs font-semibold">University / Institution</Label>
+                  <Input
+                    id="inquiryInstitution"
+                    value={inquiryInstitution}
+                    onChange={(e) => setInquiryInstitution(e.target.value)}
+                    placeholder="e.g. University of Lagos"
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="inquiryPhone" className="text-xs font-semibold">Phone / WhatsApp</Label>
+                  <Input
+                    id="inquiryPhone"
+                    value={inquiryPhone}
+                    onChange={(e) => setInquiryPhone(e.target.value)}
+                    placeholder="e.g. +234 803 123 4567"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="inquiryVolume" className="text-xs font-semibold">Estimated Assessment Volume</Label>
+                <Input
+                  id="inquiryVolume"
+                  value={inquiryVolume}
+                  onChange={(e) => setInquiryVolume(e.target.value)}
+                  placeholder="e.g. 50,000 Questions / Semester"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="inquiryNotes" className="text-xs font-semibold">Specific Requirements / Notes</Label>
+                <textarea
+                  id="inquiryNotes"
+                  rows={3}
+                  className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-xs shadow-xs focus:outline-none focus:ring-2 focus:ring-ring"
+                  value={inquiryNotes}
+                  onChange={(e) => setInquiryNotes(e.target.value)}
+                  placeholder="Specify LMS integration (Moodle/Canvas), custom exam format, or campus billing procedures..."
+                />
+              </div>
+
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSendWhatsApp(contactSalesPkg)}
+                  className="w-full sm:w-auto gap-2 border-[#25D366]/40 text-[#25D366] hover:bg-[#25D366]/10 text-xs"
+                >
+                  <ExternalLinkIcon className="size-3.5" />
+                  Chat via WhatsApp
+                </Button>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setContactSalesPkg(null)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    className="gap-2 bg-[#38492A] hover:bg-[#2b3820] text-white shadow-sm font-semibold"
+                    disabled={isSubmittingInquiry}
+                  >
+                    <MailIcon className="size-4" />
+                    {isSubmittingInquiry ? "Submitting..." : "Submit Inquiry"}
                   </Button>
                 </div>
               </div>
