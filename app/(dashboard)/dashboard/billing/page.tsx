@@ -53,6 +53,27 @@ const defaultFallbackPackages: PricingPackage[] = [
     isCustomQuote: false,
   },
   {
+    id: "pkg-course-pack",
+    packageCode: "pkg-course-pack",
+    name: "Course Pack",
+    credits: 20000,
+    priceNGN: 18000,
+    costPerQuestion: "800 Questions (₦22.5/Question · Course Coordinators)",
+    popular: false,
+    features: [
+      "Up to 800 AI-Generated Exam Questions",
+      "20,000 Generation Credits (Never expire)",
+      "Multi-Course & Syllabus Tagging",
+      "Bloom's Taxonomy Cognitive Targeting",
+      "Instant LMS Export (Aiken, GIFT & Print-Ready PDF)",
+      "OPay & Bank Transfer Instant Activation",
+      "Lifetime Credit Validity (No Expiry)",
+    ],
+    displayOrder: 2,
+    isActive: true,
+    isCustomQuote: false,
+  },
+  {
     id: "pkg-department",
     packageCode: "pkg-department",
     name: "Department Pack",
@@ -68,7 +89,7 @@ const defaultFallbackPackages: PricingPackage[] = [
       "Full Gradebook & CSV Result Analytics",
       "OPay & Bank Transfer Instant Activation",
     ],
-    displayOrder: 2,
+    displayOrder: 3,
     isActive: true,
     isCustomQuote: false,
   },
@@ -88,7 +109,7 @@ const defaultFallbackPackages: PricingPackage[] = [
       "Custom Institutional Exam Header Templates",
       "Dedicated Account Support & WhatsApp Onboarding",
     ],
-    displayOrder: 3,
+    displayOrder: 4,
     isActive: true,
     isCustomQuote: false,
   },
@@ -109,7 +130,7 @@ const defaultFallbackPackages: PricingPackage[] = [
       "Dedicated Account Specialist & Priority SLAs",
       "Hands-on Lecturer & Departmental Onboarding",
     ],
-    displayOrder: 4,
+    displayOrder: 5,
     isActive: true,
     isCustomQuote: true,
   },
@@ -702,7 +723,7 @@ export default function BillingPage() {
           )}
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {packages.map((pkg) => (
             <Card
               key={pkg.id || pkg.name}
