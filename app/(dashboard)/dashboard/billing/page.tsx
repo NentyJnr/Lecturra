@@ -627,14 +627,9 @@ export default function BillingPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/40">
         <div className="flex items-center gap-2 flex-wrap">
           {isAdmin ? (
-            <>
-              <Badge variant="outline" className="gap-1 border-[#00B578]/30 text-[#00B578]">
-                <SparklesIcon className="size-3.5" /> Credit Packages & Pricing Setup
-              </Badge>
-              <Badge className="bg-[#00B578]/10 text-[#00B578] border-[#00B578]/30 font-mono text-[10px]">
-                Admin Price Controls Active
-              </Badge>
-            </>
+            <Badge variant="outline" className="gap-1 border-[#00B578]/30 text-[#00B578]">
+              <SparklesIcon className="size-3.5" /> Credit Packages & Pricing Setup
+            </Badge>
           ) : (
             <Badge variant="outline" className="gap-1 border-[#00B578]/30 text-[#00B578]">
               <CreditCardIcon className="size-3.5" /> Paystack Unified Checkout (Cards, Bank Transfer & USSD)
@@ -779,29 +774,12 @@ export default function BillingPage() {
 
               <CardFooter className="pt-4 flex flex-col gap-2">
                 {isAdmin ? (
-                  <div className="w-full flex flex-col gap-2">
-                    <Button
-                      className="w-full gap-2 bg-[#00B578] hover:bg-[#009B63] text-white shadow-sm font-semibold"
-                      onClick={() => handleOpenEditModal(pkg)}
-                    >
-                      <PencilIcon className="size-4" /> Configure Price & Features
-                    </Button>
-                    {pkg.isCustomQuote || pkg.priceNGN <= 0 ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="w-full gap-1.5 border-[#38492A]/40 text-[#38492A] hover:bg-[#38492A]/10 text-xs font-semibold"
-                        onClick={() => handleOpenContactSales(pkg)}
-                      >
-                        <MessageSquareIcon className="size-3.5" /> Test &quot;Contact Sales&quot; Modal
-                      </Button>
-                    ) : (
-                      <p className="text-[10px] text-muted-foreground text-center">
-                        Faculty view renders: <span className="font-semibold text-foreground">⚡ Pay ₦{pkg.priceNGN.toLocaleString()}</span>
-                      </p>
-                    )}
-                  </div>
+                  <Button
+                    className="w-full gap-2 bg-[#00B578] hover:bg-[#009B63] text-white shadow-sm font-semibold"
+                    onClick={() => handleOpenEditModal(pkg)}
+                  >
+                    <PencilIcon className="size-4" /> Configure Price & Features
+                  </Button>
                 ) : pkg.isCustomQuote || pkg.priceNGN <= 0 ? (
                   <Button
                     className="w-full gap-2 bg-[#38492A] hover:bg-[#2b3820] text-white shadow-sm font-semibold transition-all"
