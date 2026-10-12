@@ -221,52 +221,26 @@ export default function LibraryPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Action Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/40">
-        <div className="flex items-center gap-2 flex-wrap">
-          {isAdmin ? (
-            <Badge variant="outline" className="gap-1 border-purple-500/30 text-purple-600 dark:text-purple-400 font-semibold">
-              <ShieldCheckIcon className="size-3.5" /> Platform Global Audit
-            </Badge>
-          ) : (
+      {/* Top Action Toolbar (Educators/Lecturers Only) */}
+      {!isAdmin && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/40">
+          <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="outline" className="gap-1 border-sky-500/30 text-sky-600 dark:text-sky-400 font-semibold">
               <LibraryIcon className="size-3.5" /> Course Resource Ingestion
             </Badge>
-          )}
-        </div>
+          </div>
 
-        <div>
-          <Button onClick={() => handleOpenSlide()} className="gap-2 shadow-sm" size="sm">
-            <PlusIcon className="size-4" />
-            <span>{isAdmin ? "Upload Admin File" : "Add Material"}</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Drag & Drop / Admin System Audit Banner */}
-      {isAdmin ? (
-        <Card className="border border-purple-500/30 bg-purple-500/5 dark:bg-purple-950/20 p-5 rounded-2xl shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex size-11 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 shrink-0 border border-purple-500/20">
-                <ShieldCheckIcon className="size-6" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  Global User Documents Repository
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  As System Administrator, you are viewing all documents uploaded across all lecturers, departments, and workspaces in the system.
-                </p>
-              </div>
-            </div>
-            <Button onClick={() => handleOpenSlide()} variant="outline" size="sm" className="gap-2 shrink-0">
-              <PlusIcon className="size-3.5" />
-              <span>Upload Admin Document</span>
+          <div>
+            <Button onClick={() => handleOpenSlide()} className="gap-2 shadow-sm" size="sm">
+              <PlusIcon className="size-4" />
+              <span>Add Material</span>
             </Button>
           </div>
-        </Card>
-      ) : (
+        </div>
+      )}
+
+      {/* Main Drag & Drop Card (Educators/Lecturers Only) */}
+      {!isAdmin && (
         <Card
           onDragOver={(e) => {
             e.preventDefault();
@@ -301,8 +275,8 @@ export default function LibraryPage() {
         </Card>
       )}
 
-      {/* Slide-over Form Drawer */}
-      {isSlideOpen && (
+      {/* Slide-over Form Drawer (Educators/Lecturers Only) */}
+      {!isAdmin && isSlideOpen && (
         <div className="fixed inset-0 z-50 flex justify-end">
           {/* Backdrop */}
           <div
@@ -479,21 +453,27 @@ export default function LibraryPage() {
         </div>
       )}
 
-      {/* Retention Notice Banner */}
-      <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs shadow-xs">
-        <ClockIcon className="size-4 shrink-0 text-amber-500" />
-        <span>
-          <strong>Storage Retention Policy:</strong> Uploaded materials are automatically retained for <strong>1 year</strong> from upload date, after which they are safely wiped to preserve database capacity.
-        </span>
-      </div>
+      {/* Retention Notice Banner (Educators/Lecturers Only) */}
+      {!isAdmin && (
+        <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs shadow-xs">
+          <ClockIcon className="size-4 shrink-0 text-amber-500" />
+          <span>
+            <strong>Storage Retention Policy:</strong> Uploaded materials are automatically retained for <strong>1 year</strong> from upload date, after which they are safely wiped to preserve database capacity.
+          </span>
+        </div>
+      )}
 
       {/* Materials Search & List Table */}
       <Card>
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <CardTitle className="text-base">Uploaded Lecture Materials ({materials.length})</CardTitle>
+            <CardTitle className="text-base">
+              {isAdmin ? `Uploaded Materials (${materials.length})` : `Uploaded Lecture Materials (${materials.length})`}
+            </CardTitle>
             <CardDescription className="text-xs">
-              Manage your course materials. Uploaded files are available for automated AI question bank generation.
+              {isAdmin
+                ? "View and monitor lecture materials uploaded across all workspaces in the system."
+                : "Manage your course materials. Uploaded files are available for automated AI question bank generation."}
             </CardDescription>
           </div>
           <div className="relative w-full sm:w-64">
