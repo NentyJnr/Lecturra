@@ -29,7 +29,7 @@ import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/stores/auth-store";
 import { isAdminUser } from "@/lib/api/types/auth";
 import { getCurrentUserProfile } from "@/lib/api/services/users";
-import { billingService, type PricingPackage } from "@/lib/api/services/billing";
+import { billingService, getStandardPackageOrder, type PricingPackage } from "@/lib/api/services/billing";
 
 const defaultFallbackPackages: PricingPackage[] = [
   {
@@ -389,9 +389,12 @@ export default function BillingPage() {
           }
         }
 
-        const combined = [...sanitized, ...missingDefaults].sort(
-          (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
-        );
+        const combined = [...sanitized, ...missingDefaults]
+          .map((p) => ({
+            ...p,
+            displayOrder: getStandardPackageOrder(p),
+          }))
+          .sort((a, b) => getStandardPackageOrder(a) - getStandardPackageOrder(b));
 
         setPackages(deduplicatePackages(combined));
       } else {

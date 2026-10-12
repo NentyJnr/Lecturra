@@ -188,6 +188,19 @@ export const DEFAULT_PRICING_PACKAGES: PricingPackage[] = [
   },
 ];
 
+export function getStandardPackageOrder(pkg: Partial<PricingPackage>): number {
+  const code = (pkg.packageCode || pkg.id || "").toLowerCase();
+  const name = (pkg.name || "").toLowerCase();
+
+  if (code.includes("starter") || name.includes("starter")) return 1;
+  if (code.includes("course") || name.includes("course")) return 2;
+  if (code.includes("department") || name.includes("department")) return 3;
+  if (code.includes("faculty") || name.includes("faculty")) return 4;
+  if (code.includes("enterprise") || name.includes("enterprise") || pkg.isCustomQuote || (pkg.priceNGN !== undefined && pkg.priceNGN <= 0)) return 5;
+
+  return pkg.displayOrder ?? 99;
+}
+
 export const billingService = {
   async getPricingPackages(): Promise<PricingPackage[]> {
     try {
@@ -204,9 +217,12 @@ export const billingService = {
             )
         );
 
-        return [...serverPackages, ...missingDefaults].sort(
-          (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
-        );
+        return [...serverPackages, ...missingDefaults]
+          .map((p) => ({
+            ...p,
+            displayOrder: getStandardPackageOrder(p),
+          }))
+          .sort((a, b) => getStandardPackageOrder(a) - getStandardPackageOrder(b));
       }
       return DEFAULT_PRICING_PACKAGES;
     } catch {
