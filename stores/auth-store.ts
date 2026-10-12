@@ -42,33 +42,15 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       setSession: (session) => {
-        let u = session.user;
-        if (u && u.email?.toLowerCase() === "neotroltd@gmail.com") {
-          u = {
-            ...u,
-            role: "SystemAdmin",
-            accountType: 2,
-            institutionName: u.institutionName || "System Admin Workspace",
-          };
-        }
         set({
           accessToken: session.accessToken,
           refreshTokenValue: session.refreshToken,
-          user: u,
+          user: session.user,
           isAuthenticated: true,
         });
       },
       setUser: (user) => {
-        let u = user;
-        if (u && u.email?.toLowerCase() === "neotroltd@gmail.com") {
-          u = {
-            ...u,
-            role: "SystemAdmin",
-            accountType: 2,
-            institutionName: u.institutionName || "System Admin Workspace",
-          };
-        }
-        set({ user: u });
+        set({ user });
       },
       deductQuota: (creditsDeducted) =>
         set((state) => {
@@ -120,16 +102,6 @@ export const useAuthStore = create<AuthState>()(
         user: s.user,
         isAuthenticated: s.isAuthenticated,
       }),
-      onRehydrateStorage: () => (state) => {
-        if (state?.user && state.user.email?.toLowerCase() === "neotroltd@gmail.com") {
-          state.user = {
-            ...state.user,
-            role: "SystemAdmin",
-            accountType: 2,
-            institutionName: state.user.institutionName || "System Admin Workspace",
-          };
-        }
-      },
     },
   ),
 );

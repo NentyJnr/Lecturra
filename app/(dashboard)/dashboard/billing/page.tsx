@@ -125,25 +125,13 @@ interface HistoryRow {
   date: string;
 }
 
-const mockHistory: HistoryRow[] = [
-  {
-    id: "tx-1",
-    orderRef: "ORD-20260908-8F21",
-    credits: 1500,
-    amount: "₦0 (Free Registration Allocation)",
-    provider: "System Welcome Allocation",
-    status: "Completed",
-    date: "2026-09-08 14:00",
-  },
-];
-
 export default function BillingPage() {
   const user = useAuthStore((s) => s.user);
   const isAdmin = isAdminUser(user);
   const remainingCredits = user?.remainingQuota ?? 1500;
 
   const [packages, setPackages] = useState<PricingPackage[]>(defaultFallbackPackages);
-  const [history, setHistory] = useState<HistoryRow[]>(mockHistory);
+  const [history, setHistory] = useState<HistoryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -261,9 +249,11 @@ export default function BillingPage() {
           };
         });
         setHistory(mapped);
+      } else {
+        setHistory([]);
       }
     } catch {
-      // Keep mock or fallback
+      setHistory([]);
     }
   }
 
@@ -843,38 +833,47 @@ export default function BillingPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
-                {history.map((h) => (
-                  <tr key={h.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="p-3 font-mono font-medium">{h.orderRef}</td>
-                    <td className="p-3 font-bold text-[#00B578]">+{h.credits.toLocaleString()} Credits</td>
-                    <td className="p-3 font-semibold">{h.amount}</td>
-                    <td className="p-3 text-muted-foreground">{h.provider}</td>
-                    <td className="p-3">
-                      {h.status === "Completed" ? (
-                        <Badge className="bg-[#00B578]/10 text-[#00B578] border-[#00B578]/30 gap-1 font-medium">
-                          <CheckCircle2Icon className="size-3" /> Completed
-                        </Badge>
-                      ) : (
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10 gap-1 font-medium">
-                            <ClockIcon className="size-3" /> Pending
-                          </Badge>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleVerifyPendingTx(h.orderRef)}
-                            disabled={verifyingOrderRef === h.orderRef}
-                            className="h-6 px-2 text-[11px] gap-1 border-[#00B578]/60 text-[#00B578] hover:bg-[#00B578]/10 font-semibold shadow-xs"
-                          >
-                            <RefreshCwIcon className={`size-3 ${verifyingOrderRef === h.orderRef ? "animate-spin" : ""}`} />
-                            {verifyingOrderRef === h.orderRef ? "Verifying..." : "Verify Payment"}
-                          </Button>
-                        </div>
-                      )}
+                {history.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                      <CreditCardIcon className="size-8 mx-auto mb-2 text-muted-foreground/40" />
+                      No payment or allocation records found yet.
                     </td>
-                    <td className="p-3 text-muted-foreground">{h.date}</td>
                   </tr>
-                ))}
+                ) : (
+                  history.map((h) => (
+                    <tr key={h.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="p-3 font-mono font-medium">{h.orderRef}</td>
+                      <td className="p-3 font-bold text-[#00B578]">+{h.credits.toLocaleString()} Credits</td>
+                      <td className="p-3 font-semibold">{h.amount}</td>
+                      <td className="p-3 text-muted-foreground">{h.provider}</td>
+                      <td className="p-3">
+                        {h.status === "Completed" ? (
+                          <Badge className="bg-[#00B578]/10 text-[#00B578] border-[#00B578]/30 gap-1 font-medium">
+                            <CheckCircle2Icon className="size-3" /> Completed
+                          </Badge>
+                        ) : (
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10 gap-1 font-medium">
+                              <ClockIcon className="size-3" /> Pending
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleVerifyPendingTx(h.orderRef)}
+                              disabled={verifyingOrderRef === h.orderRef}
+                              className="h-6 px-2 text-[11px] gap-1 border-[#00B578]/60 text-[#00B578] hover:bg-[#00B578]/10 font-semibold shadow-xs"
+                            >
+                              <RefreshCwIcon className={`size-3 ${verifyingOrderRef === h.orderRef ? "animate-spin" : ""}`} />
+                              {verifyingOrderRef === h.orderRef ? "Verifying..." : "Verify Payment"}
+                            </Button>
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-3 text-muted-foreground">{h.date}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

@@ -91,9 +91,12 @@ export interface ApiMessage {
 
 export function isAdminUser(user: AuthUser | null): boolean {
   if (!user) return false;
-  if (user.email?.toLowerCase() === "neotroltd@gmail.com") return true;
-  if (!user.role) return false;
-  const role = user.role.toLowerCase();
-  return role === "institutionadmin" || role === "systemadmin" || role.includes("admin");
+  if (user.role) {
+    const role = user.role.toLowerCase();
+    if (role === "institutionadmin" || role === "systemadmin" || role === "superadmin" || role.includes("admin")) {
+      return true;
+    }
+  }
+  return user.accountType === 2;
 }
 

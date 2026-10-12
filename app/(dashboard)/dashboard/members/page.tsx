@@ -26,67 +26,12 @@ import { Badge } from "@/components/ui/badge";
 import { tenantsService, TenantLookup } from "@/lib/api/services/tenants";
 import { getMembers, toggleUserStatus, MemberItem } from "@/lib/api/services/users";
 
-const mockFallbackMembers: MemberItem[] = [
-  {
-    id: "mem-1",
-    tenantId: "00000000-0000-0000-0000-000000000001",
-    tenantName: "University of Lagos Workspace",
-    fullName: "Dr. Jane Doe",
-    email: "j.doe@unilag.edu.ng",
-    title: "Senior Lecturer",
-    location: "Physics & Astronomy",
-    roleName: "InstitutionAdmin",
-    isActive: true,
-    isTenantSuspended: false,
-    createdAt: "2026-09-01T08:00:00Z",
-  },
-  {
-    id: "mem-2",
-    tenantId: "00000000-0000-0000-0000-000000000001",
-    tenantName: "University of Lagos Workspace",
-    fullName: "Prof. Olumide Falase",
-    email: "o.falase@unilag.edu.ng",
-    title: "Head of Department",
-    location: "Computer Sciences",
-    roleName: "Lecturer",
-    isActive: true,
-    isTenantSuspended: false,
-    createdAt: "2026-09-03T10:30:00Z",
-  },
-  {
-    id: "mem-3",
-    tenantId: "00000000-0000-0000-0000-000000000001",
-    tenantName: "University of Lagos Workspace",
-    fullName: "Engr. Fatima Bello",
-    email: "f.bello@unilag.edu.ng",
-    title: "Associate Professor",
-    location: "Electrical Engineering",
-    roleName: "Lecturer",
-    isActive: false,
-    isTenantSuspended: false,
-    createdAt: "2026-09-05T14:15:00Z",
-  },
-  {
-    id: "mem-4",
-    tenantId: "00000000-0000-0000-0000-000000000002",
-    tenantName: "Covenant University Workspace",
-    fullName: "Dr. Emmanuel Chukwu",
-    email: "e.chukwu@covenant.edu.ng",
-    title: "Department Chair",
-    location: "Software Engineering",
-    roleName: "InstitutionAdmin",
-    isActive: true,
-    isTenantSuspended: true,
-    createdAt: "2026-09-07T11:00:00Z",
-  },
-];
-
 export default function MembersPage() {
   const user = useAuthStore((s) => s.user);
   const isAdmin = isAdminUser(user);
 
   const [tenants, setTenants] = useState<TenantLookup[]>([]);
-  const [members, setMembers] = useState<MemberItem[]>(mockFallbackMembers);
+  const [members, setMembers] = useState<MemberItem[]>([]);
   const [selectedTenantId, setSelectedTenantId] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -106,14 +51,12 @@ export default function MembersPage() {
         getMembers(),
       ]);
 
-      if (tenantsData && tenantsData.length > 0) {
+      if (tenantsData) {
         setTenants(tenantsData);
       }
-      if (membersData && membersData.length > 0) {
-        setMembers(membersData);
-      }
+      setMembers(membersData || []);
     } catch {
-      // Keep fallbacks if offline
+      setMembers([]);
     } finally {
       setLoading(false);
     }
@@ -124,11 +67,9 @@ export default function MembersPage() {
     setLoading(true);
     try {
       const membersData = await getMembers(tenantId, searchQuery, statusFilter === "all" ? undefined : statusFilter);
-      if (membersData && membersData.length > 0) {
-        setMembers(membersData);
-      }
+      setMembers(membersData || []);
     } catch {
-      // fallback
+      setMembers([]);
     } finally {
       setLoading(false);
     }

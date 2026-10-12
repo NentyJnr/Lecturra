@@ -12,6 +12,13 @@ export interface TenantLookup {
   remainingQuota: number;
 }
 
+export interface UpdateTenantSettingsPayload {
+  institutionName: string;
+  allowedDomain?: string;
+  facultyEmail?: string;
+  facultyAccessCode?: string;
+}
+
 export const tenantsService = {
   async getAllTenants(): Promise<TenantLookup[]> {
     try {
@@ -26,6 +33,11 @@ export const tenantsService = {
     const res = await api.put<{ success: boolean; message: string; data: boolean }>(`/api/v1/tenants/${tenantId}/status`, {
       isQuotaLocked,
     });
+    return res.data?.success || false;
+  },
+
+  async updateTenantSettings(tenantId: string, payload: UpdateTenantSettingsPayload): Promise<boolean> {
+    const res = await api.put<{ success: boolean; message: string; data: any }>(`/api/v1/tenants/${tenantId}/settings`, payload);
     return res.data?.success || false;
   },
 };

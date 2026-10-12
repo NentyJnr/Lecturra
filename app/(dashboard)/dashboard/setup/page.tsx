@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   SettingsIcon,
   Building2Icon,
@@ -21,17 +21,40 @@ import { Badge } from "@/components/ui/badge";
 
 import Link from "next/link";
 import { isAdminUser } from "@/lib/api/types/auth";
+import { tenantsService } from "@/lib/api/services/tenants";
+import { getCurrentUserProfile } from "@/lib/api/services/users";
 
 export default function SetupPage() {
   const user = useAuthStore((s) => s.user);
+  const setUser = useAuthStore((s) => s.setUser);
   const isAdmin = isAdminUser(user);
 
-
-  const [institutionName, setInstitutionName] = useState(user?.institutionName || "University of Lagos");
-  const [allowedDomain, setAllowedDomain] = useState("unilag.edu.ng");
-  const [facultyEmail, setFacultyEmail] = useState(user?.email || "admin@unilag.edu.ng");
-  const [accessCode, setAccessCode] = useState(user?.facultyAccessCode || "FAC-UNILAG-8F21");
+  const [institutionName, setInstitutionName] = useState(user?.institutionName || "");
+  const [allowedDomain, setAllowedDomain] = useState(user?.email ? user.email.split("@")[1] || "" : "");
+  const [facultyEmail, setFacultyEmail] = useState(user?.email || "");
+  const [accessCode, setAccessCode] = useState(user?.facultyAccessCode || "");
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    async function loadTenantProfile() {
+      try {
+        const latestProfile = await getCurrentUserProfile();
+        if (latestProfile) {
+          setUser(latestProfile);
+          if (latestProfile.institutionName) setInstitutionName(latestProfile.institutionName);
+          if (latestProfile.facultyAccessCode) setAccessCode(latestProfile.facultyAccessCode);
+          if (latestProfile.email) {
+            setFacultyEmail(latestProfile.email);
+            const domain = latestProfile.email.split("@")[1];
+            if (domain) setAllowedDomain(domain);
+          }
+        }
+      } catch {
+        // Fallback to store
+      }
+    }
+    loadTenantProfile();
+  }, [setUser]);
 
   if (!isAdmin) {
     return (
@@ -50,20 +73,52 @@ export default function SetupPage() {
     );
   }
 
-
-  function handleSaveSetup(e: React.FormEvent) {
+  async function handleSaveSetup(e: React.FormEvent) {
     e.preventDefault();
+    if (!institutionName.trim()) {
+      toast.error("Please provide an institution name.");
+      return;
+    }
+
+    const tenantId = user?.tenantId;
+    if (!tenantId) {
+      toast.error("Unable to resolve active workspace identity.");
+      return;
+    }
+
     setSaving(true);
-    setTimeout(() => {
+    try {
+      const success = await tenantsService.updateTenantSettings(tenantId, {
+        institutionName: institutionName.trim(),
+        allowedDomain: allowedDomain.trim(),
+        facultyEmail: facultyEmail.trim(),
+        facultyAccessCode: accessCode.trim(),
+      });
+
+      if (success) {
+        if (user) {
+          setUser({
+            ...user,
+            institutionName: institutionName.trim(),
+            facultyAccessCode: accessCode.trim(),
+          });
+        }
+        toast.success("Organization workspace setup saved to database!");
+      } else {
+        toast.error("Failed to save workspace settings. Please try again.");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update workspace settings.");
+    } finally {
       setSaving(false);
-      toast.success("Organization workspace setup updated!");
-    }, 800);
+    }
   }
 
   function handleRegenerateCode() {
-    const newCode = "FAC-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+    const cleanPrefix = institutionName ? institutionName.replace(/[^a-zA-Z]/g, "").substring(0, 6).toUpperCase() : "FAC";
+    const newCode = `${cleanPrefix || "FAC"}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
     setAccessCode(newCode);
-    toast.info(`New Faculty Access Code generated: ${newCode}`);
+    toast.info(`New Faculty Access Code generated: ${newCode}. Click "Save Organization Setup" to apply.`);
   }
 
   return (

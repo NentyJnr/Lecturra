@@ -36,6 +36,7 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
   // Determine role and account type from auth store
   const isOrganization = user?.accountType === 2 || !!user?.institutionName;
   const isAdmin = isAdminUser(user);
+  const isSuperAdmin = user?.role === "SystemAdmin" || user?.email?.toLowerCase() === "neotroltd@gmail.com";
 
 
   interface NavItem {
@@ -140,12 +141,12 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
             </div>
             <div className="flex flex-col min-w-0 flex-1">
               <span className="truncate text-xs font-semibold text-foreground">
-                {user?.email?.toLowerCase() === "neotroltd@gmail.com" ? "System Admin Workspace" : isOrganization ? (user?.institutionName || "School Workspace") : (user?.fullName ? `${user.fullName}'s Workspace` : "Lecturer Workspace")}
+                {isSuperAdmin ? "System Admin Workspace" : isOrganization ? (user?.institutionName || "School Workspace") : (user?.fullName ? `${user.fullName}'s Workspace` : "Lecturer Workspace")}
               </span>
               <div className="flex items-center gap-1">
                 <span className="size-1.5 rounded-full bg-[#80802B]" />
                 <span className="text-[10px] text-muted-foreground font-medium">
-                  {user?.email?.toLowerCase() === "neotroltd@gmail.com" ? "Super Admin" : isAdmin ? "Institution Admin" : "Lecturer Workspace"}
+                  {isSuperAdmin ? "Super Admin" : isAdmin ? "Institution Admin" : "Lecturer Workspace"}
                 </span>
               </div>
             </div>

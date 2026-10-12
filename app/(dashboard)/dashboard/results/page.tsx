@@ -23,10 +23,11 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { assessmentsApi, tenantsApi, TenantLookupDto, StudentSubmissionItemDto } from "@/lib/api/services/assessments";
 import { useAuthStore } from "@/stores/auth-store";
+import { isAdminUser } from "@/lib/api/types/auth";
 
 export default function ResultStationPage() {
   const { user } = useAuthStore();
-  const isAdmin = user?.role === "SystemAdmin" || user?.role === "InstitutionAdmin" || user?.email?.toLowerCase() === "neotroltd@gmail.com";
+  const isAdmin = isAdminUser(user);
 
   const [tenants, setTenants] = useState<TenantLookupDto[]>([]);
   const [selectedTenantFilter, setSelectedTenantFilter] = useState<string>("");

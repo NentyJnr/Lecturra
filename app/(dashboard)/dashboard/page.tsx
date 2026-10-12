@@ -47,6 +47,7 @@ export default function DashboardOverviewPage() {
 
   const isOrganization = overview?.isOrganization ?? (user?.accountType === 2 || !!user?.institutionName);
   const isAdmin = isAdminUser(user);
+  const isSuperAdmin = user?.role === "SystemAdmin" || user?.email?.toLowerCase() === "neotroltd@gmail.com";
 
   const remainingQuotaFormatted = (overview?.remainingQuota ?? user?.remainingQuota ?? 1500).toLocaleString();
   const libraryCount = (overview?.libraryMaterialsCount ?? 0).toString();
@@ -128,7 +129,7 @@ export default function DashboardOverviewPage() {
                 {isOrganization ? <Building2Icon className="size-3.5" /> : <SparklesIcon className="size-3.5" />}
                 {isOrganization ? (overview?.institutionName || user?.institutionName || "School Organization") : "Individual Lecturer Workspace"}
               </Badge>
-              {user?.email?.toLowerCase() === "neotroltd@gmail.com" ? (
+              {isSuperAdmin ? (
                 <Badge variant="outline">Super Admin</Badge>
               ) : isAdmin ? (
                 <Badge variant="outline">Administrator</Badge>

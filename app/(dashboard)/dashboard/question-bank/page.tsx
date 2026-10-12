@@ -43,6 +43,8 @@ import {
   AssessmentDetailsDto,
 } from "@/lib/api/services/assessments";
 import { useAuthStore } from "@/stores/auth-store";
+import { isAdminUser } from "@/lib/api/types/auth";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -78,27 +80,14 @@ interface QuestionItem {
   explanation: string;
 }
 
-const defaultMaterials: MaterialCourse[] = [
-  {
-    id: "mat-1",
-    courseCode: "EXCEL 101",
-    title: "EXCEL 101 - Lecture Material",
-    topics: [
-      { id: "t-1", name: "Part 1: Foundational Principles & Core Concepts" },
-      { id: "t-2", name: "Part 2: Methodology & Practical Application" },
-      { id: "t-3", name: "Part 3: Advanced Analysis & Assessment" },
-    ],
-  },
-];
-
 export default function QuestionBankPage() {
   const { user } = useAuthStore();
-  const isAdmin = user?.role === "SystemAdmin" || user?.role === "InstitutionAdmin" || user?.email?.toLowerCase() === "neotroltd@gmail.com";
+  const isAdmin = isAdminUser(user);
 
   const [tenants, setTenants] = useState<TenantLookupDto[]>([]);
   const [selectedTenantFilter, setSelectedTenantFilter] = useState<string>("");
 
-  const [materials, setMaterials] = useState<MaterialCourse[]>(defaultMaterials);
+  const [materials, setMaterials] = useState<MaterialCourse[]>([]);
   const [selectedMaterialId, setSelectedMaterialId] = useState<string>("");
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
 
@@ -197,10 +186,8 @@ export default function QuestionBankPage() {
         console.error("Error loading uploaded materials:", err);
       }
     }
-    if (!isAdmin) {
-      loadUploadedMaterials();
-    }
-  }, [isAdmin]);
+    loadUploadedMaterials();
+  }, []);
 
   useEffect(() => {
     loadSavedAssessmentsList(selectedTenantFilter);
@@ -325,97 +312,58 @@ export default function QuestionBankPage() {
     setIsGenerating(true);
 
     try {
-      const isRealDocument = !selectedMaterialId.startsWith("mat-");
-
-      if (isRealDocument) {
-        const apiQuestions = await assessmentsApi.generateQuestions({
-          documentId: selectedMaterialId,
-          questionCount: requestedCount,
-          selectedTopics: selectedTopics,
-          targetAudience: knowledgeLevel,
-          targetAgeRange: `${targetAgeRange} Years`,
-          trueFalsePercentage: questionType === "TrueFalse" ? 100 : questionType === "Mixed" ? 30 : 0,
-          mcqPercentage: questionType === "TrueFalse" ? 0 : questionType === "Mixed" ? 70 : 100,
-        });
-
-        if (apiQuestions && apiQuestions.length > 0) {
-          const mapped: QuestionItem[] = apiQuestions.map((q, idx) => {
-            const rawOpts = q.options && q.options.length > 0
-              ? q.options
-              : ["Option A", "Option B", "Option C", "Option D"];
-            const opts = rawOpts.map((opt, optIdx) => {
-              const clean = opt.trim();
-              const letter = String.fromCharCode(65 + optIdx);
-              if (/^[A-D][.)\-:\s]/i.test(clean)) return clean;
-              return `${letter}. ${clean}`;
-            });
-            const correctOptStr = opts[q.correctOptionIndex] || opts[0];
-
-            return {
-              id: `q-${Date.now()}-${idx + 1}`,
-              courseCode: currentMaterial?.courseCode || "COURSE",
-              topic: q.topic || selectedTopics[idx % selectedTopics.length] || "General Topic",
-              type: opts.length === 2 ? "TrueFalse" : "MCQ",
-              // SAFETY: AI payload difficulty is string, fallback to Medium validated via domain
-              difficulty: (q.difficulty as QuestionItem["difficulty"]) || "Medium",
-              // SAFETY: AI payload bloomLevel is string, fallback to Understand validated via domain
-              bloomsTaxonomy: (q.bloomLevel as QuestionItem["bloomsTaxonomy"]) || "Understand",
-              ageRange: `${targetAgeRange} Yrs`,
-              knowledgeLevel: knowledgeLevel,
-              questionText: q.questionText,
-              options: opts,
-              correctAnswer: correctOptStr,
-              correctOptionIndex: q.correctOptionIndex,
-              explanation: q.explanation || "Correct option identified based on course material analysis.",
-            };
-          });
-
-          setQuestions(mapped);
-          setHasGenerated(true);
-          useAuthStore.getState().deductQuota(creditsNeeded);
-          toast.success(`Successfully generated ${mapped.length} AI questions for ${currentMaterial?.courseCode}! (${creditsNeeded} credits deducted)`);
-          return;
-        }
-      }
-
-      // Fallback synthetic generator if backend returned empty array
-      const generatedBatch: QuestionItem[] = Array.from({ length: requestedCount }).map((_, idx) => {
-        const topicName = selectedTopics[idx % selectedTopics.length] || "Core Fundamentals";
-        const isTF = questionType === "TrueFalse" || (questionType === "Mixed" && idx % 3 === 2);
-        const options = isTF
-          ? ["True", "False"]
-          : [
-              `A. Principle of ${topicName} primary structure`,
-              `B. Linear invariant transformation limit`,
-              `C. Standard statistical variance threshold`,
-              `D. System boundary equilibrium condition`,
-            ];
-        const correctIndex = 0;
-
-        return {
-          id: `q-${Date.now()}-${idx + 1}`,
-          courseCode: currentMaterial?.courseCode || "EXCEL 101",
-          topic: topicName,
-          type: isTF ? "TrueFalse" : "MCQ",
-          difficulty: knowledgeLevel === "Beginner" ? "Easy" : knowledgeLevel === "Advanced" ? "Hard" : "Medium",
-          bloomsTaxonomy: idx % 2 === 0 ? "Apply" : "Understand",
-          ageRange: `${targetAgeRange} Yrs`,
-          knowledgeLevel: knowledgeLevel,
-          questionText: `In the context of ${topicName}, which primary principle governs domain operations for ${knowledgeLevel.toLowerCase()} learners? (Item ${idx + 1})`,
-          options: options,
-          correctAnswer: options[correctIndex],
-          correctOptionIndex: correctIndex,
-          explanation: `Demonstrates essential domain knowledge in ${topicName}.`,
-        };
+      const apiQuestions = await assessmentsApi.generateQuestions({
+        documentId: selectedMaterialId,
+        questionCount: requestedCount,
+        selectedTopics: selectedTopics,
+        targetAudience: knowledgeLevel,
+        targetAgeRange: `${targetAgeRange} Years`,
+        trueFalsePercentage: questionType === "TrueFalse" ? 100 : questionType === "Mixed" ? 30 : 0,
+        mcqPercentage: questionType === "TrueFalse" ? 0 : questionType === "Mixed" ? 70 : 100,
       });
 
-      setQuestions(generatedBatch);
-      setHasGenerated(true);
-      useAuthStore.getState().deductQuota(creditsNeeded);
-      toast.success(`Generated ${generatedBatch.length} AI questions for ${currentMaterial?.courseCode}! (${creditsNeeded} credits deducted)`);
+      if (apiQuestions && apiQuestions.length > 0) {
+        const mapped: QuestionItem[] = apiQuestions.map((q, idx) => {
+          const rawOpts = q.options && q.options.length > 0
+            ? q.options
+            : ["Option A", "Option B", "Option C", "Option D"];
+          const opts = rawOpts.map((opt, optIdx) => {
+            const clean = opt.trim();
+            const letter = String.fromCharCode(65 + optIdx);
+            if (/^[A-D][.)\-:\s]/i.test(clean)) return clean;
+            return `${letter}. ${clean}`;
+          });
+          const correctOptStr = opts[q.correctOptionIndex] || opts[0];
+
+          return {
+            id: `q-${Date.now()}-${idx + 1}`,
+            courseCode: currentMaterial?.courseCode || "COURSE",
+            topic: q.topic || selectedTopics[idx % selectedTopics.length] || "General Topic",
+            type: opts.length === 2 ? "TrueFalse" : "MCQ",
+            // SAFETY: AI payload difficulty is string, fallback to Medium validated via domain
+            difficulty: (q.difficulty as QuestionItem["difficulty"]) || "Medium",
+            // SAFETY: AI payload bloomLevel is string, fallback to Understand validated via domain
+            bloomsTaxonomy: (q.bloomLevel as QuestionItem["bloomsTaxonomy"]) || "Understand",
+            ageRange: `${targetAgeRange} Yrs`,
+            knowledgeLevel: knowledgeLevel,
+            questionText: q.questionText,
+            options: opts,
+            correctAnswer: correctOptStr,
+            correctOptionIndex: q.correctOptionIndex,
+            explanation: q.explanation || "Correct option identified based on course material analysis.",
+          };
+        });
+
+        setQuestions(mapped);
+        setHasGenerated(true);
+        toast.success(`Successfully generated ${mapped.length} AI questions for ${currentMaterial?.courseCode}!`);
+        return;
+      }
+
+      toast.error("The AI engine could not extract questions from this material. Please try selecting different topics or verify the uploaded document in System Library.");
     } catch (err: any) {
       console.error("Error generating questions:", err);
-      toast.error(err?.message || "Failed to generate AI questions. Please try again.");
+      toast.error(err?.message || "Failed to generate AI questions. Please verify your document and remaining quota.");
     } finally {
       setIsGenerating(false);
     }
@@ -729,18 +677,27 @@ export default function QuestionBankPage() {
                   <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                     <BookOpenIcon className="size-3.5 text-indigo-500" /> Target Course Material
                   </Label>
-                  <select
-                    value={selectedMaterialId}
-                    onChange={(e) => handleMaterialChange(e.target.value)}
-                    className="h-10 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-indigo-500 font-medium"
-                  >
-                    <option value="">-- Select Target Course Material --</option>
-                    {materials.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.title}
-                      </option>
-                    ))}
-                  </select>
+                  {materials.length === 0 ? (
+                    <div className="rounded-lg border border-dashed border-border bg-muted/20 p-3 text-xs text-muted-foreground flex items-center justify-between gap-2">
+                      <span>No materials uploaded yet.</span>
+                      <Link href="/dashboard/library" className="text-primary font-semibold hover:underline flex items-center gap-1">
+                        Upload in Library &rarr;
+                      </Link>
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedMaterialId}
+                      onChange={(e) => handleMaterialChange(e.target.value)}
+                      className="h-10 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-indigo-500 font-medium"
+                    >
+                      <option value="">-- Select Target Course Material --</option>
+                      {materials.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.title}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                   <p className="text-[11px] text-muted-foreground">
                     Populated from your uploaded materials in System Library.
                   </p>

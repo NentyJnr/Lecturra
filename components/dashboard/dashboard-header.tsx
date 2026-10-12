@@ -63,6 +63,7 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
 
   const isOrganization = user?.accountType === 2 || !!user?.institutionName;
   const isAdmin = isAdminUser(user);
+  const isSuperAdmin = user?.role === "SystemAdmin" || user?.email?.toLowerCase() === "neotroltd@gmail.com";
   const remainingCredits = user?.remainingQuota ?? 1500;
 
   const pageTitle = pathname === "/dashboard/billing" && isAdmin
@@ -151,7 +152,7 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
                 {user?.fullName || "Educator"}
               </span>
               <span className="truncate text-[10px] text-muted-foreground font-medium">
-                {user?.email?.toLowerCase() === "neotroltd@gmail.com" ? "Super Admin" : isAdmin ? "Admin" : "Lecturer"}
+                {isSuperAdmin ? "Super Admin" : isAdmin ? "Admin" : "Lecturer"}
               </span>
             </div>
           </button>
@@ -169,7 +170,7 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
                   <p className="text-[11px] text-muted-foreground truncate">{user?.email}</p>
                   <div className="mt-1 flex items-center gap-1">
                     <Badge variant="secondary" className="text-[9px] px-1.5 py-0 font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20">
-                      {user?.email?.toLowerCase() === "neotroltd@gmail.com" ? "Super Admin Workspace" : isOrganization ? (user?.institutionName || "Organization") : "Individual Lecturer"}
+                      {isSuperAdmin ? "Super Admin Workspace" : isOrganization ? (user?.institutionName || "Organization") : "Individual Lecturer"}
                     </Badge>
                   </div>
                 </div>
