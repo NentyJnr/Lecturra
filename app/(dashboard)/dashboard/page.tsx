@@ -125,12 +125,18 @@ export default function DashboardOverviewPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="secondary" className="gap-1 font-medium">
-                {isOrganization ? <Building2Icon className="size-3.5" /> : <SparklesIcon className="size-3.5" />}
-                {isOrganization ? (overview?.institutionName || user?.institutionName || "School Organization") : "Individual Lecturer Workspace"}
+              <Badge variant="secondary" className="gap-1 font-medium bg-[#38492A]/10 text-[#38492A] border-[#38492A]/20 dark:bg-[#8FB373]/10 dark:text-[#8FB373] dark:border-[#8FB373]/25">
+                {isSuperAdmin || isOrganization ? <Building2Icon className="size-3.5" /> : <SparklesIcon className="size-3.5" />}
+                {isSuperAdmin
+                  ? "Lectura Platform"
+                  : (isOrganization && overview?.institutionName !== "Independent Educator" && user?.institutionName !== "Independent Educator")
+                  ? (overview?.institutionName || user?.institutionName || "School Organization")
+                  : "Lecturer Workspace"}
               </Badge>
               {isSuperAdmin ? (
-                <Badge variant="outline">Super Admin</Badge>
+                <Badge variant="outline" className="font-semibold text-purple-700 border-purple-300 bg-purple-50 dark:text-purple-300 dark:border-purple-800 dark:bg-purple-950/40">
+                  Super Admin
+                </Badge>
               ) : isAdmin ? (
                 <Badge variant="outline">Administrator</Badge>
               ) : isOrganization ? (
