@@ -79,13 +79,21 @@ export default function DashboardOverviewPage() {
           icon: HelpCircleIcon,
           accent: "text-foreground bg-muted border-border",
         },
-        {
-          title: "Submissions & Results",
-          value: submissionsCount,
-          change: overview?.submissionsCount ? `${overview.submissionsCount} student submissions recorded` : "Student assessment submissions",
-          icon: BarChart3Icon,
-          accent: "text-foreground bg-muted border-border",
-        },
+        isSuperAdmin
+          ? {
+              title: "Active Workspaces",
+              value: membersCountFormatted,
+              change: "Platform educators & institutions",
+              icon: Building2Icon,
+              accent: "text-foreground bg-muted border-border",
+            }
+          : {
+              title: "Submissions & Results",
+              value: submissionsCount,
+              change: overview?.submissionsCount ? `${overview.submissionsCount} student submissions recorded` : "Student assessment submissions",
+              icon: BarChart3Icon,
+              accent: "text-foreground bg-muted border-border",
+            },
       ]
     : [
         {

@@ -21,13 +21,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
 import { assessmentsApi, tenantsApi, TenantLookupDto, StudentSubmissionItemDto } from "@/lib/api/services/assessments";
 import { useAuthStore } from "@/stores/auth-store";
 import { isAdminUser } from "@/lib/api/types/auth";
 
 export default function ResultStationPage() {
+  const router = useRouter();
   const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === "SystemAdmin" || user?.email?.toLowerCase() === "neotroltd@gmail.com";
   const isAdmin = isAdminUser(user);
+
+  useEffect(() => {
+    if (isSuperAdmin) {
+      router.replace("/dashboard");
+    }
+  }, [isSuperAdmin, router]);
 
   const [tenants, setTenants] = useState<TenantLookupDto[]>([]);
   const [selectedTenantFilter, setSelectedTenantFilter] = useState<string>("");

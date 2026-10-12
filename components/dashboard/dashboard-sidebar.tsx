@@ -66,12 +66,16 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
       icon: HelpCircleIcon,
       description: "Generate & assemble questions",
     },
-    {
-      title: "Result Station",
-      href: "/dashboard/results",
-      icon: BarChart3Icon,
-      description: "Extract test result reports",
-    },
+    ...(!isSuperAdmin
+      ? [
+          {
+            title: "Result Station",
+            href: "/dashboard/results",
+            icon: BarChart3Icon,
+            description: "Extract test result reports",
+          },
+        ]
+      : []),
     {
       title: isAdmin ? "Pricing & Packages" : "Quota Topup / Payments",
       href: "/dashboard/billing",
