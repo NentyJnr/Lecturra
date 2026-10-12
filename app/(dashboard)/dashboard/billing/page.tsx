@@ -18,6 +18,7 @@ import {
   MailIcon,
   PhoneIcon,
   ExternalLinkIcon,
+  ClockIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -137,6 +138,8 @@ export default function BillingPage() {
   const [checkoutPaymentMethod, setCheckoutPaymentMethod] = useState<string>("card");
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
+  const [verifyingOrderRef, setVerifyingOrderRef] = useState<string | null>(null);
+  const [isSyncingHistory, setIsSyncingHistory] = useState(false);
 
   // Contact Sales / Institutional Inquiry Modal State
   const [contactSalesPkg, setContactSalesPkg] = useState<PricingPackage | null>(null);
@@ -236,6 +239,73 @@ export default function BillingPage() {
       }
     } catch {
       // Keep mock or fallback
+    }
+  }
+
+  async function handleVerifyPendingTx(orderRef: string) {
+    if (!orderRef) return;
+    setVerifyingOrderRef(orderRef);
+    try {
+      const verifyRes = await billingService.verifyPayment(orderRef);
+      if (verifyRes?.isSuccess) {
+        if (verifyRes.remainingQuota !== undefined && Number.isFinite(verifyRes.remainingQuota)) {
+          useAuthStore.getState().setRemainingQuota(verifyRes.remainingQuota);
+        } else if (verifyRes.creditsAdded > 0) {
+          const current = user?.remainingQuota ?? 1500;
+          useAuthStore.getState().setRemainingQuota(current + verifyRes.creditsAdded);
+        }
+        await loadHistory();
+        setToastMsg(`🎉 Payment Verified! +${(verifyRes.creditsAdded || 5000).toLocaleString()} Credits added to your balance.`);
+        setTimeout(() => setToastMsg(null), 6000);
+      } else {
+        alert(verifyRes?.message || "Payment is still awaiting gateway confirmation on Paystack.");
+      }
+    } catch {
+      alert("Network error while verifying transaction with Paystack.");
+    } finally {
+      setVerifyingOrderRef(null);
+    }
+  }
+
+  async function handleSyncPendingHistory() {
+    setIsSyncingHistory(true);
+    try {
+      const pendingRows = history.filter((h) => h.status === "Pending");
+      if (pendingRows.length === 0) {
+        await loadHistory();
+        setToastMsg("Payment history refreshed. No pending transactions found.");
+        setTimeout(() => setToastMsg(null), 3000);
+        return;
+      }
+
+      let newlyCredited = 0;
+      for (const row of pendingRows) {
+        try {
+          const res = await billingService.verifyPayment(row.orderRef);
+          if (res?.isSuccess) {
+            newlyCredited++;
+            if (res.remainingQuota !== undefined && Number.isFinite(res.remainingQuota)) {
+              useAuthStore.getState().setRemainingQuota(res.remainingQuota);
+            }
+          }
+        } catch {
+          // Continue with next
+        }
+      }
+
+      await loadHistory();
+      if (newlyCredited > 0) {
+        setToastMsg(`🎉 Successfully verified and credited ${newlyCredited} transaction(s)!`);
+        setTimeout(() => setToastMsg(null), 6000);
+      } else {
+        setToastMsg("Gateway sync complete. Pending transactions are still awaiting Paystack clearance.");
+        setTimeout(() => setToastMsg(null), 5000);
+      }
+    } catch {
+      setToastMsg("Failed to synchronize gateway history.");
+      setTimeout(() => setToastMsg(null), 4000);
+    } finally {
+      setIsSyncingHistory(false);
     }
   }
 
@@ -676,7 +746,7 @@ export default function BillingPage() {
       {/* Payment History Table */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <CardTitle className="text-base flex items-center gap-2">
                 <HistoryIcon className="size-4 text-muted-foreground" />
@@ -686,6 +756,16 @@ export default function BillingPage() {
                 History of credit allocations and topup order transactions.
               </CardDescription>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSyncPendingHistory}
+              disabled={isSyncingHistory}
+              className="gap-1.5 text-xs h-8 border-border hover:bg-muted font-medium shrink-0"
+            >
+              <RefreshCwIcon className={`size-3.5 ${isSyncingHistory ? "animate-spin text-[#00B578]" : ""}`} />
+              {isSyncingHistory ? "Checking Gateway..." : "Sync Paystack Status"}
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -709,9 +789,27 @@ export default function BillingPage() {
                     <td className="p-3 font-semibold">{h.amount}</td>
                     <td className="p-3 text-muted-foreground">{h.provider}</td>
                     <td className="p-3">
-                      <Badge className="bg-[#00B578]/10 text-[#00B578] border-[#00B578]/30 gap-1">
-                        <CheckCircle2Icon className="size-3" /> {h.status}
-                      </Badge>
+                      {h.status === "Completed" ? (
+                        <Badge className="bg-[#00B578]/10 text-[#00B578] border-[#00B578]/30 gap-1 font-medium">
+                          <CheckCircle2Icon className="size-3" /> Completed
+                        </Badge>
+                      ) : (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge variant="outline" className="border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10 gap-1 font-medium">
+                            <ClockIcon className="size-3" /> Pending
+                          </Badge>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleVerifyPendingTx(h.orderRef)}
+                            disabled={verifyingOrderRef === h.orderRef}
+                            className="h-6 px-2 text-[11px] gap-1 border-[#00B578]/60 text-[#00B578] hover:bg-[#00B578]/10 font-semibold shadow-xs"
+                          >
+                            <RefreshCwIcon className={`size-3 ${verifyingOrderRef === h.orderRef ? "animate-spin" : ""}`} />
+                            {verifyingOrderRef === h.orderRef ? "Verifying..." : "Verify Payment"}
+                          </Button>
+                        </div>
+                      )}
                     </td>
                     <td className="p-3 text-muted-foreground">{h.date}</td>
                   </tr>
