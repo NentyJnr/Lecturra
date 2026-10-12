@@ -3,7 +3,7 @@
 import { useEffect, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useGoogleLogin, useMicrosoftLogin } from "@/hooks/use-auth";
+import { useGoogleLogin } from "@/hooks/use-auth";
 import { getApiErrorMessage } from "@/lib/api/api-error";
 
 declare global {
@@ -44,14 +44,48 @@ declare global {
 export function useSso() {
   const router = useRouter();
   const googleMutation = useGoogleLogin();
-  const microsoftMutation = useMicrosoftLogin();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isMicrosoftLoading, setIsMicrosoftLoading] = useState(false);
 
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
   const microsoftClientId = process.env.NEXT_PUBLIC_MICROSOFT_CLIENT_ID;
 
-  // Load Google Identity Services script
+  // Listen for background cross-window/popup auth completion
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "lectura_auth_success" && e.newValue) {
+        try {
+          const payload = JSON.parse(e.newValue);
+          if (payload?.timestamp) {
+            router.replace("/dashboard");
+          }
+        } catch {}
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+
+    let channel: BroadcastChannel | null = null;
+    if ("BroadcastChannel" in window) {
+      try {
+        channel = new BroadcastChannel("lecturra_auth_channel");
+        channel.onmessage = (event) => {
+          if (event.data?.type === "AUTH_SUCCESS") {
+            router.replace("/dashboard");
+          }
+        };
+      } catch {}
+    }
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      channel?.close();
+    };
+  }, [router]);
+
+  // Load Google Identity Services script for One Tap if supported
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -112,7 +146,7 @@ export function useSso() {
             ? "Your new academic account was provisioned with 1,500 free credits."
             : "Successfully signed in with Google.",
         });
-        router.push("/dashboard");
+        router.replace("/dashboard");
       } catch (err) {
         const message = getApiErrorMessage(err);
         toast.error("Google Sign-In Failed", { description: message });
@@ -138,77 +172,20 @@ export function useSso() {
 
     const redirectUri = typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : "";
     const nonce = Math.random().toString(36).substring(2, 15);
+    
+    if (typeof window !== "undefined") {
+      localStorage.setItem("lectura_sso_provider", "google");
+    }
+
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(
       googleClientId
     )}&redirect_uri=${encodeURIComponent(
       redirectUri
-    )}&response_type=id_token&scope=openid%20profile%20email&nonce=${nonce}`;
+    )}&response_type=id_token&scope=openid%20profile%20email&nonce=${nonce}&state=google`;
 
-    const width = 500;
-    const height = 600;
-    const left = window.screen.width / 2 - width / 2;
-    const top = window.screen.height / 2 - height / 2;
-
-    const popup = window.open(
-      authUrl,
-      "GoogleLogin",
-      `width=${width},height=${height},top=${top},left=${left},toolbar=no,menubar=no`
-    );
-
-    if (!popup) {
-      setIsGoogleLoading(false);
-      toast.error("Popup blocked", {
-        description: "Please allow popups for localhost to authenticate with Google.",
-      });
-      return;
-    }
-
-    // Listen for OAuth token callback from popup
-    const messageListener = async (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
-
-      if (event.data?.type === "GOOGLE_AUTH_SUCCESS" && event.data?.token) {
-        window.removeEventListener("message", messageListener);
-        popup?.close();
-
-        try {
-          const storedRef = typeof window !== "undefined" ? localStorage.getItem("lectura_referral_code") || undefined : undefined;
-          const result = await googleMutation.mutateAsync({ idToken: event.data.token, referralCode: storedRef });
-          if (storedRef && result.isNewUser) {
-            localStorage.removeItem("lectura_referral_code");
-          }
-          toast.success("Welcome back!", {
-            description: result.isNewUser
-              ? "Your new academic account was provisioned with 1,500 free credits."
-              : "Successfully signed in with Google.",
-          });
-          router.push("/dashboard");
-        } catch (err) {
-          toast.error("Google Sign-In Failed", { description: getApiErrorMessage(err) });
-        } finally {
-          setIsGoogleLoading(false);
-        }
-      } else if (event.data?.type === "GOOGLE_AUTH_ERROR") {
-        window.removeEventListener("message", messageListener);
-        popup?.close();
-        setIsGoogleLoading(false);
-        toast.error("Google Sign-In Failed", {
-          description: event.data.error || "Authentication was cancelled or denied.",
-        });
-      }
-    };
-
-    window.addEventListener("message", messageListener);
-
-    // Watch for manual popup close
-    const checkClosedInterval = setInterval(() => {
-      if (popup.closed) {
-        clearInterval(checkClosedInterval);
-        window.removeEventListener("message", messageListener);
-        setIsGoogleLoading(false);
-      }
-    }, 1000);
-  }, [googleClientId, googleMutation, router]);
+    // Standard OAuth full-page redirect in the main window
+    window.location.assign(authUrl);
+  }, [googleClientId]);
 
   const triggerMicrosoftLogin = useCallback(() => {
     if (!microsoftClientId) {
@@ -226,86 +203,20 @@ export function useSso() {
     const redirectUri = typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : "";
     const nonce = Math.random().toString(36).substring(2, 15);
     const tenant = process.env.NEXT_PUBLIC_MICROSOFT_TENANT_ID || "common";
+    
+    if (typeof window !== "undefined") {
+      localStorage.setItem("lectura_sso_provider", "microsoft");
+    }
+
     const authUrl = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize?client_id=${encodeURIComponent(
       microsoftClientId
     )}&response_type=id_token&redirect_uri=${encodeURIComponent(
       redirectUri
-    )}&scope=openid%20profile%20email&response_mode=fragment&nonce=${nonce}`;
+    )}&scope=openid%20profile%20email&response_mode=fragment&nonce=${nonce}&state=microsoft`;
 
-    const width = 500;
-    const height = 600;
-    const left = window.screen.width / 2 - width / 2;
-    const top = window.screen.height / 2 - height / 2;
-
-    const popup = window.open(
-      authUrl,
-      "MicrosoftLogin",
-      `width=${width},height=${height},top=${top},left=${left},toolbar=no,menubar=no`
-    );
-
-    if (!popup) {
-      setIsMicrosoftLoading(false);
-      toast.error("Popup blocked", {
-        description: "Please allow popups for localhost to authenticate with Microsoft.",
-      });
-      return;
-    }
-
-    // Safety timeout: Never leave user stuck on infinite spinner
-    const safetyTimeout = setTimeout(() => {
-      setIsMicrosoftLoading(false);
-      window.removeEventListener("message", messageListener);
-    }, 60000);
-
-    // Listen for OAuth token callback from popup
-    const messageListener = async (event: MessageEvent) => {
-      if (event.origin !== window.location.origin) return;
-
-      if (event.data?.type === "MS_AUTH_SUCCESS" && event.data?.token) {
-        clearTimeout(safetyTimeout);
-        window.removeEventListener("message", messageListener);
-        popup?.close();
-
-        try {
-          const storedRef = typeof window !== "undefined" ? localStorage.getItem("lectura_referral_code") || undefined : undefined;
-          const result = await microsoftMutation.mutateAsync({ token: event.data.token, referralCode: storedRef });
-          if (storedRef && result.isNewUser) {
-            localStorage.removeItem("lectura_referral_code");
-          }
-          toast.success("Welcome back!", {
-            description: result.isNewUser
-              ? "Your new academic account was provisioned with 1,500 free credits."
-              : "Successfully signed in with Microsoft.",
-          });
-          router.push("/dashboard");
-        } catch (err) {
-          toast.error("Microsoft Sign-In Failed", { description: getApiErrorMessage(err) });
-        } finally {
-          setIsMicrosoftLoading(false);
-        }
-      } else if (event.data?.type === "MS_AUTH_ERROR") {
-        clearTimeout(safetyTimeout);
-        window.removeEventListener("message", messageListener);
-        popup?.close();
-        setIsMicrosoftLoading(false);
-        toast.error("Microsoft Sign-In Failed", {
-          description: event.data.error || "Authentication was denied or cancelled.",
-        });
-      }
-    };
-
-    window.addEventListener("message", messageListener);
-
-    // Watch for manual popup close
-    const checkClosedInterval = setInterval(() => {
-      if (popup.closed) {
-        clearInterval(checkClosedInterval);
-        clearTimeout(safetyTimeout);
-        window.removeEventListener("message", messageListener);
-        setIsMicrosoftLoading(false);
-      }
-    }, 1000);
-  }, [microsoftClientId, microsoftMutation, router]);
+    // Standard OAuth full-page redirect in the main window
+    window.location.assign(authUrl);
+  }, [microsoftClientId]);
 
   return {
     triggerGoogleLogin,

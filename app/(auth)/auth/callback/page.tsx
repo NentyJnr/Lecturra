@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2Icon, AlertCircleIcon } from "lucide-react";
+import { Loader2Icon, AlertCircleIcon, CheckCircle2Icon } from "lucide-react";
 import { toast } from "sonner";
-import { microsoftLogin, googleLogin } from "@/lib/api/services/auth";
+import { microsoftLogin, googleLogin, type SsoAuthResult } from "@/lib/api/services/auth";
 import { useAuthStore } from "@/stores/auth-store";
 import { getApiErrorMessage } from "@/lib/api/api-error";
 import { Button } from "@/components/ui/button";
@@ -13,11 +13,12 @@ export default function AuthCallbackPage() {
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // 1. Extract tokens and errors from BOTH hash fragment (#id_token=...) and query string (?id_token=...)
+    // 1. Extract tokens, state, and errors from BOTH hash fragment (#id_token=...) and query string (?id_token=...)
     const hash = window.location.hash.startsWith("#") ? window.location.hash.substring(1) : window.location.hash;
     const hashParams = new URLSearchParams(hash);
     const searchParams = new URLSearchParams(window.location.search);
@@ -32,6 +33,22 @@ export default function AuthCallbackPage() {
       hashParams.get("credential") ||
       searchParams.get("credential");
 
+    const stateParam = (hashParams.get("state") || searchParams.get("state") || "").toLowerCase();
+    const issParam = (hashParams.get("iss") || searchParams.get("iss") || "").toLowerCase();
+    const storedProvider = localStorage.getItem("lectura_sso_provider") || "";
+
+    const isGoogle =
+      stateParam.includes("google") ||
+      issParam.includes("google") ||
+      issParam.includes("accounts.google.com") ||
+      storedProvider === "google";
+
+    const isMicrosoft =
+      stateParam.includes("microsoft") ||
+      issParam.includes("microsoft") ||
+      issParam.includes("login.microsoftonline.com") ||
+      storedProvider === "microsoft";
+
     const rawError = hashParams.get("error") || searchParams.get("error");
     const rawErrorDesc =
       hashParams.get("error_description") ||
@@ -43,15 +60,16 @@ export default function AuthCallbackPage() {
     if (rawError) {
       const formattedError = rawErrorDesc ? decodeURIComponent(rawErrorDesc) : rawError;
       
-      // If running inside a popup window
-      if (window.opener && !window.opener.closed) {
-        window.opener.postMessage({ type: "MS_AUTH_ERROR", error: formattedError }, window.location.origin);
-        window.opener.postMessage({ type: "GOOGLE_AUTH_ERROR", error: formattedError }, window.location.origin);
-        window.close();
-        return;
-      }
+      // Notify parent/opener if opened via popup
+      try {
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({ type: "MS_AUTH_ERROR", error: formattedError }, window.location.origin);
+          window.opener.postMessage({ type: "GOOGLE_AUTH_ERROR", error: formattedError }, window.location.origin);
+          window.close();
+          return;
+        }
+      } catch {}
 
-      // If running in full-page redirect mode
       setErrorMessage(formattedError);
       toast.error("Authentication failed", { description: formattedError });
       return;
@@ -59,26 +77,85 @@ export default function AuthCallbackPage() {
 
     // Case 2: Token successfully returned
     if (idToken) {
-      // If running inside a popup window
-      if (window.opener && !window.opener.closed) {
-        window.opener.postMessage({ type: "MS_AUTH_SUCCESS", token: idToken }, window.location.origin);
-        window.opener.postMessage({ type: "GOOGLE_AUTH_SUCCESS", token: idToken }, window.location.origin);
-        window.close();
-        return;
-      }
-
-      // If running in full-page redirect mode (no window.opener)
-      const completeRedirectAuth = async () => {
+      const completeAuth = async () => {
         try {
-          // Attempt Microsoft login first, fallback to Google
-          let result;
-          try {
-            result = await microsoftLogin(idToken);
-          } catch {
-            result = await googleLogin(idToken);
+          const storedRef = localStorage.getItem("lectura_referral_code") || undefined;
+          let result: SsoAuthResult;
+
+          // Route to the correct provider endpoint directly to avoid false 500/400 errors
+          if (isMicrosoft) {
+            result = await microsoftLogin(idToken, storedRef);
+          } else if (isGoogle) {
+            result = await googleLogin(idToken, storedRef);
+          } else {
+            // If provider is undetermined, inspect or try Google first, then Microsoft
+            try {
+              result = await googleLogin(idToken, storedRef);
+            } catch {
+              result = await microsoftLogin(idToken, storedRef);
+            }
           }
 
+          if (storedRef && result.isNewUser) {
+            localStorage.removeItem("lectura_referral_code");
+          }
+          localStorage.removeItem("lectura_sso_provider");
+
+          // Save session to global store and local storage
           setSession(result);
+          setIsSuccess(true);
+
+          // Broadcast to any other open tabs (e.g. login tab)
+          try {
+            if ("BroadcastChannel" in window) {
+              const channel = new BroadcastChannel("lecturra_auth_channel");
+              channel.postMessage({ type: "AUTH_SUCCESS", session: result });
+              channel.close();
+            }
+          } catch {}
+
+          try {
+            localStorage.setItem(
+              "lectura_auth_success",
+              JSON.stringify({ timestamp: Date.now(), userId: result.user?.id })
+            );
+          } catch {}
+
+          // Check if running inside a popup
+          const isPopup =
+            typeof window !== "undefined" &&
+            (window.opener !== null ||
+              window.name === "GoogleLogin" ||
+              window.name === "MicrosoftLogin" ||
+              (window.innerWidth < 650 && window.innerHeight < 750));
+
+          if (isPopup) {
+            // Attempt to message opener and close popup
+            try {
+              if (window.opener && !window.opener.closed) {
+                window.opener.postMessage({ type: "GOOGLE_AUTH_SUCCESS", token: idToken }, window.location.origin);
+                window.opener.postMessage({ type: "MS_AUTH_SUCCESS", token: idToken }, window.location.origin);
+                window.opener.postMessage({ type: "AUTH_SUCCESS", session: result }, window.location.origin);
+              }
+            } catch {}
+
+            try {
+              window.close();
+            } catch {}
+
+            // If popup was NOT closed by browser (e.g. COOP restriction), navigate to dashboard
+            setTimeout(() => {
+              toast.success("Welcome back!", {
+                description: result.isNewUser
+                  ? "Your academic account was provisioned with 1,500 credits."
+                  : "Successfully signed in.",
+              });
+              router.replace("/dashboard");
+            }, 600);
+            return;
+          }
+
+          // Main window standard redirect
           toast.success("Welcome back!", {
             description: result.isNewUser
               ? "Your academic account was provisioned with 1,500 credits."
@@ -92,7 +169,7 @@ export default function AuthCallbackPage() {
         }
       };
 
-      completeRedirectAuth();
+      completeAuth();
       return;
     }
 
@@ -124,6 +201,14 @@ export default function AuthCallbackPage() {
             >
               Return to Login
             </Button>
+          </div>
+        ) : isSuccess ? (
+          <div className="space-y-3">
+            <div className="mx-auto flex size-10 items-center justify-center rounded-full bg-[#00B578]/10 text-[#00B578]">
+              <CheckCircle2Icon className="size-5" />
+            </div>
+            <h2 className="text-sm font-semibold text-foreground">Authentication Successful</h2>
+            <p className="text-xs text-muted-foreground">Redirecting to your academic workspace...</p>
           </div>
         ) : (
           <div className="space-y-3">
