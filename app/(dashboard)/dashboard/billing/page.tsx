@@ -1,5 +1,8 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { useEffect, useState } from "react";
 import {
   CreditCardIcon,
@@ -328,7 +331,19 @@ export default function BillingPage() {
     try {
       const data = await billingService.getPricingPackages();
       if (data && data.length > 0) {
-        setPackages(deduplicatePackages(data));
+        // 1. Sanitize: ensure any zero-price or enterprise package has isCustomQuote = true
+        const sanitized = data.map((p) => ({
+          ...p,
+          isCustomQuote: Boolean(p.isCustomQuote || p.priceNGN <= 0 || p.name.toLowerCase().includes("enterprise")),
+        }));
+
+        // 2. Guarantee Enterprise tier is included even if legacy deployed API did not return it
+        const hasEnterprise = sanitized.some((p) => p.isCustomQuote || p.name.toLowerCase().includes("enterprise"));
+        const combined = hasEnterprise
+          ? sanitized
+          : [...sanitized, ...defaultFallbackPackages.filter((p) => p.isCustomQuote)];
+
+        setPackages(deduplicatePackages(combined));
       } else {
         setPackages(deduplicatePackages(defaultFallbackPackages));
       }
