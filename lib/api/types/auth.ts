@@ -69,6 +69,8 @@ export interface AuthUser {
   tenantId?: string;
   remainingQuota?: number;
   monthlyQuotaLimit?: number;
+  referralCode?: string;
+  referredByReferralCode?: string;
 }
 
 export interface AuthSession {
@@ -91,6 +93,7 @@ export interface ApiMessage {
 
 export function isAdminUser(user: AuthUser | null): boolean {
   if (!user) return false;
+  if (user.email && user.email.toLowerCase() === "neotroltd@gmail.com") return true;
   if (user.role) {
     const role = user.role.toLowerCase();
     if (role === "institutionadmin" || role === "systemadmin" || role === "superadmin" || role.includes("admin")) {

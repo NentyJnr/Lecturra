@@ -102,7 +102,11 @@ export function useSso() {
 
       setIsGoogleLoading(true);
       try {
-        const result = await googleMutation.mutateAsync(response.credential);
+        const storedRef = typeof window !== "undefined" ? localStorage.getItem("lectura_referral_code") || undefined : undefined;
+        const result = await googleMutation.mutateAsync({ idToken: response.credential, referralCode: storedRef });
+        if (storedRef && result.isNewUser) {
+          localStorage.removeItem("lectura_referral_code");
+        }
         toast.success("Welcome back!", {
           description: result.isNewUser
             ? "Your new academic account was provisioned with 1,500 free credits."
@@ -168,7 +172,11 @@ export function useSso() {
         popup?.close();
 
         try {
-          const result = await googleMutation.mutateAsync(event.data.token);
+          const storedRef = typeof window !== "undefined" ? localStorage.getItem("lectura_referral_code") || undefined : undefined;
+          const result = await googleMutation.mutateAsync({ idToken: event.data.token, referralCode: storedRef });
+          if (storedRef && result.isNewUser) {
+            localStorage.removeItem("lectura_referral_code");
+          }
           toast.success("Welcome back!", {
             description: result.isNewUser
               ? "Your new academic account was provisioned with 1,500 free credits."
@@ -259,7 +267,11 @@ export function useSso() {
         popup?.close();
 
         try {
-          const result = await microsoftMutation.mutateAsync(event.data.token);
+          const storedRef = typeof window !== "undefined" ? localStorage.getItem("lectura_referral_code") || undefined : undefined;
+          const result = await microsoftMutation.mutateAsync({ token: event.data.token, referralCode: storedRef });
+          if (storedRef && result.isNewUser) {
+            localStorage.removeItem("lectura_referral_code");
+          }
           toast.success("Welcome back!", {
             description: result.isNewUser
               ? "Your new academic account was provisioned with 1,500 free credits."

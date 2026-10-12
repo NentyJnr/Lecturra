@@ -44,7 +44,12 @@ export function useLogin() {
 export function useGoogleLogin() {
   const setSession = useAuthStore((s) => s.setSession);
   return useMutation({
-    mutationFn: (idToken: string) => googleLogin(idToken),
+    mutationFn: (param: string | { idToken: string; referralCode?: string }) => {
+      if (typeof param === "string") {
+        return googleLogin(param);
+      }
+      return googleLogin(param.idToken, param.referralCode);
+    },
     onSuccess: (session) => setSession(session),
   });
 }
@@ -52,7 +57,12 @@ export function useGoogleLogin() {
 export function useMicrosoftLogin() {
   const setSession = useAuthStore((s) => s.setSession);
   return useMutation({
-    mutationFn: (token: string) => microsoftLogin(token),
+    mutationFn: (param: string | { token: string; referralCode?: string }) => {
+      if (typeof param === "string") {
+        return microsoftLogin(param);
+      }
+      return microsoftLogin(param.token, param.referralCode);
+    },
     onSuccess: (session) => setSession(session),
   });
 }

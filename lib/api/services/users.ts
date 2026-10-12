@@ -27,6 +27,12 @@ export interface MemberItem {
   isActive: boolean;
   isTenantSuspended: boolean;
   createdAt: string;
+  questionsGenerated?: number;
+  creditsUsed?: number;
+  remainingCredits?: number;
+  referralCode?: string;
+  referredBy?: string | null;
+  referralCount?: number;
 }
 
 export async function getCurrentUserProfile(): Promise<AuthUser | null> {
@@ -72,4 +78,22 @@ export async function toggleUserStatus(userId: string, isActive: boolean): Promi
     isActive,
   });
   return res.data?.success || false;
+}
+
+export interface ApplyReferralResponse {
+  referralCodeApplied: string;
+  bonusCreditsAwarded: number;
+  newRemainingQuota: number;
+  message: string;
+}
+
+export async function applyReferralCode(referralCode: string): Promise<ApplyReferralResponse> {
+  const res = await api.post<{ success: boolean; message: string; data: ApplyReferralResponse }>(
+    "/api/v1/users/apply-referral",
+    { referralCode }
+  );
+  if (res.data?.success && res.data?.data) {
+    return res.data.data;
+  }
+  throw new Error(res.data?.message || "Failed to apply referral code");
 }

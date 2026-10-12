@@ -34,10 +34,9 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
   const handleLogout = useLogout();
 
   // Determine role and account type from auth store
-  const isOrganization = user?.accountType === 2 || !!user?.institutionName;
-  const isAdmin = isAdminUser(user);
   const isSuperAdmin = user?.role === "SystemAdmin" || user?.email?.toLowerCase() === "neotroltd@gmail.com";
-
+  const isAdmin = isAdminUser(user) || isSuperAdmin;
+  const isOrganization = user?.accountType === 2 || !!user?.institutionName || isSuperAdmin;
 
   interface NavItem {
     title: string;
@@ -83,10 +82,10 @@ export function DashboardSidebar({ mobileOpen, setMobileOpen }: DashboardSidebar
 
   const adminNavItems: NavItem[] = [
     {
-      title: "Members",
+      title: "Membership",
       href: "/dashboard/members",
       icon: UsersIcon,
-      description: "Organization staff & access code",
+      description: "Members, credits used & questions",
     },
   ];
 

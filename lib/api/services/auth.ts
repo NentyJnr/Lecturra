@@ -39,8 +39,8 @@ export interface SsoAuthResult extends AuthSession {
   isNewUser?: boolean;
 }
 
-export async function googleLogin(idToken: string): Promise<SsoAuthResult> {
-  const { data } = await api.post<any>(AUTH_ENDPOINTS.google, { idToken });
+export async function googleLogin(idToken: string, referralCode?: string): Promise<SsoAuthResult> {
+  const { data } = await api.post<any>(AUTH_ENDPOINTS.google, { idToken, referralCode });
   const raw = data?.data || data;
   return {
     accessToken: raw.token || raw.accessToken,
@@ -54,8 +54,8 @@ export async function googleLogin(idToken: string): Promise<SsoAuthResult> {
   };
 }
 
-export async function microsoftLogin(token: string): Promise<SsoAuthResult> {
-  const { data } = await api.post<any>(AUTH_ENDPOINTS.microsoft, { token });
+export async function microsoftLogin(token: string, referralCode?: string): Promise<SsoAuthResult> {
+  const { data } = await api.post<any>(AUTH_ENDPOINTS.microsoft, { token, referralCode });
   const raw = data?.data || data;
   return {
     accessToken: raw.token || raw.accessToken,

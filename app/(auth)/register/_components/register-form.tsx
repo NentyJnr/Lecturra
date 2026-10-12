@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -68,9 +68,21 @@ function MicrosoftIcon(props: React.SVGProps<SVGSVGElement>) {
 
 export function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const registerMutation = useRegister();
   const { triggerGoogleLogin, triggerMicrosoftLogin, isGoogleLoading, isMicrosoftLoading } = useSso();
   const [showPassword, setShowPassword] = useState(false);
+  const [referralBonusActive, setReferralBonusActive] = useState(false);
+
+  useEffect(() => {
+    const ref = searchParams?.get("ref");
+    if (ref) {
+      localStorage.setItem("lectura_referral_code", ref.trim());
+      setReferralBonusActive(true);
+    } else if (typeof window !== "undefined" && localStorage.getItem("lectura_referral_code")) {
+      setReferralBonusActive(true);
+    }
+  }, [searchParams]);
 
   const {
     register,
@@ -86,6 +98,7 @@ export function RegisterForm() {
   const selectedAccountType = watch("accountType");
 
   function onSubmit(values: RegisterValues) {
+    const storedRef = typeof window !== "undefined" ? localStorage.getItem("lectura_referral_code") || undefined : undefined;
     registerMutation.mutate(
       {
         fullName: values.fullName,
@@ -93,9 +106,13 @@ export function RegisterForm() {
         password: values.password,
         accountType: values.accountType,
         institutionName: values.institutionName,
+        referredByReferralCode: storedRef,
       },
       {
         onSuccess: () => {
+          if (storedRef) {
+            localStorage.removeItem("lectura_referral_code");
+          }
           toast.success("Account created successfully!", {
             description: "Check your email for the verification link before logging in.",
           });

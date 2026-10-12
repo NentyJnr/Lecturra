@@ -61,9 +61,9 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
   // SAFETY: pathname is a validated dashboard route string, fallback to empty covers unknown routes
   const currentPage = pageTitles[pathname as keyof typeof pageTitles] || { title: "", subtitle: "" };
 
-  const isOrganization = user?.accountType === 2 || !!user?.institutionName;
-  const isAdmin = isAdminUser(user);
   const isSuperAdmin = user?.role === "SystemAdmin" || user?.email?.toLowerCase() === "neotroltd@gmail.com";
+  const isAdmin = isAdminUser(user) || isSuperAdmin;
+  const isOrganization = user?.accountType === 2 || !!user?.institutionName || isSuperAdmin;
   const remainingCredits = user?.remainingQuota ?? 1500;
 
   const pageTitle = pathname === "/dashboard/billing" && isAdmin

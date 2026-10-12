@@ -45,9 +45,9 @@ export default function DashboardOverviewPage() {
     loadOverview();
   }, []);
 
-  const isOrganization = overview?.isOrganization ?? (user?.accountType === 2 || !!user?.institutionName);
-  const isAdmin = isAdminUser(user);
   const isSuperAdmin = user?.role === "SystemAdmin" || user?.email?.toLowerCase() === "neotroltd@gmail.com";
+  const isAdmin = isAdminUser(user) || isSuperAdmin;
+  const isOrganization = overview?.isOrganization ?? (user?.accountType === 2 || !!user?.institutionName || isSuperAdmin);
 
   const remainingQuotaFormatted = (overview?.remainingQuota ?? user?.remainingQuota ?? 1500).toLocaleString();
   const libraryCount = (overview?.libraryMaterialsCount ?? 0).toString();
