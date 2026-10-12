@@ -477,17 +477,17 @@ export default function QuestionBankPage() {
               .no-print { display: none; }
             }
             body { font-family: Arial, sans-serif; padding: 40px; color: #111827; max-width: 850px; margin: auto; }
-            .header-box { text-align: center; border-bottom: 2px solid #3730a3; padding-bottom: 16px; margin-bottom: 24px; }
-            .course-code { font-size: 24px; font-weight: bold; color: #3730a3; margin: 0; }
-            .course-title { font-size: 16px; font-weight: 600; color: #4f46e5; margin: 4px 0; }
+            .header-box { text-align: center; border-bottom: 2px solid #38492A; padding-bottom: 16px; margin-bottom: 24px; }
+            .course-code { font-size: 24px; font-weight: bold; color: #38492A; margin: 0; }
+            .course-title { font-size: 16px; font-weight: 600; color: #38492A; margin: 4px 0; }
             .topics-bar { font-size: 12px; color: #6b7280; margin-top: 8px; font-style: italic; }
             .meta-info { display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 20px; }
-            .section-title { font-size: 16px; font-weight: bold; color: #1e1b4b; border-bottom: 1px solid #c7d2fe; padding-bottom: 6px; margin: 32px 0 16px 0; }
+            .section-title { font-size: 16px; font-weight: bold; color: #1e291e; border-bottom: 1px solid #8FB373; padding-bottom: 6px; margin: 32px 0 16px 0; }
           </style>
         </head>
         <body>
           <div className="no-print" style="text-align: right; margin-bottom: 20px;">
-            <button onclick="window.print()" style="padding: 8px 16px; background: #4f46e5; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+            <button onclick="window.print()" style="padding: 8px 16px; background: #38492A; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
               Print / Save as PDF
             </button>
           </div>
@@ -590,7 +590,7 @@ export default function QuestionBankPage() {
       {isAdmin ? (
         <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-border/40">
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="outline" className="gap-1 border-purple-500/40 text-purple-600 dark:text-purple-400 font-semibold">
+            <Badge variant="outline" className="gap-1 border-primary/40 text-primary dark:text-primary font-semibold bg-primary/5">
               <ShieldCheckIcon className="size-3.5" /> Platform Global Audit
             </Badge>
           </div>
@@ -599,12 +599,12 @@ export default function QuestionBankPage() {
             {/* Tenant Filter Dropdown for Admin */}
             <div className="flex items-center gap-2">
               <Label className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-                <FilterIcon className="size-3.5 text-purple-500" /> Filter Tenant:
+                <FilterIcon className="size-3.5 text-primary" /> Filter Tenant:
               </Label>
               <select
                 value={selectedTenantFilter}
                 onChange={(e) => setSelectedTenantFilter(e.target.value)}
-                className="h-9 rounded-lg border border-purple-500/30 bg-background px-3 text-xs outline-none focus:border-purple-500 font-medium"
+                className="h-9 rounded-lg border border-primary/30 bg-background px-3 text-xs outline-none focus:border-primary font-medium"
               >
                 <option value="">-- All Institutions & Tenants --</option>
                 {tenants.map((t) => (
@@ -618,16 +618,16 @@ export default function QuestionBankPage() {
             <Button
               onClick={() => setShowExportModal(true)}
               variant="outline"
-              className="gap-1 text-xs border-indigo-500/30"
+              className="gap-1 text-xs border-primary/30 text-primary hover:bg-primary/5"
             >
-              <FileDownIcon className="size-3.5 text-indigo-600" /> Export (Aiken / GIFT / PDF)
+              <FileDownIcon className="size-3.5 text-primary" /> Export (Aiken / GIFT / PDF)
             </Button>
           </div>
         </div>
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="gap-1 border-indigo-500/30 text-indigo-600 dark:text-indigo-400">
+            <Badge variant="outline" className="gap-1 border-primary/30 text-primary dark:text-primary bg-primary/5">
               <HelpCircleIcon className="size-3.5" /> AI Question Bank Engine
             </Badge>
           </div>
@@ -638,7 +638,7 @@ export default function QuestionBankPage() {
                 onClick={handleGenerateShareLink}
                 disabled={isSharing}
                 variant="outline"
-                className="gap-1.5 text-xs border-purple-500/40 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40"
+                className="gap-1.5 text-xs border-primary/40 text-primary dark:text-primary hover:bg-primary/5"
               >
                 {isSharing ? <Loader2Icon className="size-3.5 animate-spin" /> : <Share2Icon className="size-3.5" />}
                 <span>Generate Student Link</span>
@@ -648,9 +648,9 @@ export default function QuestionBankPage() {
             <Button
               onClick={() => setShowExportModal(true)}
               variant="outline"
-              className="gap-1 text-xs border-indigo-500/30"
+              className="gap-1 text-xs border-primary/30 text-primary hover:bg-primary/5"
             >
-              <FileDownIcon className="size-3.5 text-indigo-600" /> Export (Aiken / GIFT / PDF)
+              <FileDownIcon className="size-3.5 text-primary" /> Export (Aiken / GIFT / PDF)
             </Button>
           </div>
         </div>
@@ -661,7 +661,7 @@ export default function QuestionBankPage() {
         <Card className="border-border bg-card">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <SlidersIcon className="size-4 text-indigo-600 dark:text-indigo-400" />
+              <SlidersIcon className="size-4 text-primary" />
               AI Question Run Configuration
             </CardTitle>
             <CardDescription className="text-xs">
@@ -675,7 +675,7 @@ export default function QuestionBankPage() {
                 {/* Target Course Selector */}
                 <div className="space-y-1.5">
                   <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    <BookOpenIcon className="size-3.5 text-indigo-500" /> Target Course Material
+                    <BookOpenIcon className="size-3.5 text-primary" /> Target Course Material
                   </Label>
                   {materials.length === 0 ? (
                     <div className="rounded-lg border border-dashed border-border bg-muted/20 p-3 text-xs text-muted-foreground flex items-center justify-between gap-2">
@@ -688,7 +688,7 @@ export default function QuestionBankPage() {
                     <select
                       value={selectedMaterialId}
                       onChange={(e) => handleMaterialChange(e.target.value)}
-                      className="h-10 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-indigo-500 font-medium"
+                      className="h-10 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary/30 font-medium"
                     >
                       <option value="">-- Select Target Course Material --</option>
                       {materials.map((m) => (
@@ -712,7 +712,7 @@ export default function QuestionBankPage() {
                     <select
                       value={targetAgeRange}
                       onChange={(e) => setTargetAgeRange(e.target.value)}
-                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-indigo-500"
+                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
                     >
                       <option value="10-14">10-14 Years (Middle School)</option>
                       <option value="15-18">15-18 Years (High School / K-12)</option>
@@ -728,7 +728,7 @@ export default function QuestionBankPage() {
                     <select
                       value={knowledgeLevel}
                       onChange={(e) => setKnowledgeLevel(e.target.value)}
-                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-indigo-500"
+                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
                     >
                       <option value="Beginner">Beginner / Introductory</option>
                       <option value="Intermediate">Intermediate</option>
@@ -744,7 +744,7 @@ export default function QuestionBankPage() {
                     <select
                       value={questionType}
                       onChange={(e) => setQuestionType(e.target.value)}
-                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-indigo-500"
+                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
                     >
                       <option value="MCQ">Multiple Choice (MCQ)</option>
                       <option value="TrueFalse">True / False Only</option>
@@ -757,7 +757,7 @@ export default function QuestionBankPage() {
                     <select
                       value={bloomsLevel}
                       onChange={(e) => setBloomsLevel(e.target.value)}
-                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-indigo-500"
+                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
                     >
                       <option value="Balanced">Balanced (Remember & Apply)</option>
                       <option value="Remember">Remember & Understand</option>
@@ -770,7 +770,7 @@ export default function QuestionBankPage() {
                     <select
                       value={batchCount}
                       onChange={(e) => setBatchCount(e.target.value)}
-                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-indigo-500"
+                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
                     >
                       <option value="10">10 Questions (100 Credits)</option>
                       <option value="25">25 Questions (250 Credits)</option>
@@ -788,7 +788,7 @@ export default function QuestionBankPage() {
                     <select
                       value={testDuration}
                       onChange={(e) => setTestDuration(e.target.value)}
-                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-indigo-500"
+                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
                     >
                       <option value="3">3 Minutes (Test Run)</option>
                       <option value="15">15 Minutes</option>
@@ -808,7 +808,7 @@ export default function QuestionBankPage() {
                     <select
                       value={totalMarks}
                       onChange={(e) => setTotalMarks(e.target.value)}
-                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-indigo-500"
+                      className="h-9 w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary/30"
                     >
                       <option value="10">10 Marks</option>
                       <option value="20">20 Marks</option>
@@ -830,12 +830,12 @@ export default function QuestionBankPage() {
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2">
                     <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                      <LayersIcon className="size-3.5 text-purple-500" /> Extracted Topics in Material
+                      <LayersIcon className="size-3.5 text-primary" /> Extracted Topics in Material
                     </Label>
                     <button
                       type="button"
                       onClick={toggleSelectAllTopics}
-                      className="text-[11px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+                      className="text-[11px] font-medium text-primary hover:underline"
                     >
                       {currentMaterial && selectedTopics.length === currentMaterial.topics.length
                         ? "Deselect All"
@@ -854,7 +854,7 @@ export default function QuestionBankPage() {
                     </div>
                   ) : isLoadingTopics ? (
                     <div className="flex items-center justify-center p-6 text-xs text-muted-foreground gap-2 border border-dashed rounded-lg bg-muted/20">
-                      <Loader2Icon className="size-4 animate-spin text-purple-500" />
+                      <Loader2Icon className="size-4 animate-spin text-primary" />
                       <span>Extracting AI topics from document...</span>
                     </div>
                   ) : currentMaterial?.topics && currentMaterial.topics.length > 0 ? (
@@ -867,12 +867,12 @@ export default function QuestionBankPage() {
                             onClick={() => toggleTopic(t.name)}
                             className={`flex items-center gap-2.5 p-2 rounded-lg border text-xs cursor-pointer transition-colors ${
                               isChecked
-                                ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-700 dark:text-indigo-300 font-medium"
+                                ? "bg-primary/10 border-primary/30 text-primary font-medium"
                                 : "bg-background/60 border-border/70 text-muted-foreground hover:bg-muted/40"
                             }`}
                           >
                             {isChecked ? (
-                              <CheckSquareIcon className="size-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                              <CheckSquareIcon className="size-4 shrink-0 text-primary" />
                             ) : (
                               <SquareIcon className="size-4 shrink-0 opacity-40" />
                             )}
@@ -892,7 +892,7 @@ export default function QuestionBankPage() {
                   <Button
                     onClick={triggerAiGenerator}
                     disabled={isGenerating}
-                    className="w-full gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+                    className="w-full gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-sm transition-all"
                   >
                     {isGenerating ? <Loader2Icon className="size-4 animate-spin" /> : <SparklesIcon className="size-4" />}
                     <span>{isGenerating ? "Parsing & Generating..." : "Generate Questions with AI"}</span>
@@ -905,11 +905,11 @@ export default function QuestionBankPage() {
       )}
 
       {/* Created Assessments & Question Sets Repository Table */}
-      <Card className="border-indigo-500/30">
+      <Card className="border-border">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <CardTitle className="text-base flex items-center gap-2">
-              <BookOpenIcon className="size-4 text-indigo-600" /> Created Assessments & Question Sets ({savedAssessments.length})
+              <BookOpenIcon className="size-4 text-primary" /> Created Assessments & Question Sets ({savedAssessments.length})
             </CardTitle>
             <CardDescription className="text-xs">
               {isAdmin
@@ -923,7 +923,7 @@ export default function QuestionBankPage() {
             variant="outline"
             onClick={() => loadSavedAssessmentsList(selectedTenantFilter)}
             disabled={isLoadingAssessments}
-            className="text-xs gap-1.5 border-indigo-500/30 text-indigo-600 dark:text-indigo-400"
+            className="text-xs gap-1.5 border-primary/30 text-primary dark:text-primary hover:bg-primary/5"
           >
             {isLoadingAssessments ? <Loader2Icon className="size-3.5 animate-spin" /> : <SparklesIcon className="size-3.5" />}
             <span>Refresh Assessments</span>
@@ -933,7 +933,7 @@ export default function QuestionBankPage() {
         <CardContent>
           {isLoadingAssessments ? (
             <div className="py-8 text-center text-xs text-muted-foreground flex flex-col items-center justify-center space-y-2">
-              <Loader2Icon className="size-6 animate-spin text-indigo-600" />
+              <Loader2Icon className="size-6 animate-spin text-primary" />
               <p>Loading created assessments...</p>
             </div>
           ) : savedAssessments.length === 0 ? (
@@ -965,18 +965,18 @@ export default function QuestionBankPage() {
                       {isAdmin && (
                         <td className="p-3 font-medium text-foreground">
                           <div className="flex items-center gap-1.5">
-                            <Building2Icon className="size-3.5 text-purple-500 shrink-0" />
+                            <Building2Icon className="size-3.5 text-primary shrink-0" />
                             <span className="truncate max-w-[160px] font-semibold">{item.tenantName || "Lectura Workspace"}</span>
                           </div>
                         </td>
                       )}
                       <td className="p-3">
                         {isAdmin ? (
-                          <Badge variant="secondary" className="font-mono text-[10px] bg-purple-500/10 text-purple-600 dark:text-purple-400 font-semibold">
+                          <Badge variant="secondary" className="font-mono text-[10px] bg-primary/10 text-primary font-semibold">
                             {item.tokensUsed ?? (item.totalQuestions * 10)} Tokens
                           </Badge>
                         ) : (
-                          <Badge variant="secondary" className="font-mono text-[10px] bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold">
+                          <Badge variant="secondary" className="font-mono text-[10px] bg-primary/10 text-primary font-semibold">
                             {item.courseCode}
                           </Badge>
                         )}
@@ -997,7 +997,7 @@ export default function QuestionBankPage() {
                         <Button
                           size="xs"
                           onClick={() => openAssessmentActionModal(item.id)}
-                          className="gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs shadow-sm"
+                          className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-xs shadow-sm"
                         >
                           <EyeIcon className="size-3.5" />
                           <span>Action / View &rarr;</span>
@@ -1041,7 +1041,7 @@ export default function QuestionBankPage() {
           <CardContent className="space-y-4">
             {!hasGenerated ? (
               <div className="py-12 px-4 text-center border-2 border-dashed border-border/80 rounded-2xl bg-muted/10 space-y-3">
-                <div className="flex size-14 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 mx-auto">
+                <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20 mx-auto">
                   <BookOpenIcon className="size-7" />
                 </div>
                 <div className="space-y-1">
@@ -1054,7 +1054,7 @@ export default function QuestionBankPage() {
                   <Button
                     onClick={triggerAiGenerator}
                     disabled={isGenerating}
-                    className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white"
+                    className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-sm transition-all"
                   >
                     <SparklesIcon className="size-4" />
                     <span>Generate Questions with AI</span>
@@ -1070,7 +1070,7 @@ export default function QuestionBankPage() {
                 <div key={q.id} className="rounded-xl border border-border p-4 space-y-3 bg-muted/20 hover:bg-muted/40 transition-colors">
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-2">
                     <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="font-mono text-[10px] bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                      <Badge variant="secondary" className="font-mono text-[10px] bg-primary/10 text-primary font-semibold">
                         {q.courseCode}
                       </Badge>
                       <span className="text-xs font-semibold text-foreground">{q.topic}</span>
@@ -1159,7 +1159,7 @@ export default function QuestionBankPage() {
           <div className="bg-background border border-border rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b pb-3">
               <h3 className="font-heading font-semibold text-base flex items-center gap-2">
-                <FileDownIcon className="size-4 text-indigo-600" /> Export Question Bank
+                <FileDownIcon className="size-4 text-primary" /> Export Question Bank
               </h3>
               <button
                 onClick={() => setShowExportModal(false)}
@@ -1176,18 +1176,18 @@ export default function QuestionBankPage() {
             <div className="space-y-2.5">
               <button
                 onClick={exportToFormattedPdf}
-                className="w-full text-left p-3.5 rounded-xl border border-indigo-500/30 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/30 transition-colors flex items-center justify-between group"
+                className="w-full text-left p-3.5 rounded-xl border border-primary/30 hover:bg-primary/5 transition-colors flex items-center justify-between group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="size-9 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                     <PrinterIcon className="size-5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-semibold text-foreground group-hover:text-indigo-600">Formatted PDF Document</h4>
+                    <h4 className="text-xs font-semibold text-foreground group-hover:text-primary">Formatted PDF Document</h4>
                     <p className="text-[11px] text-muted-foreground">Includes Course Header, Selected Topics & Answer Key</p>
                   </div>
                 </div>
-                <Badge variant="outline" className="text-[10px] border-indigo-500/30 text-indigo-600">PDF</Badge>
+                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">PDF</Badge>
               </button>
 
               <button
@@ -1211,11 +1211,11 @@ export default function QuestionBankPage() {
                 className="w-full text-left p-3.5 rounded-xl border border-border hover:bg-muted/40 transition-colors flex items-center justify-between group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="size-9 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center">
+                  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
                     <FileTextIcon className="size-5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-semibold text-foreground group-hover:text-purple-600">GIFT Quiz Format</h4>
+                    <h4 className="text-xs font-semibold text-foreground group-hover:text-primary">GIFT Quiz Format</h4>
                     <p className="text-[11px] text-muted-foreground">Structured syntax with category & weight tags</p>
                   </div>
                 </div>
@@ -1231,7 +1231,7 @@ export default function QuestionBankPage() {
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-background border border-border rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="font-heading font-semibold text-base flex items-center gap-2 text-purple-600 dark:text-purple-400">
+              <h3 className="font-heading font-semibold text-base flex items-center gap-2 text-primary">
                 <Share2Icon className="size-4" /> Share Link with Students
               </h3>
               <button
@@ -1262,7 +1262,7 @@ export default function QuestionBankPage() {
                     toast.success("Student share link copied!");
                     setTimeout(() => setCopiedLink(false), 2500);
                   }}
-                  className="bg-purple-600 hover:bg-purple-700 text-white text-xs shrink-0 gap-1.5"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shrink-0 gap-1.5"
                 >
                   {copiedLink ? <CheckIcon className="size-3.5" /> : <CopyIcon className="size-3.5" />}
                   <span>{copiedLink ? "Copied!" : "Copy Link"}</span>
@@ -1276,7 +1276,7 @@ export default function QuestionBankPage() {
                 href={shareUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
+                className="text-primary font-medium hover:underline"
               >
                 Preview Student Portal &rarr;
               </a>
@@ -1293,7 +1293,7 @@ export default function QuestionBankPage() {
             <div>
               <div className="flex items-center justify-between border-b pb-3">
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="font-mono text-xs bg-indigo-600 text-white">
+                  <Badge variant="secondary" className="font-mono text-xs bg-primary text-primary-foreground font-semibold">
                     {activeAssessmentModal.courseCode}
                   </Badge>
                   <h3 className="font-heading font-bold text-lg text-foreground truncate max-w-md">
@@ -1314,7 +1314,7 @@ export default function QuestionBankPage() {
                   onClick={() => setActiveSlide(1)}
                   className={`py-2 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
                     activeSlide === 1
-                      ? "bg-indigo-600 text-white shadow-sm"
+                      ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -1325,7 +1325,7 @@ export default function QuestionBankPage() {
                   onClick={() => setActiveSlide(2)}
                   className={`py-2 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
                     activeSlide === 2
-                      ? "bg-emerald-600 text-white shadow-sm"
+                      ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -1336,7 +1336,7 @@ export default function QuestionBankPage() {
                   onClick={() => setActiveSlide(3)}
                   className={`py-2 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
                     activeSlide === 3
-                      ? "bg-purple-600 text-white shadow-sm"
+                      ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -1352,7 +1352,7 @@ export default function QuestionBankPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <BookOpenIcon className="size-4 text-indigo-600" /> Part A: Assessment Questions ({activeAssessmentModal.questions.length})
+                      <BookOpenIcon className="size-4 text-primary" /> Part A: Assessment Questions ({activeAssessmentModal.questions.length})
                     </h4>
                     <Badge variant="outline" className="text-xs">
                       Time Allowed: {activeAssessmentModal.durationMinutes} Mins
@@ -1362,7 +1362,7 @@ export default function QuestionBankPage() {
                   {activeAssessmentModal.questions.map((q, idx) => (
                     <div key={q.id || `mod-q-${idx}`} className="p-4 rounded-xl border border-border/80 bg-muted/20 space-y-2.5">
                       <p className="text-xs font-semibold text-foreground leading-relaxed">
-                        <span className="text-indigo-600 dark:text-indigo-400 font-bold mr-1">Q{idx + 1}.</span> {q.questionText}
+                        <span className="text-primary font-bold mr-1">Q{idx + 1}.</span> {q.questionText}
                       </p>
 
                       <div className="grid gap-2 sm:grid-cols-2 pt-1">
@@ -1432,8 +1432,8 @@ export default function QuestionBankPage() {
                       </div>
 
                       {q.explanation && (
-                        <div className="p-2.5 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-500/20 text-xs">
-                          <span className="font-semibold text-indigo-700 dark:text-indigo-300">Explanation: </span>
+                        <div className="p-2.5 rounded-lg bg-primary/5 border border-primary/20 text-xs">
+                          <span className="font-semibold text-primary">Explanation: </span>
                           <span className="text-muted-foreground">{q.explanation}</span>
                         </div>
                       )}
@@ -1446,7 +1446,7 @@ export default function QuestionBankPage() {
               {activeSlide === 3 && (
                 <div className="space-y-4 py-4">
                   <div className="text-center space-y-1">
-                    <div className="size-12 rounded-2xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center mx-auto mb-2">
+                    <div className="size-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-2">
                       <LinkIcon className="size-6" />
                     </div>
                     <h4 className="font-heading font-bold text-base text-foreground">Shareable Student Assessment Link</h4>
@@ -1456,7 +1456,7 @@ export default function QuestionBankPage() {
                   </div>
 
                   {modalShareToken ? (
-                    <div className="p-4 rounded-xl border border-purple-500/30 bg-purple-50/30 dark:bg-purple-950/20 space-y-3">
+                    <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-3">
                       <Label className="text-xs font-semibold text-foreground">Public Student Assessment URL</Label>
                       <div className="flex items-center gap-2">
                         <Input
@@ -1472,14 +1472,14 @@ export default function QuestionBankPage() {
                             toast.success("Student link copied to clipboard!");
                             setTimeout(() => setModalCopiedLink(false), 2500);
                           }}
-                          className="bg-purple-600 hover:bg-purple-700 text-white text-xs shrink-0 gap-1.5 h-10 px-4"
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs shrink-0 gap-1.5 h-10 px-4"
                         >
                           {modalCopiedLink ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
                           <span>{modalCopiedLink ? "Copied!" : "Copy Link"}</span>
                         </Button>
                       </div>
 
-                      <div className="flex items-center justify-between text-xs pt-2 border-t border-purple-500/20">
+                      <div className="flex items-center justify-between text-xs pt-2 border-t border-primary/20">
                         <span className="text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
                           <CheckCircle2Icon className="size-3.5" /> Public Access Active
                         </span>
@@ -1487,7 +1487,7 @@ export default function QuestionBankPage() {
                           href={`${window.location.origin}/assessment/${modalShareToken}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1"
+                          className="text-primary font-semibold hover:underline flex items-center gap-1"
                         >
                           Preview Test Portal <ExternalLinkIcon className="size-3.5" />
                         </a>
@@ -1495,7 +1495,7 @@ export default function QuestionBankPage() {
                     </div>
                   ) : (
                     <div className="p-6 text-center text-xs text-muted-foreground border border-dashed rounded-xl">
-                      <Loader2Icon className="size-5 animate-spin text-purple-600 mx-auto mb-2" />
+                      <Loader2Icon className="size-5 animate-spin text-primary mx-auto mb-2" />
                       Generating shareable link...
                     </div>
                   )}
@@ -1533,7 +1533,7 @@ export default function QuestionBankPage() {
                       // SAFETY: increment stays within 1|2|3, validated by activeSlide < 3 guard
                       setActiveSlide((prev) => (prev + 1) as 1 | 2 | 3);
                     }}
-                    className="text-xs gap-1 bg-indigo-600 hover:bg-indigo-700 text-white"
+                    className="text-xs gap-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-sm"
                   >
                     <span>{activeSlide === 1 ? "Next: View Answers" : "Next: View Link"}</span>
                     <ChevronRightIcon className="size-3.5" />
