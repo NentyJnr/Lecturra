@@ -13,6 +13,7 @@ import {
   ChevronDownIcon,
   CheckIcon,
   PlusIcon,
+  GiftIcon,
 } from "lucide-react";
 
 import { useAuthStore } from "@/stores/auth-store";
@@ -304,6 +305,20 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
                     >
                       <UserIcon className="size-4 text-muted-foreground" />
                       <span>My Profile</span>
+                    </Link>
+
+                    <Link
+                      href="/dashboard/profile?tab=referrals"
+                      onClick={() => setProfileDropdownOpen(false)}
+                      className="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-500/10 transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <GiftIcon className="size-4 text-purple-600 dark:text-purple-400" />
+                        <span>Refer & Earn Credits</span>
+                      </div>
+                      <Badge className="bg-purple-500/20 text-purple-700 dark:text-purple-300 text-[10px] px-1.5 py-0 border-none font-mono">
+                        +200
+                      </Badge>
                     </Link>
 
                     {isAdmin && (

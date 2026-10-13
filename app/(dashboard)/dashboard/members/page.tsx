@@ -52,10 +52,6 @@ export default function MembersPage() {
   const [loading, setLoading] = useState(false);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
-  // Referral code claim state
-  const [referralInput, setReferralInput] = useState("");
-  const [claimingReferral, setClaimingReferral] = useState(false);
-
   // Active Workspace Context
   const activeWorkspace = useWorkspaceStore((s) => s.getActiveWorkspace());
   const isOrgWorkspace = Boolean(activeWorkspace && !activeWorkspace.isPersonal);
@@ -149,41 +145,6 @@ export default function MembersPage() {
     } finally {
       setActionLoadingId(null);
     }
-  }
-
-  async function handleClaimReferralBonus() {
-    if (!referralInput.trim()) {
-      toast.error("Please enter a referral code.");
-      return;
-    }
-    setClaimingReferral(true);
-    try {
-      const res = await applyReferralCode(referralInput.trim());
-      toast.success("Referral bonus claimed!", {
-        description: res.message || `Awarded ${res.bonusCreditsAwarded} bonus credits.`,
-      });
-      if (res.newRemainingQuota) {
-        setRemainingQuota(res.newRemainingQuota);
-      }
-      setReferralInput("");
-      loadInitialData();
-    } catch (err: any) {
-      toast.error("Referral claim failed", {
-        description: err?.response?.data?.message || err?.message || "Invalid or already applied referral code.",
-      });
-    } finally {
-      setClaimingReferral(false);
-    }
-  }
-
-  function copyReferralLink() {
-    const code = user?.referralCode || "LECTURA";
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const inviteLink = `${origin}/register?ref=${code}`;
-    navigator.clipboard.writeText(inviteLink);
-    toast.success("Referral invite link copied to clipboard!", {
-      description: inviteLink,
-    });
   }
 
   if (!isAdmin) {
@@ -308,66 +269,16 @@ export default function MembersPage() {
         <Card className="p-4 border-border/80">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Referral Activations</p>
-              <p className="text-2xl font-bold font-heading mt-1">{totalReferrals.toLocaleString()}</p>
+              <p className="text-xs font-medium text-muted-foreground">Active Faculty</p>
+              <p className="text-2xl font-bold font-heading mt-1">{members.filter(m => m.isActive).length.toLocaleString()}</p>
             </div>
             <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              <GiftIcon className="size-5" />
+              <UserCheckIcon className="size-5" />
             </div>
           </div>
-          <p className="text-[11px] text-muted-foreground mt-2">Educators joined through invitations</p>
+          <p className="text-[11px] text-muted-foreground mt-2">Active educators with generation access</p>
         </Card>
       </div>
-
-      {/* Referral Program Card */}
-      <Card className="border-border/80 bg-gradient-to-r from-purple-500/5 via-sky-500/5 to-transparent">
-        <CardContent className="p-4 sm:p-5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          <div className="space-y-1 max-w-xl">
-            <div className="flex items-center gap-2">
-              <GiftIcon className="size-4 text-purple-600 dark:text-purple-400" />
-              <h3 className="text-sm font-bold text-foreground">Educator Referral Reward Program</h3>
-              <Badge variant="secondary" className="text-[10px] bg-purple-500/10 text-purple-600 border-purple-500/20">
-                +200 Credits Per Invite
-              </Badge>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              When a colleague signs up with your referral code or invite link—even via Google or Microsoft SSO—both of you receive 200 free question generation credits.
-            </p>
-            {user?.referralCode && (
-              <div className="flex items-center gap-2 pt-1">
-                <span className="text-xs font-medium text-foreground">Your Code:</span>
-                <Badge variant="outline" className="font-mono text-xs font-bold border-purple-500/30 text-purple-600 dark:text-purple-300">
-                  {user.referralCode}
-                </Badge>
-                <Button variant="ghost" size="xs" onClick={copyReferralLink} className="gap-1 text-xs text-purple-600 dark:text-purple-400">
-                  <CopyIcon className="size-3" /> Copy Invite Link
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* Quick Apply Referral Box for SSO or new users */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 md:max-w-md w-full md:w-auto bg-background/80 p-3 rounded-xl border border-border/60">
-            <div className="flex-1">
-              <Input
-                placeholder="Enter colleague's referral code..."
-                value={referralInput}
-                onChange={(e) => setReferralInput(e.target.value.toUpperCase())}
-                className="h-8 text-xs font-mono uppercase"
-              />
-            </div>
-            <Button
-              size="sm"
-              onClick={handleClaimReferralBonus}
-              disabled={claimingReferral || !referralInput.trim()}
-              className="gap-1.5 h-8 text-xs whitespace-nowrap bg-purple-600 hover:bg-purple-700 text-white"
-            >
-              <SparklesIcon className="size-3.5" />
-              {claimingReferral ? "Claiming..." : "Claim +200 Credits"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Filter Toolbar (Tenant Dropdown + Status Filter + Search) */}
       <Card className="border-border/80 bg-card">

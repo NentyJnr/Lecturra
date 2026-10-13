@@ -71,6 +71,8 @@ export interface AuthUser {
   monthlyQuotaLimit?: number;
   referralCode?: string;
   referredByReferralCode?: string;
+  referralCount?: number;
+  totalReferralBonusEarned?: number;
 }
 
 export interface AuthSession {

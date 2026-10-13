@@ -19,6 +19,7 @@ import {
   CheckCircle2Icon,
   BuildingIcon,
   UserIcon,
+  GiftIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -145,9 +146,17 @@ export function RegisterForm() {
         {/* Center Register Form */}
         <div className="mx-auto my-auto w-full max-w-sm py-8 sm:max-w-md">
           <div className="mb-6">
-            <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[#38492A]/20 bg-[#38492A]/5 px-3 py-1 font-mono text-[11px] font-semibold text-[#38492A] dark:border-[#8FB373]/30 dark:bg-[#8FB373]/10 dark:text-[#8FB373]">
-              <SparklesIcon className="size-3" />
-              <span>1,500 Free Question Synthesis Credits</span>
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-[#38492A]/20 bg-[#38492A]/5 px-3 py-1 font-mono text-[11px] font-semibold text-[#38492A] dark:border-[#8FB373]/30 dark:bg-[#8FB373]/10 dark:text-[#8FB373]">
+                <SparklesIcon className="size-3" />
+                <span>1,500 Free Question Synthesis Credits</span>
+              </div>
+              {referralBonusActive && (
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1 font-mono text-[11px] font-semibold text-purple-700 dark:text-purple-300">
+                  <GiftIcon className="size-3 text-purple-600 dark:text-purple-400" />
+                  <span>Referred by Colleague</span>
+                </div>
+              )}
             </div>
             <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               Create your account

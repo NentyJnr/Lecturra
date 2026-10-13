@@ -15,24 +15,48 @@ import {
   CalendarIcon,
   XIcon,
   CheckIcon,
+  GiftIcon,
+  CopyIcon,
+  SparklesIcon,
+  Building2Icon,
+  Link2Icon,
+  Share2Icon,
+  UsersIcon,
+  ExternalLinkIcon,
+  MessageSquareIcon,
+  ArrowRightIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useAuthStore } from "@/stores/auth-store";
-import { getCurrentUserProfile, updateUserProfile } from "@/lib/api/services/users";
+import { useWorkspaceStore } from "@/stores/workspace-store";
+import { getCurrentUserProfile, updateUserProfile, applyReferralCode } from "@/lib/api/services/users";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Badge } from "@/components/ui/badge";
 
-type ProfileTab = "bio-data" | "roles" | "profile-image";
+type ProfileTab = "bio-data" | "roles" | "profile-image" | "referrals";
 
 export default function ProfilePage() {
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
 
+  const workspaces = useWorkspaceStore((s) => s.workspaces);
+  const orgWorkspaces = workspaces.filter((w) => !w.isPersonal);
+  const hasOrganizations = orgWorkspaces.length > 0;
+
   const [activeTab, setActiveTab] = useState<ProfileTab>("bio-data");
+  const [activeLinkMode, setActiveLinkMode] = useState<"personal" | "department">("personal");
+  const [selectedOrgId, setSelectedOrgId] = useState<string>("");
+  const [copiedPersonal, setCopiedPersonal] = useState(false);
+  const [copiedDept, setCopiedDept] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  // Referral code claim state
+  const [referralInput, setReferralInput] = useState("");
+  const [claimingReferral, setClaimingReferral] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   const [title, setTitle] = useState(user?.title || "");
@@ -84,6 +108,94 @@ export default function ProfilePage() {
 
     loadProfile();
   }, [setUser]);
+
+  useEffect(() => {
+    if (orgWorkspaces.length > 0 && !selectedOrgId) {
+      setSelectedOrgId(orgWorkspaces[0].id);
+    }
+  }, [orgWorkspaces, selectedOrgId]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (tabParam === "referrals" || tabParam === "invites" || tabParam === "referral") {
+        setActiveTab("referrals");
+      }
+    }
+  }, []);
+
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const referralCode = user?.referralCode || "LECTURA";
+  const personalInviteUrl = `${origin}/register?ref=${referralCode}`;
+
+  const currentOrg = orgWorkspaces.find((w) => w.id === selectedOrgId) || orgWorkspaces[0];
+  const deptInviteCode = currentOrg?.inviteCode || "";
+  const deptInviteUrl = `${origin}/join?org=${deptInviteCode}`;
+
+  function copyPersonalLink() {
+    navigator.clipboard.writeText(personalInviteUrl);
+    setCopiedPersonal(true);
+    toast.success("Personal referral link copied to clipboard!", {
+      description: personalInviteUrl,
+    });
+    setTimeout(() => setCopiedPersonal(false), 3000);
+  }
+
+  function copyPersonalCode() {
+    navigator.clipboard.writeText(referralCode);
+    setCopiedCode(true);
+    toast.success(`Referral code copied: ${referralCode}`);
+    setTimeout(() => setCopiedCode(false), 3000);
+  }
+
+  function copyDepartmentLink() {
+    if (!deptInviteUrl) return;
+    navigator.clipboard.writeText(deptInviteUrl);
+    setCopiedDept(true);
+    toast.success(`Department invite link for ${currentOrg?.name} copied!`, {
+      description: deptInviteUrl,
+    });
+    setTimeout(() => setCopiedDept(false), 3000);
+  }
+
+  function shareOnWhatsApp() {
+    const text = encodeURIComponent(
+      `Hello colleague! Join me on Lectura to synthesize exam questions and Bloom's taxonomy assessments: ${personalInviteUrl}`
+    );
+    window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
+  }
+
+  function shareViaEmail() {
+    const subject = encodeURIComponent("Invitation to join Lectura AI Assessment Platform");
+    const body = encodeURIComponent(
+      `Hello colleague,\n\nI invite you to try Lectura for synthesizing exam questions and academic assessments.\n\nSign up using my personal invitation link: ${personalInviteUrl}\n\nBest regards,\n${fullName || user?.email}`
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  }
+
+  async function handleClaimReferralBonus() {
+    if (!referralInput.trim()) {
+      toast.error("Please enter a referral code.");
+      return;
+    }
+    setClaimingReferral(true);
+    try {
+      const res = await applyReferralCode(referralInput.trim());
+      toast.success("Referral code applied!", {
+        description: res.message || "Your colleague was credited with +200 bonus credits.",
+      });
+      setReferralInput("");
+      const latestUser = await getCurrentUserProfile();
+      if (latestUser) setUser(latestUser);
+    } catch (err: any) {
+      toast.error("Referral claim failed", {
+        description: err?.response?.data?.message || err?.message || "Invalid or already applied referral code.",
+      });
+    } finally {
+      setClaimingReferral(false);
+    }
+  }
 
   const _isOrganization = user?.accountType === 2 || !!user?.institutionName;
   const isAdmin = user?.role === "InstitutionAdmin" || user?.role === "SystemAdmin" || user?.accountType === 2;
@@ -237,6 +349,21 @@ export default function ProfilePage() {
               }`}
             >
               <CameraIcon className="size-4" /> Profile Image
+            </button>
+            <button
+              onClick={() => setActiveTab("referrals")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+                activeTab === "referrals"
+                  ? "bg-[#0b132b] text-white shadow-sm dark:bg-primary dark:text-primary-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <GiftIcon className="size-4 text-purple-400" /> Referrals & Invites
+              {(user?.referralCount ?? 0) > 0 && (
+                <Badge className="ml-1 bg-purple-500/20 text-purple-600 dark:text-purple-300 text-[10px] px-1.5 py-0 border-none font-mono">
+                  {user?.referralCount}
+                </Badge>
+              )}
             </button>
           </div>
         </div>
@@ -580,6 +707,347 @@ export default function ProfilePage() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* TAB 4: REFERRALS & INVITES */}
+      {activeTab === "referrals" && (
+        <div className="space-y-6">
+          {/* Main Referral & Invitation Card */}
+          <Card className="border border-border/80 shadow-sm overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-purple-500/10 via-sky-500/5 to-transparent pb-4 border-b border-border/40">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="gap-1 border-purple-500/30 text-purple-600 dark:text-purple-400 font-semibold bg-purple-500/5">
+                      <GiftIcon className="size-3.5" /> Educator Invitation Hub
+                    </Badge>
+                    <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-mono text-[10px]">
+                      +200 Credits / Colleague
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-xl font-bold font-heading">
+                    Invite Colleagues & Share Access
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Share your personal referral link to earn bonus credits, or invite faculty members directly into your department workspace.
+                  </CardDescription>
+                </div>
+
+                {/* Mode Selector (if belonging to an organization) */}
+                {hasOrganizations && (
+                  <div className="inline-flex rounded-lg border border-border/80 bg-muted/60 p-1 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setActiveLinkMode("personal")}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                        activeLinkMode === "personal"
+                          ? "bg-background text-foreground shadow-xs"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <UserIcon className="size-3.5 text-purple-600 dark:text-purple-400" />
+                      Personal Link
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveLinkMode("department")}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                        activeLinkMode === "department"
+                          ? "bg-background text-foreground shadow-xs"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Building2Icon className="size-3.5 text-sky-600 dark:text-sky-400" />
+                      Department Link
+                    </button>
+                  </div>
+                )}
+              </div>
+            </CardHeader>
+
+            <CardContent className="p-6 space-y-6">
+              {/* VIEW A: PERSONAL REFERRAL LINK */}
+              {activeLinkMode === "personal" && (
+                <div className="space-y-6">
+                  {/* Metric Summary Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="rounded-xl border border-border/70 bg-card p-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">Colleagues Invited</span>
+                        <div className="flex size-8 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                          <UsersIcon className="size-4" />
+                        </div>
+                      </div>
+                      <p className="text-2xl font-bold font-heading mt-2">
+                        {(user?.referralCount ?? 0).toLocaleString()}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground mt-1">Total educators who joined</p>
+                    </div>
+
+                    <div className="rounded-xl border border-border/70 bg-card p-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">Credits Earned</span>
+                        <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                          <SparklesIcon className="size-4" />
+                        </div>
+                      </div>
+                      <p className="text-2xl font-bold font-heading mt-2 text-emerald-600 dark:text-emerald-400 font-mono">
+                        {((user?.referralCount ?? 0) * 200).toLocaleString()}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground mt-1">+200 credits for each friend</p>
+                    </div>
+
+                    <div className="rounded-xl border border-border/70 bg-card p-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">Bonus Rate</span>
+                        <div className="flex size-8 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400">
+                          <GiftIcon className="size-4" />
+                        </div>
+                      </div>
+                      <p className="text-2xl font-bold font-heading mt-2 text-sky-600 dark:text-sky-400 font-mono">
+                        +200
+                      </p>
+                      <p className="text-[11px] text-muted-foreground mt-1">Per educator activation</p>
+                    </div>
+
+                    <div className="rounded-xl border border-border/70 bg-card p-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">Invite Limit</span>
+                        <div className="flex size-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                          <CheckCircle2Icon className="size-4" />
+                        </div>
+                      </div>
+                      <p className="text-2xl font-bold font-heading mt-2 text-foreground font-mono">
+                        Unlimited
+                      </p>
+                      <p className="text-[11px] text-muted-foreground mt-1">No cap on colleague rewards</p>
+                    </div>
+                  </div>
+
+                  {/* Shareable Link Box */}
+                  <div className="rounded-2xl border border-purple-500/30 bg-purple-500/5 p-5 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <Link2Icon className="size-4 text-purple-600 dark:text-purple-400" />
+                          <h3 className="text-sm font-bold text-foreground">Your Personal Referral Link</h3>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Colleagues can sign up via email or 1-click Google SSO using this link.
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground font-medium">Your Code:</span>
+                        <Badge
+                          variant="outline"
+                          onClick={copyPersonalCode}
+                          className="font-mono text-xs font-bold border-purple-500/40 text-purple-700 dark:text-purple-300 bg-background cursor-pointer hover:bg-muted"
+                          title="Click to copy code"
+                        >
+                          {referralCode}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Copy Input Bar */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      <Input
+                        readOnly
+                        value={personalInviteUrl}
+                        className="font-mono text-xs bg-background select-all h-10"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={copyPersonalLink}
+                        className="h-10 px-4 shrink-0 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs gap-1.5"
+                      >
+                        {copiedPersonal ? (
+                          <>
+                            <CheckCircle2Icon className="size-4 text-white" />
+                            Copied Link
+                          </>
+                        ) : (
+                          <>
+                            <CopyIcon className="size-4" />
+                            Copy Referral Link
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    {/* Quick Share Buttons */}
+                    <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-purple-500/20">
+                      <span className="text-xs font-semibold text-muted-foreground mr-1">Share via:</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="xs"
+                        onClick={shareOnWhatsApp}
+                        className="gap-1.5 text-xs bg-background hover:bg-emerald-500/10 hover:text-emerald-600 hover:border-emerald-500/30"
+                      >
+                        <MessageSquareIcon className="size-3.5 text-emerald-600" /> WhatsApp
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="xs"
+                        onClick={shareViaEmail}
+                        className="gap-1.5 text-xs bg-background hover:bg-sky-500/10 hover:text-sky-600 hover:border-sky-500/30"
+                      >
+                        <MailIcon className="size-3.5 text-sky-600" /> Email Invitation
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Program Rules Note */}
+                  <div className="rounded-xl border border-border/80 bg-muted/40 p-4 space-y-1.5 text-xs">
+                    <div className="flex items-center gap-2 font-semibold text-foreground">
+                      <SparklesIcon className="size-4 text-purple-600 dark:text-purple-400" />
+                      <span>How Bonus Attribution Works</span>
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Only you receive the <strong>+200 bonus credits</strong> when an educator signs up through your personal referral link. Your colleague receives the standard 1,500 initial synthesis credits upon registration. You can refer an unlimited number of educators—every single successful registration rewards you with +200 credits immediately!
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* VIEW B: DEPARTMENT / ORGANIZATION LINK */}
+              {activeLinkMode === "department" && hasOrganizations && (
+                <div className="space-y-6">
+                  {/* Department Selector */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                      <Building2Icon className="size-4 text-sky-600 dark:text-sky-400" />
+                      Select Department / Institutional Workspace
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {orgWorkspaces.map((org) => {
+                        const isSelected = org.id === selectedOrgId || (!selectedOrgId && org === orgWorkspaces[0]);
+                        return (
+                          <div
+                            key={org.id}
+                            onClick={() => setSelectedOrgId(org.id)}
+                            className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                              isSelected
+                                ? "border-sky-500/80 bg-sky-500/10 ring-1 ring-sky-500/30"
+                                : "border-border/80 bg-card hover:bg-muted/50"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-semibold text-xs text-foreground truncate">{org.name}</span>
+                              <Badge variant="outline" className="text-[10px] font-mono border-sky-500/30 text-sky-600">
+                                {org.role}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center justify-between mt-2 text-[11px] text-muted-foreground">
+                              <span>{org.credits.toLocaleString()} Shared Credits</span>
+                              <span className="font-mono">{org.inviteCode || "ORG"}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Department Shareable Onboarding URL */}
+                  <div className="rounded-2xl border border-sky-500/30 bg-sky-500/5 p-5 space-y-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Building2Icon className="size-4 text-sky-600 dark:text-sky-400" />
+                        <h3 className="text-sm font-bold text-foreground">
+                          Department Onboarding URL ({currentOrg?.name})
+                        </h3>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Invite colleagues to connect their accounts directly into this department&apos;s shared credit pool.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      <Input
+                        readOnly
+                        value={deptInviteUrl}
+                        className="font-mono text-xs bg-background select-all h-10"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={copyDepartmentLink}
+                        className="h-10 px-4 shrink-0 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs gap-1.5"
+                      >
+                        {copiedDept ? (
+                          <>
+                            <CheckCircle2Icon className="size-4 text-white" />
+                            Copied Link
+                          </>
+                        ) : (
+                          <>
+                            <CopyIcon className="size-4" />
+                            Copy Department Link
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    <div className="rounded-xl border border-sky-500/20 bg-background/80 p-3.5 space-y-1 text-xs">
+                      <div className="font-semibold text-sky-700 dark:text-sky-300 flex items-center gap-1.5">
+                        <SparklesIcon className="size-3.5" />
+                        <span>Frictionless Google & Microsoft SSO Onboarding</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        Colleagues who open this link can sign in with 1-click Google or Microsoft SSO. Their accounts will be automatically created and enrolled into <strong>{currentOrg?.name}</strong> with immediate access to shared credits.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* RETROACTIVE CLAIM BOX: Enter Colleague's Referral Code */}
+              <div className="border-t border-border/60 pt-6">
+                <div className="rounded-xl border border-border/80 bg-muted/30 p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                      <GiftIcon className="size-3.5 text-purple-600 dark:text-purple-400" />
+                      Were you invited by another educator?
+                    </h4>
+                    <p className="text-[11px] text-muted-foreground">
+                      {user?.referredByReferralCode ? (
+                        <span className="text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                          <CheckCircle2Icon className="size-3" /> You were invited with code:{" "}
+                          <strong className="font-mono">{user.referredByReferralCode}</strong>
+                        </span>
+                      ) : (
+                        "Enter your colleague's referral code to credit them with +200 bonus credits for introducing you."
+                      )}
+                    </p>
+                  </div>
+
+                  {!user?.referredByReferralCode && (
+                    <div className="flex items-center gap-2 shrink-0 sm:w-80">
+                      <Input
+                        placeholder="e.g. REF-4A9B2C1F"
+                        value={referralInput}
+                        onChange={(e) => setReferralInput(e.target.value.toUpperCase())}
+                        className="h-8 text-xs font-mono uppercase bg-background"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={handleClaimReferralBonus}
+                        disabled={claimingReferral || !referralInput.trim()}
+                        className="h-8 text-xs font-semibold shrink-0 bg-purple-600 hover:bg-purple-700 text-white"
+                      >
+                        {claimingReferral ? "Crediting..." : "Credit Colleague"}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );
