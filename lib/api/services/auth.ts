@@ -39,8 +39,8 @@ export interface SsoAuthResult extends AuthSession {
   isNewUser?: boolean;
 }
 
-export async function googleLogin(idToken: string, referralCode?: string): Promise<SsoAuthResult> {
-  const { data } = await api.post<any>(AUTH_ENDPOINTS.google, { idToken, referralCode });
+export async function googleLogin(idToken: string, referralCode?: string, orgInvite?: string): Promise<SsoAuthResult> {
+  const { data } = await api.post<any>(AUTH_ENDPOINTS.google, { idToken, referralCode, orgInvite });
   const raw = data?.data || data;
   return {
     accessToken: raw.token || raw.accessToken,

@@ -15,6 +15,8 @@ if (globalThis.window !== undefined) {
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    const activeWorkspace = localStorage.getItem("lecturra_active_workspace") || "personal";
+    config.headers["X-Workspace-Id"] = activeWorkspace;
     return config;
   });
 

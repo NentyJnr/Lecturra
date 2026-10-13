@@ -137,9 +137,13 @@ export function useSso() {
       setIsGoogleLoading(true);
       try {
         const storedRef = typeof window !== "undefined" ? localStorage.getItem("lectura_referral_code") || undefined : undefined;
-        const result = await googleMutation.mutateAsync({ idToken: response.credential, referralCode: storedRef });
+        const storedInvite = typeof window !== "undefined" ? localStorage.getItem("lecturra_org_invite") || undefined : undefined;
+        const result = await googleMutation.mutateAsync({ idToken: response.credential, referralCode: storedRef, orgInvite: storedInvite });
         if (storedRef && result.isNewUser) {
           localStorage.removeItem("lectura_referral_code");
+        }
+        if (storedInvite) {
+          localStorage.removeItem("lecturra_org_invite");
         }
         toast.success("Welcome back!", {
           description: result.isNewUser
@@ -177,11 +181,23 @@ export function useSso() {
       localStorage.setItem("lectura_sso_provider", "google");
     }
 
+    const storedInvite = typeof window !== "undefined" ? localStorage.getItem("lecturra_org_invite") || "" : "";
+    const statePayload = {
+      provider: "google",
+      orgInvite: storedInvite || undefined,
+    };
+    let encodedState = "google";
+    try {
+      encodedState = encodeURIComponent(btoa(JSON.stringify(statePayload)));
+    } catch {
+      encodedState = "google";
+    }
+
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(
       googleClientId
     )}&redirect_uri=${encodeURIComponent(
       redirectUri
-    )}&response_type=id_token&scope=openid%20profile%20email&nonce=${nonce}&state=google`;
+    )}&response_type=id_token&scope=openid%20profile%20email&nonce=${nonce}&state=${encodedState}`;
 
     // Standard OAuth full-page redirect in the main window
     window.location.assign(authUrl);

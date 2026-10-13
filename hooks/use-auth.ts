@@ -44,11 +44,11 @@ export function useLogin() {
 export function useGoogleLogin() {
   const setSession = useAuthStore((s) => s.setSession);
   return useMutation({
-    mutationFn: (param: string | { idToken: string; referralCode?: string }) => {
+    mutationFn: (param: string | { idToken: string; referralCode?: string; orgInvite?: string }) => {
       if (typeof param === "string") {
         return googleLogin(param);
       }
-      return googleLogin(param.idToken, param.referralCode);
+      return googleLogin(param.idToken, param.referralCode, param.orgInvite);
     },
     onSuccess: (session) => setSession(session),
   });

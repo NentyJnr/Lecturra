@@ -18,11 +18,14 @@ import {
   GiftIcon,
   CopyIcon,
   SparklesIcon,
+  UserPlusIcon,
+  UserMinusIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 
 import { useAuthStore } from "@/stores/auth-store";
+import { useWorkspaceStore } from "@/stores/workspace-store";
 import { isAdminUser } from "@/lib/api/types/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +33,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { tenantsService, TenantLookup } from "@/lib/api/services/tenants";
 import { getMembers, toggleUserStatus, applyReferralCode, MemberItem } from "@/lib/api/services/users";
+import { organizationsService } from "@/lib/api/services/organizations";
+import { InviteDepartmentModal } from "@/components/dashboard/invite-department-modal";
 
 export default function MembersPage() {
   const user = useAuthStore((s) => s.user);
@@ -50,6 +55,41 @@ export default function MembersPage() {
   // Referral code claim state
   const [referralInput, setReferralInput] = useState("");
   const [claimingReferral, setClaimingReferral] = useState(false);
+
+  // Active Workspace Context
+  const activeWorkspace = useWorkspaceStore((s) => s.getActiveWorkspace());
+  const isOrgWorkspace = Boolean(activeWorkspace && !activeWorkspace.isPersonal);
+  const isOrgAdmin = Boolean(
+    isOrgWorkspace &&
+      (activeWorkspace?.role === "Admin" ||
+        activeWorkspace?.role === "Owner" ||
+        isSuperAdmin)
+  );
+
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
+
+  async function handleRemoveFromOrg(mem: MemberItem) {
+    if (!activeWorkspace || activeWorkspace.isPersonal) return;
+    if (!confirm(`Are you sure you want to remove ${mem.fullName} from ${activeWorkspace.name}?`)) return;
+
+    setRemovingMemberId(mem.id);
+    try {
+      const success = await organizationsService.removeMember(activeWorkspace.id, mem.id);
+      if (success) {
+        toast.success(`${mem.fullName} removed from ${activeWorkspace.name}.`);
+        setMembers((prev) => prev.filter((m) => m.id !== mem.id));
+      } else {
+        toast.error("Failed to remove member from workspace.");
+      }
+    } catch (err: any) {
+      toast.error("Error removing member", {
+        description: err?.response?.data?.message || err?.message || "Failed to remove member.",
+      });
+    } finally {
+      setRemovingMemberId(null);
+    }
+  }
 
   useEffect(() => {
     loadInitialData();
@@ -199,9 +239,24 @@ export default function MembersPage() {
           <Badge className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 font-mono text-[10px]">
             Platform Governance Active
           </Badge>
+          {isOrgWorkspace && activeWorkspace && (
+            <Badge variant="outline" className="gap-1.5 border-purple-500/40 text-purple-700 dark:text-purple-300 font-semibold bg-purple-500/10">
+              <Building2Icon className="size-3.5" /> {activeWorkspace.name} · {activeWorkspace.credits.toLocaleString()} Shared Credits
+            </Badge>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
+          {isOrgWorkspace && isOrgAdmin && activeWorkspace && (
+            <Button
+              size="sm"
+              onClick={() => setInviteModalOpen(true)}
+              className="gap-2 shrink-0 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs"
+            >
+              <UserPlusIcon className="size-4" />
+              Invite to {activeWorkspace.name}
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={loadInitialData} className="gap-2 shrink-0">
             <RefreshCwIcon className={`size-4 ${loading ? "animate-spin" : ""}`} />
             Refresh
@@ -491,6 +546,19 @@ export default function MembersPage() {
 
                       <td className="p-3 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {isOrgWorkspace && isOrgAdmin && activeWorkspace && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleRemoveFromOrg(mem)}
+                              disabled={removingMemberId === mem.id}
+                              className="gap-1 text-xs border border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-500/10"
+                              title={`Remove from ${activeWorkspace.name}`}
+                            >
+                              <UserMinusIcon className="size-3" />
+                              {removingMemberId === mem.id ? "Removing..." : "Remove"}
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="xs"
@@ -520,6 +588,16 @@ export default function MembersPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Invite Department Modal */}
+      {isOrgWorkspace && activeWorkspace && (
+        <InviteDepartmentModal
+          open={inviteModalOpen}
+          onOpenChange={setInviteModalOpen}
+          organizationId={activeWorkspace.id}
+          organizationName={activeWorkspace.name}
+        />
+      )}
     </div>
   );
 }

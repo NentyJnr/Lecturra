@@ -80,17 +80,30 @@ export default function AuthCallbackPage() {
       const completeAuth = async () => {
         try {
           const storedRef = localStorage.getItem("lectura_referral_code") || undefined;
+          
+          let orgInviteFromState: string | undefined = undefined;
+          const rawState = hashParams.get("state") || searchParams.get("state");
+          if (rawState) {
+            try {
+              const decoded = JSON.parse(atob(decodeURIComponent(rawState)));
+              if (decoded?.orgInvite) {
+                orgInviteFromState = decoded.orgInvite;
+              }
+            } catch {}
+          }
+          const storedInvite = orgInviteFromState || localStorage.getItem("lecturra_org_invite") || undefined;
+
           let result: SsoAuthResult;
 
           // Route to the correct provider endpoint directly to avoid false 500/400 errors
           if (isMicrosoft) {
             result = await microsoftLogin(idToken, storedRef);
           } else if (isGoogle) {
-            result = await googleLogin(idToken, storedRef);
+            result = await googleLogin(idToken, storedRef, storedInvite);
           } else {
             // If provider is undetermined, inspect or try Google first, then Microsoft
             try {
-              result = await googleLogin(idToken, storedRef);
+              result = await googleLogin(idToken, storedRef, storedInvite);
             } catch {
               result = await microsoftLogin(idToken, storedRef);
             }
@@ -98,6 +111,9 @@ export default function AuthCallbackPage() {
 
           if (storedRef && result.isNewUser) {
             localStorage.removeItem("lectura_referral_code");
+          }
+          if (storedInvite) {
+            localStorage.removeItem("lecturra_org_invite");
           }
           localStorage.removeItem("lectura_sso_provider");
 
