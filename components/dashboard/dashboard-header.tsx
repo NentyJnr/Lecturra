@@ -14,6 +14,7 @@ import {
   CheckIcon,
   PlusIcon,
   GiftIcon,
+  KeyRoundIcon,
 } from "lucide-react";
 
 import { useAuthStore } from "@/stores/auth-store";
@@ -56,7 +57,8 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
 
   const [workspaceDropdownOpen, setWorkspaceDropdownOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const [joinModalOpen, setJoinModalOpen] = useState(false);
+  const [workspaceModalOpen, setWorkspaceModalOpen] = useState(false);
+  const [workspaceModalTab, setWorkspaceModalTab] = useState<"create" | "join">("create");
 
   useEffect(() => {
     async function syncRemainingQuota() {
@@ -233,16 +235,32 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
                   </div>
 
                   {/* Bottom Actions */}
-                  <div className="pt-1.5 border-t border-border/60 space-y-0.5">
+                  <div className="pt-2 border-t border-border/60 space-y-1">
                     <button
                       onClick={() => {
                         setWorkspaceDropdownOpen(false);
-                        setJoinModalOpen(true);
+                        setWorkspaceModalTab("create");
+                        setWorkspaceModalOpen(true);
                       }}
-                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-primary hover:bg-primary/10 transition-colors text-left"
                     >
-                      <PlusIcon className="size-4 text-primary" />
-                      <span>Join Department Workspace</span>
+                      <PlusIcon className="size-4 text-primary shrink-0" />
+                      <div>
+                        <span className="block leading-tight font-semibold">Create Department Workspace</span>
+                        <span className="text-[10px] text-muted-foreground font-normal">Start a shared credit pool as Admin</span>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setWorkspaceDropdownOpen(false);
+                        setWorkspaceModalTab("join");
+                        setWorkspaceModalOpen(true);
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-xl px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-left"
+                    >
+                      <KeyRoundIcon className="size-4 shrink-0" />
+                      <span>Join with Workspace Code</span>
                     </button>
                   </div>
                 </div>
@@ -321,6 +339,30 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
                       </Badge>
                     </Link>
 
+                    <button
+                      onClick={() => {
+                        setProfileDropdownOpen(false);
+                        setWorkspaceModalTab("create");
+                        setWorkspaceModalOpen(true);
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors text-left"
+                    >
+                      <PlusIcon className="size-4 text-primary shrink-0" />
+                      <span>Create Department</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setProfileDropdownOpen(false);
+                        setWorkspaceModalTab("join");
+                        setWorkspaceModalOpen(true);
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors text-left"
+                    >
+                      <Building2Icon className="size-4 text-muted-foreground shrink-0" />
+                      <span>Join Department</span>
+                    </button>
+
                     {isAdmin && (
                       <>
                         <Link
@@ -363,8 +405,12 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
         </div>
       </header>
 
-      {/* Manual Join Workspace Modal */}
-      <JoinWorkspaceModal open={joinModalOpen} onOpenChange={setJoinModalOpen} />
+      {/* Manual Join / Create Workspace Modal */}
+      <JoinWorkspaceModal
+        open={workspaceModalOpen}
+        onOpenChange={setWorkspaceModalOpen}
+        initialTab={workspaceModalTab}
+      />
     </>
   );
 }

@@ -25,6 +25,7 @@ import {
   ExternalLinkIcon,
   MessageSquareIcon,
   ArrowRightIcon,
+  PlusIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -36,6 +37,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Badge } from "@/components/ui/badge";
+import { JoinWorkspaceModal } from "@/components/dashboard/join-workspace-modal";
 
 type ProfileTab = "bio-data" | "roles" | "profile-image" | "referrals";
 
@@ -53,6 +55,8 @@ export default function ProfilePage() {
   const [copiedPersonal, setCopiedPersonal] = useState(false);
   const [copiedDept, setCopiedDept] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [workspaceModalOpen, setWorkspaceModalOpen] = useState(false);
+  const [workspaceModalTab, setWorkspaceModalTab] = useState<"create" | "join">("create");
 
   // Referral code claim state
   const [referralInput, setReferralInput] = useState("");
@@ -733,35 +737,51 @@ export default function ProfilePage() {
                   </CardDescription>
                 </div>
 
-                {/* Mode Selector (if belonging to an organization) */}
-                {hasOrganizations && (
-                  <div className="inline-flex rounded-lg border border-border/80 bg-muted/60 p-1 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setActiveLinkMode("personal")}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                        activeLinkMode === "personal"
-                          ? "bg-background text-foreground shadow-xs"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      <UserIcon className="size-3.5 text-purple-600 dark:text-purple-400" />
-                      Personal Link
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveLinkMode("department")}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                        activeLinkMode === "department"
-                          ? "bg-background text-foreground shadow-xs"
-                          : "text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      <Building2Icon className="size-3.5 text-sky-600 dark:text-sky-400" />
-                      Department Link
-                    </button>
-                  </div>
-                )}
+                {/* Mode Selector & Department Creator */}
+                <div className="flex items-center gap-2 shrink-0">
+                  {hasOrganizations && (
+                    <div className="inline-flex rounded-lg border border-border/80 bg-muted/60 p-1">
+                      <button
+                        type="button"
+                        onClick={() => setActiveLinkMode("personal")}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                          activeLinkMode === "personal"
+                            ? "bg-background text-foreground shadow-xs"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <UserIcon className="size-3.5 text-purple-600 dark:text-purple-400" />
+                        Personal Link
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveLinkMode("department")}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                          activeLinkMode === "department"
+                            ? "bg-background text-foreground shadow-xs"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        <Building2Icon className="size-3.5 text-sky-600 dark:text-sky-400" />
+                        Department Link
+                      </button>
+                    </div>
+                  )}
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setWorkspaceModalTab("create");
+                      setWorkspaceModalOpen(true);
+                    }}
+                    className="gap-1.5 text-xs font-semibold text-primary border-primary/30 hover:bg-primary/10"
+                  >
+                    <PlusIcon className="size-3.5" />
+                    Create Department
+                  </Button>
+                </div>
               </div>
             </CardHeader>
 
@@ -949,6 +969,21 @@ export default function ProfilePage() {
                           </div>
                         );
                       })}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setWorkspaceModalTab("create");
+                          setWorkspaceModalOpen(true);
+                        }}
+                        className="p-3 rounded-xl border border-dashed border-border hover:border-primary/50 bg-muted/20 hover:bg-primary/5 text-left transition-all flex flex-col justify-center items-center gap-1 text-center min-h-[72px]"
+                      >
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+                          <PlusIcon className="size-3.5" />
+                          <span>Add Another Department</span>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">Start a new shared pool</span>
+                      </button>
                     </div>
                   </div>
 
@@ -1049,6 +1084,13 @@ export default function ProfilePage() {
           </Card>
         </div>
       )}
+
+      {/* Manual Join / Create Workspace Modal */}
+      <JoinWorkspaceModal
+        open={workspaceModalOpen}
+        onOpenChange={setWorkspaceModalOpen}
+        initialTab={workspaceModalTab}
+      />
     </div>
   );
 }
