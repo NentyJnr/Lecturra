@@ -309,7 +309,7 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
                     <p className="text-xs font-bold text-foreground truncate">{user?.fullName || "Educator"}</p>
                     <p className="text-[11px] text-muted-foreground truncate">{user?.email}</p>
                     <div className="mt-1 flex items-center gap-1">
-                      <Badge variant="secondary" className="text-[9px] px-1.5 py-0 font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20">
+                      <Badge variant="secondary" className="text-[9px] px-1.5 py-0 font-medium bg-[#38492A]/10 text-[#38492A] dark:bg-[#8FB373]/20 dark:text-[#8FB373] border-[#38492A]/20">
                         {isSuperAdmin ? "Super Admin Workspace" : isOrganization ? (user?.institutionName || "Organization") : "Individual Lecturer"}
                       </Badge>
                     </div>
@@ -328,13 +328,13 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
                     <Link
                       href="/dashboard/profile?tab=referrals"
                       onClick={() => setProfileDropdownOpen(false)}
-                      className="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-500/10 transition-colors"
+                      className="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium text-[#38492A] dark:text-[#8FB373] hover:bg-[#38492A]/10 dark:hover:bg-[#8FB373]/15 transition-colors"
                     >
                       <div className="flex items-center gap-2.5">
-                        <GiftIcon className="size-4 text-purple-600 dark:text-purple-400" />
+                        <GiftIcon className="size-4 text-[#38492A] dark:text-[#8FB373]" />
                         <span>Refer & Earn Credits</span>
                       </div>
-                      <Badge className="bg-purple-500/20 text-purple-700 dark:text-purple-300 text-[10px] px-1.5 py-0 border-none font-mono">
+                      <Badge className="bg-[#38492A]/15 text-[#38492A] dark:bg-[#8FB373]/25 dark:text-[#8FB373] text-[10px] px-1.5 py-0 border-none font-mono">
                         +200
                       </Badge>
                     </Link>

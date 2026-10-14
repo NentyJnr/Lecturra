@@ -261,12 +261,13 @@ export default function ProfilePage() {
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Design System Hero Header Container */}
       <div className="relative rounded-2xl border border-border/80 bg-card overflow-hidden shadow-sm">
-        {/* Deep Navy Gradient Banner */}
-        <div className="h-36 sm:h-44 w-full bg-linear-to-r from-[#0a1128] via-[#101b42] to-[#1e1b4b] relative flex items-center justify-end px-8">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.2),transparent_50%)]" />
+        {/* Signature Rainforest Moss & Botanical Gradient Banner */}
+        <div className="h-36 sm:h-44 w-full bg-linear-to-r from-[#1c2914] via-[#2d3e1f] to-[#38492A] dark:from-[#0d140b] dark:via-[#162212] dark:to-[#1e2e19] relative flex items-center justify-end px-8 overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(143,179,115,0.25),transparent_60%)]" />
+          <div className="absolute -left-12 -bottom-12 size-48 rounded-full bg-[#80802B]/15 blur-2xl" />
           <div className="hidden sm:block text-right z-10">
-            <span className="text-white/40 text-xs font-mono tracking-widest uppercase">Lecturra Academic Identity</span>
-            <p className="text-white/80 font-heading text-lg font-medium">{email || "user@lectura.com"}</p>
+            <span className="text-[#8FB373]/90 text-xs font-mono tracking-widest uppercase">Lecturra Academic Identity</span>
+            <p className="text-white font-heading text-lg font-semibold">{email || "user@lectura.com"}</p>
           </div>
         </div>
 
@@ -275,17 +276,17 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center text-center -mt-16 sm:-mt-20">
             {/* Avatar Circle with Camera Overlay */}
             <div className="relative group">
-              <div className="size-28 sm:size-32 rounded-full border-4 border-card bg-[#0b132b] text-white flex items-center justify-center text-3xl font-bold shadow-xl overflow-hidden">
+              <div className="size-28 sm:size-32 rounded-full border-4 border-card bg-[#24331a] text-white flex items-center justify-center text-3xl font-bold shadow-xl overflow-hidden ring-2 ring-[#38492A]/20 dark:ring-[#8FB373]/30">
                 {profileImageUrl ? (
                   <img src={profileImageUrl} alt={fullName || "User Profile"} className="size-full object-cover" />
                 ) : (
-                  <span className="font-heading font-extrabold text-indigo-400">{initials}</span>
+                  <span className="font-heading font-extrabold text-[#8FB373]">{initials}</span>
                 )}
               </div>
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute bottom-1 right-1 bg-primary hover:bg-primary/90 text-primary-foreground p-2 rounded-full shadow-md transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring"
+                className="absolute bottom-1 right-1 bg-[#38492A] hover:bg-[#2C3B20] text-white dark:bg-[#8FB373] dark:text-[#11160E] dark:hover:bg-[#A3C687] p-2 rounded-full shadow-md transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring"
                 title="Upload Profile Image"
               >
                 <CameraIcon className="size-4" />
@@ -306,7 +307,7 @@ export default function ProfilePage() {
 
             {/* User Meta Pills */}
             <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
-              <Badge variant="secondary" className="gap-1.5 px-3 py-1 font-medium text-xs bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+              <Badge variant="secondary" className="gap-1.5 px-3 py-1 font-semibold text-xs bg-[#38492A]/10 text-[#38492A] dark:bg-[#8FB373]/15 dark:text-[#8FB373] border border-[#38492A]/20 dark:border-[#8FB373]/30">
                 <ShieldIcon className="size-3.5" /> {assignedRoleName}
               </Badge>
               <Badge variant="outline" className="gap-1.5 px-3 py-1 text-xs text-muted-foreground border-border">
@@ -328,8 +329,8 @@ export default function ProfilePage() {
               onClick={() => setActiveTab("bio-data")}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === "bio-data"
-                  ? "bg-[#0b132b] text-white shadow-sm dark:bg-primary dark:text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-[#38492A] text-white shadow-sm dark:bg-[#8FB373] dark:text-[#11160E]"
+                  : "text-muted-foreground hover:bg-[#38492A]/5 hover:text-[#38492A] dark:hover:bg-[#8FB373]/10 dark:hover:text-[#8FB373]"
               }`}
             >
               <UserIcon className="size-4" /> Bio-Data
@@ -338,8 +339,8 @@ export default function ProfilePage() {
               onClick={() => setActiveTab("roles")}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === "roles"
-                  ? "bg-[#0b132b] text-white shadow-sm dark:bg-primary dark:text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-[#38492A] text-white shadow-sm dark:bg-[#8FB373] dark:text-[#11160E]"
+                  : "text-muted-foreground hover:bg-[#38492A]/5 hover:text-[#38492A] dark:hover:bg-[#8FB373]/10 dark:hover:text-[#8FB373]"
               }`}
             >
               <ShieldIcon className="size-4" /> Role Selection (1)
@@ -348,8 +349,8 @@ export default function ProfilePage() {
               onClick={() => setActiveTab("profile-image")}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === "profile-image"
-                  ? "bg-[#0b132b] text-white shadow-sm dark:bg-primary dark:text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-[#38492A] text-white shadow-sm dark:bg-[#8FB373] dark:text-[#11160E]"
+                  : "text-muted-foreground hover:bg-[#38492A]/5 hover:text-[#38492A] dark:hover:bg-[#8FB373]/10 dark:hover:text-[#8FB373]"
               }`}
             >
               <CameraIcon className="size-4" /> Profile Image
@@ -358,13 +359,17 @@ export default function ProfilePage() {
               onClick={() => setActiveTab("referrals")}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
                 activeTab === "referrals"
-                  ? "bg-[#0b132b] text-white shadow-sm dark:bg-primary dark:text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-[#38492A] text-white shadow-sm dark:bg-[#8FB373] dark:text-[#11160E]"
+                  : "text-muted-foreground hover:bg-[#38492A]/5 hover:text-[#38492A] dark:hover:bg-[#8FB373]/10 dark:hover:text-[#8FB373]"
               }`}
             >
-              <GiftIcon className="size-4 text-purple-400" /> Referrals & Invites
+              <GiftIcon className={`size-4 ${activeTab === "referrals" ? "text-white dark:text-[#11160E]" : "text-[#80802B] dark:text-[#8FB373]"}`} /> Referrals & Invites
               {(user?.referralCount ?? 0) > 0 && (
-                <Badge className="ml-1 bg-purple-500/20 text-purple-600 dark:text-purple-300 text-[10px] px-1.5 py-0 border-none font-mono">
+                <Badge className={`ml-1 text-[10px] px-1.5 py-0 border-none font-mono ${
+                  activeTab === "referrals"
+                    ? "bg-white/20 text-white dark:bg-[#11160E]/20 dark:text-[#11160E]"
+                    : "bg-[#38492A]/10 text-[#38492A] dark:bg-[#8FB373]/20 dark:text-[#8FB373]"
+                }`}>
                   {user?.referralCount}
                 </Badge>
               )}
@@ -385,7 +390,7 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="pt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 border border-border/40">
-                <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                <div className="p-2 rounded-lg bg-[#38492A]/10 dark:bg-[#8FB373]/15 text-[#38492A] dark:text-[#8FB373]">
                   <MailIcon className="size-4" />
                 </div>
                 <div>
@@ -399,7 +404,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 border border-border/40">
-                <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                <div className="p-2 rounded-lg bg-[#38492A]/10 dark:bg-[#8FB373]/15 text-[#38492A] dark:text-[#8FB373]">
                   <PhoneIcon className="size-4" />
                 </div>
                 <div>
@@ -413,7 +418,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 border border-border/40">
-                <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                <div className="p-2 rounded-lg bg-[#38492A]/10 dark:bg-[#8FB373]/15 text-[#38492A] dark:text-[#8FB373]">
                   <UserIcon className="size-4" />
                 </div>
                 <div>
@@ -427,14 +432,14 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 border border-border/40">
-                <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                <div className="p-2 rounded-lg bg-[#38492A]/10 dark:bg-[#8FB373]/15 text-[#38492A] dark:text-[#8FB373]">
                   <ShieldCheckIcon className="size-4" />
                 </div>
                 <div>
                   <span className="text-[10px] font-mono tracking-wider text-muted-foreground uppercase block">
                     Assigned Roles
                   </span>
-                  <Badge variant="secondary" className="mt-0.5 text-[10px] font-bold">
+                  <Badge variant="secondary" className="mt-0.5 text-[10px] font-bold bg-[#38492A]/10 text-[#38492A] dark:bg-[#8FB373]/15 dark:text-[#8FB373] border-none">
                     {assignedRoleName}
                   </Badge>
                 </div>
@@ -616,17 +621,17 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Highlighted Assigned System Roles Callout */}
-                  <div className="mt-6 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/50 dark:bg-indigo-950/20 p-4 space-y-2">
-                    <div className="flex items-center gap-2 text-xs font-bold text-indigo-950 dark:text-indigo-200">
-                      <ShieldIcon className="size-4 text-indigo-600 dark:text-indigo-400" />
+                  <div className="mt-6 rounded-xl border border-[#38492A]/20 dark:border-[#8FB373]/30 bg-[#38492A]/5 dark:bg-[#8FB373]/10 p-4 space-y-2">
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#38492A] dark:text-[#8FB373]">
+                      <ShieldIcon className="size-4 text-[#38492A] dark:text-[#8FB373]" />
                       Assigned System Roles
                     </div>
                     <p className="text-[11px] text-muted-foreground">
                       Below are all administrative & instructional roles assigned to your user account across the portal.
                     </p>
                     <div className="pt-2 flex flex-wrap gap-2">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-background border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 shadow-xs">
-                        <CheckIcon className="size-3.5 text-indigo-600 dark:text-indigo-400" />
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-background border border-[#38492A]/30 dark:border-[#8FB373]/40 text-[#38492A] dark:text-[#8FB373] shadow-xs">
+                        <CheckIcon className="size-3.5 text-[#38492A] dark:text-[#8FB373]" />
                         {assignedRoleName}
                       </span>
                     </div>
@@ -654,7 +659,7 @@ export default function ProfilePage() {
                   <h4 className="text-sm font-bold">{assignedRoleName}</h4>
                   <p className="text-xs text-muted-foreground">Primary Instructional & Examination Governance Role</p>
                 </div>
-                <Badge className="bg-emerald-600 text-white text-xs">Active Role</Badge>
+                <Badge className="bg-[#38492A] text-white dark:bg-[#8FB373] dark:text-[#11160E] text-xs">Active Role</Badge>
               </div>
               <p className="text-xs text-muted-foreground border-t border-border/40 pt-2">
                 This role grants permission to generate course assessments, manage question banks, review student submissions, and export exam packages (PDF, Aiken, GIFT).
@@ -705,7 +710,7 @@ export default function ProfilePage() {
             </Field>
 
             <div className="flex justify-end pt-2">
-              <Button size="sm" onClick={() => handleSaveProfile()} disabled={saving} className="gap-2">
+              <Button size="sm" onClick={() => handleSaveProfile()} disabled={saving} className="gap-2 bg-[#38492A] hover:bg-[#2C3B20] text-white dark:bg-[#8FB373] dark:text-[#11160E]">
                 <SaveIcon className="size-4" /> Save Profile Image
               </Button>
             </div>
@@ -718,14 +723,14 @@ export default function ProfilePage() {
         <div className="space-y-6">
           {/* Main Referral & Invitation Card */}
           <Card className="border border-border/80 shadow-sm overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-purple-500/10 via-sky-500/5 to-transparent pb-4 border-b border-border/40">
+            <CardHeader className="bg-gradient-to-r from-[#38492A]/10 via-[#80802B]/5 to-transparent pb-4 border-b border-border/40">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="gap-1 border-purple-500/30 text-purple-600 dark:text-purple-400 font-semibold bg-purple-500/5">
+                    <Badge variant="outline" className="gap-1 border-[#38492A]/30 text-[#38492A] dark:text-[#8FB373] font-semibold bg-[#38492A]/5">
                       <GiftIcon className="size-3.5" /> Educator Invitation Hub
                     </Badge>
-                    <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-mono text-[10px]">
+                    <Badge className="bg-[#38492A]/10 text-[#38492A] dark:text-[#8FB373] border-[#38492A]/30 font-mono text-[10px]">
                       +200 Credits / Colleague
                     </Badge>
                   </div>
@@ -746,11 +751,11 @@ export default function ProfilePage() {
                         onClick={() => setActiveLinkMode("personal")}
                         className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
                           activeLinkMode === "personal"
-                            ? "bg-background text-foreground shadow-xs"
+                            ? "bg-background text-[#38492A] dark:text-[#8FB373] shadow-xs font-bold"
                             : "text-muted-foreground hover:text-foreground"
                         }`}
                       >
-                        <UserIcon className="size-3.5 text-purple-600 dark:text-purple-400" />
+                        <UserIcon className="size-3.5 text-[#38492A] dark:text-[#8FB373]" />
                         Personal Link
                       </button>
                       <button
@@ -794,7 +799,7 @@ export default function ProfilePage() {
                     <div className="rounded-xl border border-border/70 bg-card p-4">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-muted-foreground">Colleagues Invited</span>
-                        <div className="flex size-8 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                        <div className="flex size-8 items-center justify-center rounded-lg bg-[#38492A]/10 text-[#38492A] dark:text-[#8FB373]">
                           <UsersIcon className="size-4" />
                         </div>
                       </div>
@@ -845,11 +850,11 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Shareable Link Box */}
-                  <div className="rounded-2xl border border-purple-500/30 bg-purple-500/5 p-5 space-y-4">
+                  <div className="rounded-2xl border border-[#38492A]/30 bg-[#38492A]/5 p-5 space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
-                          <Link2Icon className="size-4 text-purple-600 dark:text-purple-400" />
+                          <Link2Icon className="size-4 text-[#38492A] dark:text-[#8FB373]" />
                           <h3 className="text-sm font-bold text-foreground">Your Personal Referral Link</h3>
                         </div>
                         <p className="text-xs text-muted-foreground">
@@ -862,7 +867,7 @@ export default function ProfilePage() {
                         <Badge
                           variant="outline"
                           onClick={copyPersonalCode}
-                          className="font-mono text-xs font-bold border-purple-500/40 text-purple-700 dark:text-purple-300 bg-background cursor-pointer hover:bg-muted"
+                          className="font-mono text-xs font-bold border-[#38492A]/40 text-[#38492A] dark:text-[#8FB373] bg-background cursor-pointer hover:bg-muted"
                           title="Click to copy code"
                         >
                           {referralCode}
@@ -881,7 +886,7 @@ export default function ProfilePage() {
                         type="button"
                         size="sm"
                         onClick={copyPersonalLink}
-                        className="h-10 px-4 shrink-0 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs gap-1.5"
+                        className="h-10 px-4 shrink-0 bg-[#38492A] hover:bg-[#2C3B20] text-white dark:bg-[#8FB373] dark:text-[#11160E] font-semibold text-xs gap-1.5"
                       >
                         {copiedPersonal ? (
                           <>
@@ -898,7 +903,7 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Quick Share Buttons */}
-                    <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-purple-500/20">
+                    <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-[#38492A]/20">
                       <span className="text-xs font-semibold text-muted-foreground mr-1">Share via:</span>
                       <Button
                         type="button"
@@ -924,7 +929,7 @@ export default function ProfilePage() {
                   {/* Program Rules Note */}
                   <div className="rounded-xl border border-border/80 bg-muted/40 p-4 space-y-1.5 text-xs">
                     <div className="flex items-center gap-2 font-semibold text-foreground">
-                      <SparklesIcon className="size-4 text-purple-600 dark:text-purple-400" />
+                      <SparklesIcon className="size-4 text-[#38492A] dark:text-[#8FB373]" />
                       <span>How Bonus Attribution Works</span>
                     </div>
                     <p className="text-muted-foreground leading-relaxed">
@@ -1072,7 +1077,7 @@ export default function ProfilePage() {
                         size="sm"
                         onClick={handleClaimReferralBonus}
                         disabled={claimingReferral || !referralInput.trim()}
-                        className="h-8 text-xs font-semibold shrink-0 bg-purple-600 hover:bg-purple-700 text-white"
+                        className="h-8 text-xs font-semibold shrink-0 bg-[#38492A] hover:bg-[#2C3B20] text-white dark:bg-[#8FB373] dark:text-[#11160E]"
                       >
                         {claimingReferral ? "Crediting..." : "Credit Colleague"}
                       </Button>
