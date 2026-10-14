@@ -13,6 +13,7 @@ interface WorkspaceState {
   setActiveWorkspace: (id: string) => void;
   fetchWorkspaces: () => Promise<void>;
   updateWorkspaceCredits: (workspaceId: string, creditsDeducted: number) => void;
+  syncPersonalCredits: (credits: number) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceState>()(
@@ -77,6 +78,17 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           workspaces: state.workspaces.map((w) =>
             w.id === workspaceId
               ? { ...w, credits: Math.max(0, w.credits - creditsDeducted) }
+              : w
+          ),
+        }));
+      },
+
+      syncPersonalCredits: (credits: number) => {
+        if (!Number.isFinite(credits) || credits <= 0) return;
+        set((state) => ({
+          workspaces: state.workspaces.map((w) =>
+            w.isPersonal || w.id === "personal"
+              ? { ...w, credits: Math.max(w.credits, credits) }
               : w
           ),
         }));

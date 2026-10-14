@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { useAuthStore } from "@/stores/auth-store";
+import { useWorkspaceStore } from "@/stores/workspace-store";
 import { isAdminUser } from "@/lib/api/types/auth";
 import { getDashboardOverview, type DashboardOverviewData } from "@/lib/api/services/dashboard";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ export default function DashboardOverviewPage() {
         setOverview(data);
         if (data && Number.isFinite(data.remainingQuota)) {
           useAuthStore.getState().setRemainingQuota(data.remainingQuota);
+          useWorkspaceStore.getState().syncPersonalCredits(data.remainingQuota);
         }
       } catch {
         // Silent fallback to user store properties

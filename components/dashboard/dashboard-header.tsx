@@ -66,6 +66,7 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
         const profile = await getCurrentUserProfile();
         if (profile && profile.remainingQuota !== undefined && Number.isFinite(profile.remainingQuota)) {
           setRemainingQuota(profile.remainingQuota);
+          useWorkspaceStore.getState().syncPersonalCredits(profile.remainingQuota);
         }
       } catch {
         // Fallback to existing store state if offline/network error
@@ -80,7 +81,9 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
 
   const activeWorkspace = getActiveWorkspace();
   const isPersonal = activeWorkspace?.isPersonal ?? true;
-  const activeCredits = activeWorkspace?.credits ?? (user?.remainingQuota ?? 1500);
+  const activeCredits = isPersonal
+    ? Math.max(activeWorkspace?.credits ?? 0, user?.remainingQuota ?? 0, 1500)
+    : (activeWorkspace?.credits ?? 0);
 
   // SAFETY: pathname is a validated dashboard route string, fallback to empty covers unknown routes
   const currentPage = pageTitles[pathname as keyof typeof pageTitles] || { title: "", subtitle: "" };
@@ -216,7 +219,11 @@ export function DashboardHeader({ onOpenMobileSidebar }: DashboardHeaderProps) {
                             <div className="min-w-0">
                               <p className="text-xs font-semibold truncate leading-tight">{ws.name}</p>
                               <p className="text-[10px] text-muted-foreground mt-0.5">
-                                {ws.credits.toLocaleString()} {ws.isPersonal ? "personal" : "shared"} credits
+                                {(ws.isPersonal
+                                  ? Math.max(ws.credits, user?.remainingQuota ?? 0, 1500)
+                                  : ws.credits
+                                ).toLocaleString()}{" "}
+                                {ws.isPersonal ? "personal" : "shared"} credits
                               </p>
                             </div>
                           </div>

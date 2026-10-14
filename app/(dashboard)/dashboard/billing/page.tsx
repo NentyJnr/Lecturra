@@ -27,6 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/stores/auth-store";
+import { useWorkspaceStore } from "@/stores/workspace-store";
 import { isAdminUser } from "@/lib/api/types/auth";
 import { getCurrentUserProfile } from "@/lib/api/services/users";
 import { billingService, getStandardPackageOrder, type PricingPackage } from "@/lib/api/services/billing";
@@ -189,6 +190,7 @@ export default function BillingPage() {
         const profile = await getCurrentUserProfile();
         if (profile && profile.remainingQuota !== undefined && Number.isFinite(profile.remainingQuota)) {
           useAuthStore.getState().setRemainingQuota(profile.remainingQuota);
+          useWorkspaceStore.getState().syncPersonalCredits(profile.remainingQuota);
         }
       } catch {
         // Fallback
@@ -215,10 +217,12 @@ export default function BillingPage() {
         if (verifyRes?.isSuccess) {
           if (verifyRes.remainingQuota !== undefined && Number.isFinite(verifyRes.remainingQuota) && verifyRes.remainingQuota > 0) {
             useAuthStore.getState().setRemainingQuota(verifyRes.remainingQuota);
+            useWorkspaceStore.getState().syncPersonalCredits(verifyRes.remainingQuota);
           } else {
             const profile = await getCurrentUserProfile();
             if (profile && profile.remainingQuota !== undefined && Number.isFinite(profile.remainingQuota)) {
               useAuthStore.getState().setRemainingQuota(profile.remainingQuota);
+              useWorkspaceStore.getState().syncPersonalCredits(profile.remainingQuota);
             }
           }
           await loadHistory();
@@ -286,9 +290,12 @@ export default function BillingPage() {
       if (verifyRes?.isSuccess) {
         if (verifyRes.remainingQuota !== undefined && Number.isFinite(verifyRes.remainingQuota)) {
           useAuthStore.getState().setRemainingQuota(verifyRes.remainingQuota);
+          useWorkspaceStore.getState().syncPersonalCredits(verifyRes.remainingQuota);
         } else if (verifyRes.creditsAdded > 0) {
           const current = user?.remainingQuota ?? 1500;
-          useAuthStore.getState().setRemainingQuota(current + verifyRes.creditsAdded);
+          const next = current + verifyRes.creditsAdded;
+          useAuthStore.getState().setRemainingQuota(next);
+          useWorkspaceStore.getState().syncPersonalCredits(next);
         }
         await loadHistory();
         setToastMsg(`🎉 Payment Verified! +${(verifyRes.creditsAdded || 5000).toLocaleString()} Credits added to your balance.`);
@@ -609,10 +616,12 @@ export default function BillingPage() {
       const verifyRes = await billingService.verifyPayment(checkoutOrderRef);
       if (verifyRes?.isSuccess && verifyRes.remainingQuota !== undefined && verifyRes.remainingQuota > 0) {
         useAuthStore.getState().setRemainingQuota(verifyRes.remainingQuota);
+        useWorkspaceStore.getState().syncPersonalCredits(verifyRes.remainingQuota);
       } else {
         const profile = await getCurrentUserProfile();
         if (profile && profile.remainingQuota !== undefined && Number.isFinite(profile.remainingQuota)) {
           useAuthStore.getState().setRemainingQuota(profile.remainingQuota);
+          useWorkspaceStore.getState().syncPersonalCredits(profile.remainingQuota);
         }
       }
 
